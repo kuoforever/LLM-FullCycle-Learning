@@ -5,25 +5,25 @@
 
 ## Current phase
 
-The Desktop Runtime Lane A producer, strict consumer, and deterministic
-Reliability/Verifier Dataset v1 mapping now form a pinned offline baseline. The
-next phase freezes its environment and CI evidence before model work starts.
+The Desktop Runtime Lane A producer, strict consumer, deterministic
+Reliability/Verifier Dataset v1 mapping, and standard-library environment are
+content-pinned. The offline gate passed locally across Python 3.11-3.13. Remote
+CI execution remains before this baseline can be called CI-frozen.
 
 ## Single active objective
 
-Complete `FC-MVP-000` in this repository:
+Close the remaining external gate for `FC-MVP-000`:
 
 ```text
-bridge + reliability dataset baseline
-        -> locked Python environment and offline validation gate
-        -> Python 3.11-3.13 CI evidence and reproducible baseline record
+explicit intended remote
+        -> push current local commits
+        -> Python 3.11-3.13 Actions run and recorded result
 ```
 
-Freeze the current consumer and dataset contracts without adding model,
-provider, Runtime, or capture features. Record the dependency/environment lock,
-run the same offline fixture gate on Python 3.11-3.13, and preserve exact
-producer, consumer, dataset-schema, fixture, and validation identities. Do not
-start Tool Router training or Lane B under this item.
+Do not guess or add a remote and do not push without explicit authorization.
+After a remote is chosen, run `.github/workflows/offline-baseline.yml`, record
+the exact run/result, and only then mark `FC-MVP-000` complete. Do not start
+Tool Router training or Lane B while this objective remains open.
 
 `FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
 commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
@@ -40,6 +40,13 @@ tool-sequence signals. Validation on Python 3.13.7: `21 tests` passed, Ruff
 passed, mypy passed, the JSON Schema and two records validated, and the offline
 script reproduced both JSONL records byte-for-byte.
 
+`FC-MVP-000` local gates completed on 2026-07-28 at implementation commit
+`01167034d797d4d6855b1ba916b60564d29ba210`: Python 3.11.15, 3.12.12, and
+3.13.7 each passed `21 tests`, seven artifact hashes, five source import-boundary
+audits, and two exact dataset records with zero runtime dependencies. Ruff
+0.15.22 and mypy 2.3.0 also passed. The Actions matrix is configured but has
+not run because this local repository has no configured remote.
+
 ## Full Cycle backlog
 
 | ID | Status | Deliverable |
@@ -48,7 +55,7 @@ script reproduced both JSONL records byte-for-byte.
 | `FC-BRIDGE-001` | Complete | Strict manifest/run-export consumer and offline compatibility fixtures |
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
-| `FC-MVP-000` | Next | Freeze Runtime consumer baseline and environment |
+| `FC-MVP-000` | In progress | Local baseline frozen; remote Python 3.11-3.13 Actions evidence remains |
 | `FC-MVP-001` | Pending | Text Tool Router closed loop |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 

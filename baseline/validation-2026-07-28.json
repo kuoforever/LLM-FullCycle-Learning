@@ -1,0 +1,44 @@
+{
+  "task": "FC-MVP-000",
+  "validation_date": "2026-07-28",
+  "implementation_commit": "01167034d797d4d6855b1ba916b60564d29ba210",
+  "command": "<python> -I scripts/validate_offline.py",
+  "matrix": [
+    {
+      "python": "3.11.15",
+      "implementation": "cpython",
+      "valid": true,
+      "tests_run": 21,
+      "artifact_hashes_verified": 7,
+      "source_files_audited": 5,
+      "dataset_records": 2,
+      "runtime_dependencies": 0
+    },
+    {
+      "python": "3.12.12",
+      "implementation": "cpython",
+      "valid": true,
+      "tests_run": 21,
+      "artifact_hashes_verified": 7,
+      "source_files_audited": 5,
+      "dataset_records": 2,
+      "runtime_dependencies": 0
+    },
+    {
+      "python": "3.13.7",
+      "implementation": "cpython",
+      "valid": true,
+      "tests_run": 21,
+      "artifact_hashes_verified": 7,
+      "source_files_audited": 5,
+      "dataset_records": 2,
+      "runtime_dependencies": 0
+    }
+  ],
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+  "github_actions": {
+    "workflow": ".github/workflows/offline-baseline.yml",
+    "status": "configured_not_run",
+    "reason": "local repository has no configured remote"
+  }
+}

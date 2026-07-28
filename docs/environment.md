@@ -3,6 +3,9 @@
 > Baseline date: 2026-07-28  
 > Scope: `FC-MVP-000` bridge and Reliability/Verifier Dataset v1 only
 
+Baseline implementation commit:
+`01167034d797d4d6855b1ba916b60564d29ba210`.
+
 ## Frozen runtime environment
 
 The bridge baseline is deliberately standard-library-only:

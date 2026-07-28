@@ -1,6 +1,6 @@
 {
   "baseline_version": 1,
-  "source_code_commit": "b610bd3b8d177c49726f034b244f1f9aab8edda7",
+  "source_code_commit": "01167034d797d4d6855b1ba916b60564d29ba210",
   "runtime_git_commit": "8ace897f746a4aa3dd3f8b10af392ea9ba81941d",
   "runtime_pull_request": 219,
   "agent_contract_version": "0.1.0",
