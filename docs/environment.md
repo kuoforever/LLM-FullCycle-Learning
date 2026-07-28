@@ -59,10 +59,13 @@ runnable without them.
 ## CI status
 
 `.github/workflows/offline-baseline.yml` defines the identical gate for Python
-3.11, 3.12 and 3.13 without installing project dependencies. This repository
-has no configured remote, so no GitHub Actions run exists yet. The workflow is
-configured but must not be described as CI-passed until a remote is explicitly
-chosen and the run completes.
+3.11, 3.12 and 3.13 without installing project dependencies. GitHub Actions run
+`30369941536` completed successfully for commit
+`80bafb4a5bd5039115519ad7239584be39acb037`; all three matrix jobs and their
+stdlib-only gates passed.
+
+Remote repository:
+`https://github.com/kuoforever/LLM-FullCycle-Learning` (private).
 
 ## Training environment boundary
 

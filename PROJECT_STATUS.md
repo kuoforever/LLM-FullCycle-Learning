@@ -7,30 +7,34 @@
 
 The Desktop Runtime Lane A producer, strict consumer, deterministic
 Reliability/Verifier Dataset v1 mapping, and standard-library environment are
-content-pinned. The offline gate passed locally across Python 3.11-3.13. Remote
-CI execution remains before this baseline can be called CI-frozen.
+content-pinned. The offline gate passed locally and in GitHub Actions across
+Python 3.11-3.13. MVP-0 is frozen; the next phase defines the first text Tool
+Router data and evaluation contract before any training.
 
 ## Single active objective
 
-Close the remaining external gate for `FC-MVP-000`:
+Complete the schema/eval gate of `FC-MVP-001`:
 
 ```text
-explicit intended remote
-        -> push current local commits
-        -> Python 3.11-3.13 Actions run and recorded result
+text Tool Router decision schema
+        -> hand-authored seed + frozen eval fixtures
+        -> deterministic validator and baseline metrics
 ```
 
-Do not guess or add a remote and do not push without explicit authorization.
-After a remote is chosen, run `.github/workflows/offline-baseline.yml`, record
-the exact run/result, and only then mark `FC-MVP-000` complete. Do not start
-Tool Router training or Lane B while this objective remains open.
+Cover normal tool use, missing arguments, ambiguity, dangerous requests,
+approval, rejection, fallback, tool failure, duplicate delivery, and loop
+limits. Normalize tool/argument/risk/approval/reject/fallback fields and freeze
+the eval answers before viewing model results. Use an offline simulator only;
+do not open Provider, MCP, Desktop, network, Memory, Continuation, training, or
+Lane B under this first gate.
 
 `FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
 commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
 manifest, one minimal valid run export, and eight invalid fixtures. Validation
 on Python 3.13.7: `12 tests` passed, Ruff passed, mypy passed, and the offline
 CLI accepted the valid fixture with the pinned manifest digest. The repository
-is local-only with no configured remote.
+is published as the private GitHub repository
+`kuoforever/LLM-FullCycle-Learning`.
 
 `FC-BRIDGE-002` completed on 2026-07-28 with
 `reliability_dataset_schema_version=1`, a strict Draft 2020-12 JSON Schema, a
@@ -44,8 +48,13 @@ script reproduced both JSONL records byte-for-byte.
 `01167034d797d4d6855b1ba916b60564d29ba210`: Python 3.11.15, 3.12.12, and
 3.13.7 each passed `21 tests`, seven artifact hashes, five source import-boundary
 audits, and two exact dataset records with zero runtime dependencies. Ruff
-0.15.22 and mypy 2.3.0 also passed. The Actions matrix is configured but has
-not run because this local repository has no configured remote.
+0.15.22 and mypy 2.3.0 also passed.
+
+`FC-MVP-000` remote gate completed on 2026-07-28. The private repository is
+`kuoforever/LLM-FullCycle-Learning`; Actions run `30369941536` at head
+`80bafb4a5bd5039115519ad7239584be39acb037` passed the Python 3.11, 3.12, and
+3.13 matrix jobs. The exact run and job IDs are recorded in
+`baseline/validation-2026-07-28.json`.
 
 ## Full Cycle backlog
 
@@ -55,8 +64,8 @@ not run because this local repository has no configured remote.
 | `FC-BRIDGE-001` | Complete | Strict manifest/run-export consumer and offline compatibility fixtures |
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
-| `FC-MVP-000` | In progress | Local baseline frozen; remote Python 3.11-3.13 Actions evidence remains |
-| `FC-MVP-001` | Pending | Text Tool Router closed loop |
+| `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
+| `FC-MVP-001` | Next | Text Tool Router closed loop |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

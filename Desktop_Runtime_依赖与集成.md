@@ -120,8 +120,9 @@ runtime_pull_request=219
 
 Full Cycle 本地侧已固定 `consumer_schema_version=1.0.0`、
 `reliability_dataset_schema_version=1` 和 Runtime commit `8ace897f`，并在
-Python 3.11-3.13 本地矩阵通过。由于 Full Cycle 仓库尚无 remote，
-`FC-BRIDGE-004` 的远程 CI/跨仓关闭证据仍为 Pending。
+Python 3.11-3.13 本地矩阵通过。Full Cycle 远程 Actions run
+`30369941536` 也通过三版本矩阵；consumer 侧 pin 与兼容门禁已具备远程证据。
+`FC-BRIDGE-004` 仍需 Runtime 侧记录/确认该 consumer 结果后共同关闭。
 
 ## 新会话入口
 
