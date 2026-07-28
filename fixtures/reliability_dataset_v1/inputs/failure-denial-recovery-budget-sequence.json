@@ -1,0 +1,115 @@
+{
+  "fullcycle_run_export_version": 1,
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+  "run_id": "run_dataset_denial",
+  "checkpoint": {
+    "checkpoint_version": 1,
+    "checkpoint_sequence": 3,
+    "run_id": "run_dataset_denial",
+    "phase": "FAILED",
+    "policy_version": "trace-v1",
+    "recovery_status": "stopped",
+    "task_length": 9,
+    "observation_epoch": 0,
+    "verified_observation_epoch": null,
+    "event_count": 7,
+    "budgets": {
+      "max_model_turns": 1,
+      "max_tool_calls": 2,
+      "max_side_effects": 1,
+      "model_turns_used": 0,
+      "tool_calls_used": 2,
+      "side_effects_used": 0,
+      "max_input_tokens": 100,
+      "input_tokens_used": 0
+    },
+    "updated_at": "2026-07-28T00:00:00+00:00",
+    "metrics": {
+      "model_calls": 0,
+      "tool_calls": 2,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "provider_latency_ms": 0,
+      "tool_latency_ms": 0,
+      "tool_failures": 2,
+      "image_results": 0,
+      "screenshot_results": 0,
+      "provider_usage_report_count": 0,
+      "retry_count": 0
+    },
+    "failure_code": "POLICY_DENIED",
+    "resume_allowed": false,
+    "recovery_action": "inspect_trace_then_start_new_run"
+  },
+  "events": [
+    {
+      "trace_version": 1,
+      "sequence": 1,
+      "run_id": "run_dataset_denial",
+      "kind": "user_task",
+      "task_length": 9
+    },
+    {
+      "trace_version": 1,
+      "sequence": 2,
+      "run_id": "run_dataset_denial",
+      "kind": "tool_call",
+      "tool": "click",
+      "arguments": {},
+      "redacted_fields": []
+    },
+    {
+      "trace_version": 1,
+      "sequence": 3,
+      "run_id": "run_dataset_denial",
+      "kind": "policy_decision",
+      "decision": "deny"
+    },
+    {
+      "trace_version": 1,
+      "sequence": 4,
+      "run_id": "run_dataset_denial",
+      "kind": "tool_result",
+      "tool": "click",
+      "status": "rejected",
+      "dispatch": "not_dispatched",
+      "text_length": 0,
+      "image_count": 0,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "trace_version": 1,
+      "sequence": 5,
+      "run_id": "run_dataset_denial",
+      "kind": "tool_call",
+      "tool": "type",
+      "arguments": {
+        "text_present": true,
+        "text_length": 5,
+        "ref_supplied": false
+      },
+      "redacted_fields": ["text"]
+    },
+    {
+      "trace_version": 1,
+      "sequence": 6,
+      "run_id": "run_dataset_denial",
+      "kind": "tool_result",
+      "tool": "type",
+      "status": "rejected",
+      "dispatch": "not_dispatched",
+      "text_length": 0,
+      "image_count": 0,
+      "code": "POLICY_DENIED"
+    },
+    {
+      "trace_version": 1,
+      "sequence": 7,
+      "run_id": "run_dataset_denial",
+      "kind": "recovery",
+      "status": "stopped"
+    }
+  ],
+  "data_class": "redacted_runtime_evidence",
+  "training_use": "reliability_and_verifier_only"
+}

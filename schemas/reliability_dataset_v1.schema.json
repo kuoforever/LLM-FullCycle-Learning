@@ -1,0 +1,440 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://local.fullcycle.invalid/schemas/reliability_dataset_v1.schema.json",
+  "title": "Lane A Reliability and Verifier Dataset Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "reliability_dataset_schema_version",
+    "record_id",
+    "source",
+    "data_class",
+    "training_use",
+    "features",
+    "labels"
+  ],
+  "properties": {
+    "reliability_dataset_schema_version": {
+      "const": 1
+    },
+    "record_id": {
+      "$ref": "#/$defs/sha256"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "runtime_git_commit",
+        "consumer_schema_version",
+        "fullcycle_manifest_version",
+        "fullcycle_run_export_version",
+        "manifest_digest",
+        "run_export_digest",
+        "run_id",
+        "trace_version",
+        "checkpoint_version",
+        "policy_version"
+      ],
+      "properties": {
+        "runtime_git_commit": {
+          "const": "8ace897f746a4aa3dd3f8b10af392ea9ba81941d"
+        },
+        "consumer_schema_version": {
+          "const": "1.0.0"
+        },
+        "fullcycle_manifest_version": {
+          "const": 1
+        },
+        "fullcycle_run_export_version": {
+          "const": 1
+        },
+        "manifest_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "run_export_digest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "run_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "trace_version": {
+          "const": 1
+        },
+        "checkpoint_version": {
+          "const": 1
+        },
+        "policy_version": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "data_class": {
+      "const": "redacted_runtime_evidence"
+    },
+    "training_use": {
+      "const": "reliability_and_verifier_only"
+    },
+    "features": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "phase",
+        "recovery_status",
+        "recovery_action",
+        "failure_code",
+        "event_count",
+        "event_kind_counts",
+        "tool_sequence",
+        "tool_outcomes",
+        "policy_decisions",
+        "recovery_events",
+        "budgets"
+      ],
+      "properties": {
+        "phase": {
+          "enum": [
+            "CREATED",
+            "OBSERVING",
+            "PLANNING",
+            "WAITING_APPROVAL",
+            "PAUSED",
+            "EXECUTING",
+            "VERIFYING",
+            "SUCCESS",
+            "FAILED",
+            "UNKNOWN_OUTCOME",
+            "CANCELLED"
+          ]
+        },
+        "recovery_status": {
+          "enum": [
+            "ready",
+            "requires_reobservation",
+            "unknown_outcome",
+            "stopped"
+          ]
+        },
+        "recovery_action": {
+          "enum": [
+            "resume_with_original_task",
+            "none",
+            "human_reobserve_then_start_new_run",
+            "inspect_trace_then_start_new_run"
+          ]
+        },
+        "failure_code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "event_count": {
+          "$ref": "#/$defs/nonnegativeInteger"
+        },
+        "event_kind_counts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "user_task",
+            "model_turn",
+            "tool_call",
+            "tool_result",
+            "observation",
+            "policy_decision",
+            "recovery"
+          ],
+          "properties": {
+            "user_task": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "model_turn": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "tool_call": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "tool_result": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "observation": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "policy_decision": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            },
+            "recovery": {
+              "$ref": "#/$defs/nonnegativeInteger"
+            }
+          }
+        },
+        "tool_sequence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/toolSequenceItem"
+          }
+        },
+        "tool_outcomes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/toolOutcome"
+          }
+        },
+        "policy_decisions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/policyDecision"
+          }
+        },
+        "recovery_events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/recoveryEvent"
+          }
+        },
+        "budgets": {
+          "$ref": "#/$defs/budgets"
+        }
+      }
+    },
+    "labels": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "outcome_class",
+        "is_failure",
+        "is_unknown_outcome",
+        "policy_denied",
+        "recovery_required",
+        "budget_limit_hit",
+        "verifier_tags"
+      ],
+      "properties": {
+        "outcome_class": {
+          "enum": [
+            "success",
+            "failure",
+            "unknown_outcome",
+            "cancelled",
+            "paused",
+            "in_progress"
+          ]
+        },
+        "is_failure": {
+          "type": "boolean"
+        },
+        "is_unknown_outcome": {
+          "type": "boolean"
+        },
+        "policy_denied": {
+          "type": "boolean"
+        },
+        "recovery_required": {
+          "type": "boolean"
+        },
+        "budget_limit_hit": {
+          "type": "boolean"
+        },
+        "verifier_tags": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "enum": [
+              "failure",
+              "unknown_outcome",
+              "policy_denial",
+              "recovery_required",
+              "budget_limit",
+              "tool_sequence_available"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "nonnegativeInteger": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "toolSequenceItem": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "tool"
+      ],
+      "properties": {
+        "sequence": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "toolOutcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "tool",
+        "status",
+        "dispatch",
+        "code"
+      ],
+      "properties": {
+        "sequence": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "enum": [
+            "success",
+            "action_error",
+            "transport_error",
+            "rejected",
+            "unknown_outcome"
+          ]
+        },
+        "dispatch": {
+          "enum": [
+            "not_dispatched",
+            "dispatched",
+            "unknown"
+          ]
+        },
+        "code": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "policyDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "decision"
+      ],
+      "properties": {
+        "sequence": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "decision": {
+          "enum": [
+            "allow",
+            "deny",
+            "approval_required",
+            "reobserve",
+            "defer"
+          ]
+        }
+      }
+    },
+    "recoveryEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sequence",
+        "status"
+      ],
+      "properties": {
+        "sequence": {
+          "$ref": "#/$defs/positiveInteger"
+        },
+        "status": {
+          "enum": [
+            "ready",
+            "requires_reobservation",
+            "unknown_outcome",
+            "stopped"
+          ]
+        }
+      }
+    },
+    "budgetValues": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_turns",
+        "tool_calls",
+        "side_effects",
+        "input_tokens"
+      ],
+      "properties": {
+        "model_turns": {
+          "$ref": "#/$defs/nonnegativeInteger"
+        },
+        "tool_calls": {
+          "$ref": "#/$defs/nonnegativeInteger"
+        },
+        "side_effects": {
+          "$ref": "#/$defs/nonnegativeInteger"
+        },
+        "input_tokens": {
+          "$ref": "#/$defs/nonnegativeInteger"
+        }
+      }
+    },
+    "budgetFlags": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "model_turns",
+        "tool_calls",
+        "side_effects",
+        "input_tokens"
+      ],
+      "properties": {
+        "model_turns": {
+          "type": "boolean"
+        },
+        "tool_calls": {
+          "type": "boolean"
+        },
+        "side_effects": {
+          "type": "boolean"
+        },
+        "input_tokens": {
+          "type": "boolean"
+        }
+      }
+    },
+    "budgets": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "limits",
+        "used",
+        "limit_hit"
+      ],
+      "properties": {
+        "limits": {
+          "$ref": "#/$defs/budgetValues"
+        },
+        "used": {
+          "$ref": "#/$defs/budgetValues"
+        },
+        "limit_hit": {
+          "$ref": "#/$defs/budgetFlags"
+        }
+      }
+    }
+  }
+}

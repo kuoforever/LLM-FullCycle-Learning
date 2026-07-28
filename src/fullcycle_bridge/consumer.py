@@ -250,10 +250,7 @@ def manifest_digest(manifest: Mapping[str, Any]) -> str:
 def validate_files(manifest_path: Path, run_export_path: Path) -> ValidationSummary:
     """Read two bounded regular files and validate them without opening any ports."""
 
-    manifest = _load_bounded_json(manifest_path, "manifest")
-    run_export = _load_bounded_json(run_export_path, "run_export")
-    validate_manifest(manifest)
-    validate_run_export(run_export, manifest)
+    manifest, run_export = load_validated_files(manifest_path, run_export_path)
     checkpoint = run_export["checkpoint"]
     return ValidationSummary(
         consumer_schema_version=CONSUMER_SCHEMA_VERSION,
@@ -264,6 +261,18 @@ def validate_files(manifest_path: Path, run_export_path: Path) -> ValidationSumm
         data_class=run_export["data_class"],
         training_use=run_export["training_use"],
     )
+
+
+def load_validated_files(
+    manifest_path: Path, run_export_path: Path
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Return bounded parsed objects only after the complete bridge gate passes."""
+
+    manifest = _load_bounded_json(manifest_path, "manifest")
+    run_export = _load_bounded_json(run_export_path, "run_export")
+    validate_manifest(manifest)
+    validate_run_export(run_export, manifest)
+    return manifest, run_export
 
 
 def validate_manifest(value: Any) -> None:

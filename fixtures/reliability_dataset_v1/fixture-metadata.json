@@ -1,0 +1,10 @@
+{
+  "fixture_set": "FC-BRIDGE-002",
+  "schema_path": "schemas/reliability_dataset_v1.schema.json",
+  "reliability_dataset_schema_version": 1,
+  "runtime_git_commit": "8ace897f746a4aa3dd3f8b10af392ea9ba81941d",
+  "consumer_schema_version": "1.0.0",
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+  "record_count": 2,
+  "expected_jsonl_sha256": "4ff903017bad8223b380571ee86ccaa49d35ee97ffa8cda9db73b40d7d252496"
+}

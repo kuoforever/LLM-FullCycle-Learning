@@ -5,25 +5,25 @@
 
 ## Current phase
 
-The Desktop Runtime Lane A producer and the Full Cycle strict offline consumer
-now form a pinned, tested bridge baseline. The next phase may map only this
-validated redacted evidence into a reliability/Verifier dataset.
+The Desktop Runtime Lane A producer, strict consumer, and deterministic
+Reliability/Verifier Dataset v1 mapping now form a pinned offline baseline. The
+next phase freezes its environment and CI evidence before model work starts.
 
 ## Single active objective
 
-Complete `FC-BRIDGE-002` in this repository:
+Complete `FC-MVP-000` in this repository:
 
 ```text
-validated Lane A run-export v1
-        -> versioned reliability/Verifier dataset schema
-        -> deterministic mapping and dataset fixtures
+bridge + reliability dataset baseline
+        -> locked Python environment and offline validation gate
+        -> Python 3.11-3.13 CI evidence and reproducible baseline record
 ```
 
-Use only records accepted by `fullcycle_bridge` and preserve
-`training_use=reliability_and_verifier_only`. Define deterministic examples for
-failure, unknown outcome, denial, recovery, budget, and tool-sequence analysis.
-Do not add raw task/model/tool-result text, images, Provider, MCP, Desktop,
-network, Approval, Memory, Continuation, or Lane B capture.
+Freeze the current consumer and dataset contracts without adding model,
+provider, Runtime, or capture features. Record the dependency/environment lock,
+run the same offline fixture gate on Python 3.11-3.13, and preserve exact
+producer, consumer, dataset-schema, fixture, and validation identities. Do not
+start Tool Router training or Lane B under this item.
 
 `FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
 commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
@@ -32,15 +32,23 @@ on Python 3.13.7: `12 tests` passed, Ruff passed, mypy passed, and the offline
 CLI accepted the valid fixture with the pinned manifest digest. The repository
 is local-only with no configured remote.
 
+`FC-BRIDGE-002` completed on 2026-07-28 with
+`reliability_dataset_schema_version=1`, a strict Draft 2020-12 JSON Schema, a
+canonical JSONL mapper, two exact input/output fixtures, and deterministic
+failure, unknown-outcome, policy-denial, recovery, budget-limit, and
+tool-sequence signals. Validation on Python 3.13.7: `21 tests` passed, Ruff
+passed, mypy passed, the JSON Schema and two records validated, and the offline
+script reproduced both JSONL records byte-for-byte.
+
 ## Full Cycle backlog
 
 | ID | Status | Deliverable |
 |---|---|---|
 | `FC-PM-000` | Complete | Project structure, MVP roadmap, scenario matrix, Project H, cross-repo management |
 | `FC-BRIDGE-001` | Complete | Strict manifest/run-export consumer and offline compatibility fixtures |
-| `FC-BRIDGE-002` | Next | Lane A reliability/Verifier dataset mapping |
+| `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
-| `FC-MVP-000` | Pending | Freeze Runtime consumer baseline and environment |
+| `FC-MVP-000` | Next | Freeze Runtime consumer baseline and environment |
 | `FC-MVP-001` | Pending | Text Tool Router closed loop |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 

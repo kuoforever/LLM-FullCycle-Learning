@@ -173,3 +173,11 @@ run-export v1 consumer、固定合法/非法 compatibility fixtures 和可复制
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate_bridge.ps1
 ```
+
+## 已实现：Lane A Reliability/Verifier Dataset v1
+
+`FC-BRIDGE-002` 将通过 bridge gate 的脱敏 run export 确定性映射为 canonical
+JSONL。v1 只生成可由 Runtime 事实确定的 failure、unknown outcome、policy
+denial、recovery 和 budget signals，并保留 tool sequence/outcome 特征；不生成
+SFT 文本、富多模态 episode 或需要语义猜测的 retry/rollback 标签。设计决策见
+[ADR-0001](docs/adr/ADR-0001-lane-a-reliability-dataset-v1.md)。

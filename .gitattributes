@@ -1,0 +1,2 @@
+fixtures/**/*.json text eol=lf
+fixtures/**/*.jsonl text eol=lf
