@@ -1,0 +1,32 @@
+{
+  "baseline_version": 1,
+  "source_code_commit": "b610bd3b8d177c49726f034b244f1f9aab8edda7",
+  "runtime_git_commit": "8ace897f746a4aa3dd3f8b10af392ea9ba81941d",
+  "runtime_pull_request": 219,
+  "agent_contract_version": "0.1.0",
+  "driver_contract_version": "1.0.0",
+  "fullcycle_manifest_version": 1,
+  "fullcycle_run_export_version": 1,
+  "trace_version": 1,
+  "checkpoint_version": 1,
+  "plan_contract_version": 1,
+  "consumer_schema_version": "1.0.0",
+  "reliability_dataset_schema_version": 1,
+  "package_version": "0.2.0",
+  "python_requires": ">=3.11,<3.14",
+  "required_python_minors": [
+    "3.11",
+    "3.12",
+    "3.13"
+  ],
+  "runtime_dependencies": [],
+  "artifacts": {
+    "fixtures/bridge_v1/valid/runtime-manifest.json": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+    "fixtures/bridge_v1/valid/minimal-run-export.json": "sha256:fe339a7adf10dae3258a985c6d4826a1f00fa3fbb986a877e31a989eff8e3d2b",
+    "fixtures/bridge_v1/fixture-metadata.json": "sha256:233c02cd2736256e54096102ef56ed4001e950f29debcb0727527e501e421814",
+    "schemas/reliability_dataset_v1.schema.json": "sha256:a523f5aba3dc13acd468b5c1466a48dc6fb18e25001ad16420d72cfd909e49e9",
+    "fixtures/reliability_dataset_v1/expected-records.jsonl": "sha256:4ff903017bad8223b380571ee86ccaa49d35ee97ffa8cda9db73b40d7d252496",
+    "fixtures/reliability_dataset_v1/inputs/failure-denial-recovery-budget-sequence.json": "sha256:8d5d3a4a80d31d5518ee7a4e2f454abd71bd3bf9183abb4058adbcd15035dfc0",
+    "fixtures/reliability_dataset_v1/inputs/unknown-outcome.json": "sha256:f60473964937404f4462df9b78837410982d3cae1da2f148bdcbd71914135577"
+  }
+}

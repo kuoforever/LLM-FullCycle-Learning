@@ -1,0 +1,29 @@
+name: offline-baseline
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  python-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version:
+          - "3.11"
+          - "3.12"
+          - "3.13"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: ""
+      - name: Run stdlib-only offline baseline gate
+        env:
+          PYTHONDONTWRITEBYTECODE: "1"
+        run: python -I scripts/validate_offline.py

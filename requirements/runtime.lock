@@ -1,0 +1,2 @@
+# FC-MVP-000 runtime lock
+# Intentionally empty: bridge and dataset execution use only Python 3.11-3.13 stdlib.

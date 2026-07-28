@@ -181,3 +181,15 @@ JSONL。v1 只生成可由 Runtime 事实确定的 failure、unknown outcome、p
 denial、recovery 和 budget signals，并保留 tool sequence/outcome 特征；不生成
 SFT 文本、富多模态 episode 或需要语义猜测的 retry/rollback 标签。设计决策见
 [ADR-0001](docs/adr/ADR-0001-lane-a-reliability-dataset-v1.md)。
+
+## MVP-0 离线基线门禁
+
+Bridge 与 Reliability Dataset 基线使用 Python 3.11–3.13 标准库，不包含
+runtime 第三方依赖。统一验证命令：
+
+```powershell
+python -I .\scripts\validate_offline.py
+```
+
+该 gate 会核对冻结 artifact hashes、依赖边界、全部单测、bridge fixture 和
+exact dataset JSONL。环境证据见 [Environment baseline](docs/environment.md)。
