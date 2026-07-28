@@ -5,43 +5,40 @@
 
 ## Current phase
 
-The project design is complete enough to start implementation. The Desktop
-Runtime now produces the safe bridge; the first Full Cycle code task is its
-strict offline consumer.
+The Desktop Runtime Lane A producer and the Full Cycle strict offline consumer
+now form a pinned, tested bridge baseline. The next phase may map only this
+validated redacted evidence into a reliability/Verifier dataset.
 
 ## Single active objective
 
-Complete `FC-BRIDGE-001` in this repository:
+Complete `FC-BRIDGE-002` in this repository:
 
 ```text
-manifest v1 + redacted run-export v1
-        -> strict offline consumer
-        -> valid and invalid compatibility fixtures
+validated Lane A run-export v1
+        -> versioned reliability/Verifier dataset schema
+        -> deterministic mapping and dataset fixtures
 ```
 
-Read `Desktop_Runtime_依赖与集成.md` for the exact producer contract. Validate
-supported versions, manifest digest, `automatic_export` claims, data class,
-training-use restriction, size bound, and strict structure. Reject unknown
-versions, malformed/oversized input, digest mismatch, unexpected rich content,
-and incomplete events. Do not open provider, MCP, desktop, network, approval,
-memory, or continuation ports.
+Use only records accepted by `fullcycle_bridge` and preserve
+`training_use=reliability_and_verifier_only`. Define deterministic examples for
+failure, unknown outcome, denial, recovery, budget, and tool-sequence analysis.
+Do not add raw task/model/tool-result text, images, Provider, MCP, Desktop,
+network, Approval, Memory, Continuation, or Lane B capture.
 
-Pin Runtime merge commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`
-and the schema versions below in the fixture metadata. Do not start multimodal
-training or rich episode capture under this item.
-
-This directory was not a Git worktree when checked on 2026-07-28. Before adding
-consumer code, initialize it as a repository or attach it to the intended
-remote so fixtures, schemas, and environment locks receive reproducible commit
-identities.
+`FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
+commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
+manifest, one minimal valid run export, and eight invalid fixtures. Validation
+on Python 3.13.7: `12 tests` passed, Ruff passed, mypy passed, and the offline
+CLI accepted the valid fixture with the pinned manifest digest. The repository
+is local-only with no configured remote.
 
 ## Full Cycle backlog
 
 | ID | Status | Deliverable |
 |---|---|---|
 | `FC-PM-000` | Complete | Project structure, MVP roadmap, scenario matrix, Project H, cross-repo management |
-| `FC-BRIDGE-001` | Next | Strict manifest/run-export consumer and offline compatibility fixtures |
-| `FC-BRIDGE-002` | Pending | Lane A reliability/Verifier dataset mapping |
+| `FC-BRIDGE-001` | Complete | Strict manifest/run-export consumer and offline compatibility fixtures |
+| `FC-BRIDGE-002` | Next | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-MVP-000` | Pending | Freeze Runtime consumer baseline and environment |
 | `FC-MVP-001` | Pending | Text Tool Router closed loop |

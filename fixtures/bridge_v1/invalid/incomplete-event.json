@@ -1,0 +1,53 @@
+{
+  "fullcycle_run_export_version": 1,
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+  "run_id": "run_fixture_minimal",
+  "checkpoint": {
+    "checkpoint_version": 1,
+    "checkpoint_sequence": 1,
+    "run_id": "run_fixture_minimal",
+    "phase": "CREATED",
+    "policy_version": "trace-v1",
+    "recovery_status": "ready",
+    "task_length": 1,
+    "observation_epoch": 0,
+    "verified_observation_epoch": null,
+    "event_count": 1,
+    "budgets": {
+      "max_model_turns": 1,
+      "max_tool_calls": 1,
+      "max_side_effects": 0,
+      "model_turns_used": 0,
+      "tool_calls_used": 0,
+      "side_effects_used": 0,
+      "max_input_tokens": 1,
+      "input_tokens_used": 0
+    },
+    "updated_at": "2026-07-28T00:00:00+00:00",
+    "metrics": {
+      "model_calls": 0,
+      "tool_calls": 0,
+      "input_tokens": 0,
+      "output_tokens": 0,
+      "provider_latency_ms": 0,
+      "tool_latency_ms": 0,
+      "tool_failures": 0,
+      "image_results": 0,
+      "screenshot_results": 0,
+      "provider_usage_report_count": 0,
+      "retry_count": 0
+    },
+    "resume_allowed": true,
+    "recovery_action": "resume_with_original_task"
+  },
+  "events": [
+    {
+      "trace_version": 1,
+      "sequence": 1,
+      "run_id": "run_fixture_minimal",
+      "kind": "user_task"
+    }
+  ],
+  "data_class": "redacted_runtime_evidence",
+  "training_use": "reliability_and_verifier_only"
+}

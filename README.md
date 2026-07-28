@@ -162,3 +162,14 @@ code commit
 - 模型负责提出动作，不获得执行权限；确定性 Runtime 始终掌握安全边界。
 - 一个阶段只引入一个主要变量，避免模型、数据、Prompt 和 Runtime 同时变化。
 - 任何没有真实运行证据的能力，不写成“熟练掌握”或“生产经验”。
+
+## 已实现：Runtime Lane A bridge consumer
+
+`FC-BRIDGE-001` 在本仓库提供严格、完全离线的 manifest v1 与 redacted
+run-export v1 consumer、固定合法/非法 compatibility fixtures 和可复制验证
+脚本。契约、边界和错误行为见
+[FC-BRIDGE-001 离线消费契约](docs/FC-BRIDGE-001.md)。
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\scripts\validate_bridge.ps1
+```

@@ -1,0 +1,14 @@
+{
+  "fixture_set": "FC-BRIDGE-001",
+  "runtime_git_commit": "8ace897f746a4aa3dd3f8b10af392ea9ba81941d",
+  "runtime_pull_request": 219,
+  "agent_contract_version": "0.1.0",
+  "driver_contract_version": "1.0.0",
+  "fullcycle_manifest_version": 1,
+  "fullcycle_run_export_version": 1,
+  "trace_version": 1,
+  "checkpoint_version": 1,
+  "plan_contract_version": 1,
+  "consumer_schema_version": "1.0.0",
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522"
+}

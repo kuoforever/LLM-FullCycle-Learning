@@ -77,8 +77,8 @@ Lane B 不得把 Runtime 的安全 Trace 改成秘密富日志。
 | ID | Owner | Status | 任务 |
 |---|---|---|---|
 | `GDA-FC-001` | Runtime | Complete | manifest v1 和 redacted run export v1 已实现并通过离线门禁 |
-| `FC-BRIDGE-001` | Full Cycle | Next | 固定严格 consumer、合法/非法 fixture 和兼容性失败行为 |
-| `FC-BRIDGE-002` | Full Cycle | Pending | 将 Lane A 映射到 Reliability/Verifier Dataset |
+| `FC-BRIDGE-001` | Full Cycle | Complete | 严格 consumer、合法/非法 fixture 和兼容性失败行为已通过离线验证 |
+| `FC-BRIDGE-002` | Full Cycle | Next | 将 Lane A 映射到 Reliability/Verifier Dataset |
 | `FC-BRIDGE-003` | Full Cycle | Pending review | 设计 Lane B consent/capture/security contract |
 | `FC-BRIDGE-004` | Both | Pending | Pin Runtime commit、contract version 和兼容性测试 |
 

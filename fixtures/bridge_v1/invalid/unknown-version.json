@@ -1,0 +1,9 @@
+{
+  "fullcycle_run_export_version": 2,
+  "manifest_digest": "sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522",
+  "run_id": "run_invalid",
+  "checkpoint": {},
+  "events": [],
+  "data_class": "redacted_runtime_evidence",
+  "training_use": "reliability_and_verifier_only"
+}
