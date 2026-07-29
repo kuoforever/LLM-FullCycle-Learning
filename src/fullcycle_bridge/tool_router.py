@@ -154,8 +154,12 @@ def validate_record(value: object, path: str = "$") -> None:
         record.get("schema_version"), TOOL_ROUTER_SCHEMA_VERSION, path, "schema_version"
     )
     example_id = _string(record.get("example_id"), f"{path}.example_id")
-    split = _enum(record.get("split"), {"seed", "eval"}, f"{path}.split")
-    prefix = "seed-" if split == "seed" else "eval-"
+    split = _enum(
+        record.get("split"),
+        {"seed", "train", "validation", "eval"},
+        f"{path}.split",
+    )
+    prefix = f"{split}-"
     if not example_id.startswith(prefix):
         _fail("INVALID_EXAMPLE_ID", f"{path}.example_id", prefix)
     _enum(record.get("category"), CATEGORIES, f"{path}.category")

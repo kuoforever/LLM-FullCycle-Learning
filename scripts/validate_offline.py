@@ -17,6 +17,7 @@ SRC = ROOT / "src"
 TESTS = ROOT / "tests"
 BASELINE_PATH = ROOT / "baseline" / "fc-mvp-000.json"
 TOOL_ROUTER_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-schema-eval.json"
+TOOL_ROUTER_DATA_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-data-v1.json"
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -50,7 +51,9 @@ def main() -> int:
     _validate_project_metadata(baseline)
     _validate_artifact_hashes(baseline)
     audited_files = _audit_import_boundary()
-    bridge_summary, record_count, router_summary = _validate_fixed_outputs()
+    bridge_summary, record_count, router_summary, data_report = (
+        _validate_fixed_outputs()
+    )
     tests_run = _run_tests()
 
     result = {
@@ -71,6 +74,10 @@ def main() -> int:
         "tool_router_dangerous_false_approvals": router_summary["baseline"][
             "dangerous_false_approvals"
         ],
+        "tool_router_train_records": data_report["train_records"],
+        "tool_router_validation_records": data_report["validation_records"],
+        "tool_router_task_families": data_report["task_families"],
+        "tool_router_data_report_digest": data_report["report_digest"],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -131,7 +138,9 @@ def _audit_import_boundary() -> int:
     return count
 
 
-def _validate_fixed_outputs() -> tuple[Any, int, dict[str, Any]]:
+def _validate_fixed_outputs() -> tuple[
+    Any, int, dict[str, Any], dict[str, Any]
+]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
     from fullcycle_bridge.dataset import map_many
@@ -140,6 +149,10 @@ def _validate_fixed_outputs() -> tuple[Any, int, dict[str, Any]]:
         evaluate,
         fixture_digest,
         load_fixture,
+    )
+    from fullcycle_bridge.tool_router_dataset import (
+        audit_dataset,
+        load_family_manifest,
     )
 
     manifest = ROOT / "fixtures" / "bridge_v1" / "valid" / "runtime-manifest.json"
@@ -161,7 +174,7 @@ def _validate_fixed_outputs() -> tuple[Any, int, dict[str, Any]]:
     _validate_named_hashes(router_baseline["artifact_hashes"])
     seed = load_fixture(ROOT / "fixtures" / "tool_router_v1" / "seed.json")
     evaluation = load_fixture(ROOT / "fixtures" / "tool_router_v1" / "eval.json")
-    router_summary = {
+    router_summary: dict[str, Any] = {
         "seed_records": len(seed),
         "eval_records": len(evaluation),
         "seed_digest": fixture_digest(seed),
@@ -175,7 +188,25 @@ def _validate_fixed_outputs() -> tuple[Any, int, dict[str, Any]]:
             raise GateError(f"Tool Router baseline mismatch: {key}")
     if router_summary["baseline"] != router_baseline["deterministic_rule_baseline"]:
         raise GateError("Tool Router metrics differ from the frozen baseline")
-    return summary, len(records), router_summary
+    data_baseline = _load_json(TOOL_ROUTER_DATA_BASELINE_PATH)
+    _validate_named_hashes(data_baseline["artifact_hashes"])
+    train = load_fixture(ROOT / "fixtures" / "tool_router_v1" / "train.json")
+    validation = load_fixture(
+        ROOT / "fixtures" / "tool_router_v1" / "validation.json"
+    )
+    family_manifest = load_family_manifest(
+        ROOT / "fixtures" / "tool_router_v1" / "family-manifest.json"
+    )
+    data_report = audit_dataset(
+        train,
+        validation,
+        evaluation,
+        family_manifest,
+        router_summary["eval_digest"],
+    )
+    if data_report != data_baseline["expected_report"]:
+        raise GateError("Tool Router data audit differs from the frozen baseline")
+    return summary, len(records), router_summary, data_report
 
 
 def _validate_named_hashes(artifacts: object) -> None:

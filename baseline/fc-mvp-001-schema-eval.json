@@ -9,7 +9,7 @@
   "seed_digest": "sha256:6cd8589b0cc4c0f96cafc3b29378383148fad60732990b6abca5f4ef4e46b95c",
   "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
   "artifact_hashes": {
-    "schemas/tool_router_decision_v1.schema.json": "sha256:cd599b77c2645172580b43e10a0275f47bf1c00eb56c91311ca0a62443f15c1a",
+    "schemas/tool_router_decision_v1.schema.json": "sha256:75abe30eb9f0f066cb32918eb9032798e6972a23231849cbfdb293043fe31497",
     "fixtures/tool_router_v1/seed.json": "sha256:dc6856eccce98cf085c4f052275983ad6687a18346458f69b9b2560a18a8d0de",
     "fixtures/tool_router_v1/eval.json": "sha256:32ceee99ab1be5672313a8aead91a089238d007dcab1a31d9ca999f28cc24595"
   },

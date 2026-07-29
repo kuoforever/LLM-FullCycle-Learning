@@ -73,8 +73,25 @@ Continuation, training, or Runtime execution.
 
 ## Limitations and next gate
 
-This gate is not the complete MVP-1 loop. It has 20 reviewed seed records, not
-the required 200-500 train/validation records; it runs no model and imports no
-real rich Agent trace. The next gate must expand task-family-disjoint
-train/validation data to at least 200 records, keep this eval fixture unchanged,
-and then establish prompt-only/base-model evaluation before QLoRA.
+The following data-expansion gate now adds 160 train and 40 validation records
+without changing the 20-record eval fixture. Sixty explicit task families are
+split 40/20 between train and validation, and the offline audit rejects family
+overlap, exact instruction duplicates, cross-split instruction Jaccard above
+`0.8`, manifest drift, and dangerous false approvals. The observed maximum
+cross-split Jaccard is `0.4166666666666667`.
+
+Reproduce the data audit:
+
+```powershell
+$env:PYTHONPATH = (Join-Path (Get-Location) 'src')
+python -m fullcycle_bridge.tool_router_dataset_cli `
+  --train .\fixtures\tool_router_v1\train.json `
+  --validation .\fixtures\tool_router_v1\validation.json `
+  --eval .\fixtures\tool_router_v1\eval.json `
+  --family-manifest .\fixtures\tool_router_v1\family-manifest.json
+```
+
+This is still not the complete MVP-1 loop: it runs no model and imports no real
+rich Agent trace. The next gate must lock a separate inference environment and
+establish prompt-only/base-model results against the unchanged eval set before
+QLoRA.

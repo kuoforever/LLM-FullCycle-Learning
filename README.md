@@ -198,6 +198,9 @@ exact dataset JSONL。环境证据见 [Environment baseline](docs/environment.md
 
 `FC-MVP-001` 的首个训练前门禁已定义严格 Tool Router decision v1，保存
 20 条人工种子和 20 条冻结 eval gold fixtures，并提供确定性规则 baseline。
+数据扩展门禁另保存 160 条 train、40 条 validation 和 60 个显式 task
+families；类别完全平衡，并对 family overlap、exact/near duplicate、分布与
+危险误审批执行离线审计。冻结 eval digest 保持不变。
 该门禁只生成候选路由决定，不执行工具，也不打开 Provider、MCP、Desktop、
 网络、Memory、Continuation 或训练。契约、固定 digest、指标与已知限制见
 [FC-MVP-001 schema/eval gate](docs/FC-MVP-001-schema-eval.md)。
