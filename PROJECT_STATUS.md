@@ -1,32 +1,41 @@
 # Project status
 
-> Updated: 2026-07-28.  
+> Updated: 2026-07-29.
 > This is the operational entry point for a new Full Cycle session.
 
 ## Current phase
 
-The Desktop Runtime Lane A producer, strict consumer, deterministic
-Reliability/Verifier Dataset v1 mapping, and standard-library environment are
-content-pinned. The offline gate passed locally and in GitHub Actions across
-Python 3.11-3.13. MVP-0 is frozen; the next phase defines the first text Tool
-Router data and evaluation contract before any training.
+MVP-0 remains frozen. The first `FC-MVP-001` training-preparation gate now has
+a strict Tool Router decision v1 contract, reviewed seed records, a frozen
+balanced eval set, deterministic validation, and an offline rule baseline.
+No model, Provider, Runtime execution, or rich trace channel has been opened.
 
 ## Single active objective
 
-Complete the schema/eval gate of `FC-MVP-001`:
+Complete the data-expansion gate of `FC-MVP-001`:
 
 ```text
-text Tool Router decision schema
-        -> hand-authored seed + frozen eval fixtures
-        -> deterministic validator and baseline metrics
+frozen eval v1 (unchanged)
+        -> task-family-disjoint train/validation records >= 200
+        -> distribution, duplicate, leakage, and schema audits
 ```
 
-Cover normal tool use, missing arguments, ambiguity, dangerous requests,
-approval, rejection, fallback, tool failure, duplicate delivery, and loop
-limits. Normalize tool/argument/risk/approval/reject/fallback fields and freeze
-the eval answers before viewing model results. Use an offline simulator only;
-do not open Provider, MCP, Desktop, network, Memory, Continuation, training, or
-Lane B under this first gate.
+Expand reviewed and deterministically verifiable examples without changing the
+20-record eval answers or their digest. Split task families, not paraphrases,
+between train and validation; keep dangerous false approvals at zero and
+publish a category/risk/tool distribution report. Do not start model inference,
+training, Provider, MCP, Desktop, network, Memory, Continuation, or Lane B under
+this next gate.
+
+The `FC-MVP-001` schema/eval gate completed locally on 2026-07-29:
+`tool_router_schema_version=1`, 20 reviewed seed records, 20 frozen eval
+records, ten categories with two eval cases each, and canonical eval digest
+`sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a`.
+The deterministic non-model baseline produced tool accuracy `1.0`, argument
+exact match/F1 `0.0/0.0`, risk Macro F1 `0.8641148325358852`, approval,
+rejection, and fallback accuracy `1.0`, and zero dangerous false approvals.
+The unified offline gate passed `31 tests` on Python 3.11.15, 3.12.12, and
+3.13.7; Ruff passed and mypy passed all nine source/script files.
 
 `FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
 commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
@@ -65,7 +74,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | Next | Text Tool Router closed loop |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; schema/eval gate complete, data expansion next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

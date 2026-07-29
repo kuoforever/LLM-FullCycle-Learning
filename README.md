@@ -193,3 +193,11 @@ python -I .\scripts\validate_offline.py
 
 该 gate 会核对冻结 artifact hashes、依赖边界、全部单测、bridge fixture 和
 exact dataset JSONL。环境证据见 [Environment baseline](docs/environment.md)。
+
+## MVP-1 Tool Router schema/eval gate
+
+`FC-MVP-001` 的首个训练前门禁已定义严格 Tool Router decision v1，保存
+20 条人工种子和 20 条冻结 eval gold fixtures，并提供确定性规则 baseline。
+该门禁只生成候选路由决定，不执行工具，也不打开 Provider、MCP、Desktop、
+网络、Memory、Continuation 或训练。契约、固定 digest、指标与已知限制见
+[FC-MVP-001 schema/eval gate](docs/FC-MVP-001-schema-eval.md)。

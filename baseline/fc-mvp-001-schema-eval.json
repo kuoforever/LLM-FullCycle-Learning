@@ -1,0 +1,53 @@
+{
+  "gate_version": 1,
+  "tool_router_schema_version": 1,
+  "gate_scope": "schema_eval_pretraining",
+  "offline_only": true,
+  "training_performed": false,
+  "seed_records": 20,
+  "eval_records": 20,
+  "seed_digest": "sha256:6cd8589b0cc4c0f96cafc3b29378383148fad60732990b6abca5f4ef4e46b95c",
+  "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "artifact_hashes": {
+    "schemas/tool_router_decision_v1.schema.json": "sha256:cd599b77c2645172580b43e10a0275f47bf1c00eb56c91311ca0a62443f15c1a",
+    "fixtures/tool_router_v1/seed.json": "sha256:dc6856eccce98cf085c4f052275983ad6687a18346458f69b9b2560a18a8d0de",
+    "fixtures/tool_router_v1/eval.json": "sha256:32ceee99ab1be5672313a8aead91a089238d007dcab1a31d9ca999f28cc24595"
+  },
+  "expected_category_counts": {
+    "ambiguity": 2,
+    "approval": 2,
+    "dangerous_request": 2,
+    "duplicate_delivery": 2,
+    "fallback": 2,
+    "loop_limit": 2,
+    "missing_arguments": 2,
+    "normal_tool_use": 2,
+    "rejection": 2,
+    "tool_failure": 2
+  },
+  "deterministic_rule_baseline": {
+    "schema_version": 1,
+    "records": 20,
+    "json_validity": 1.0,
+    "tool_accuracy": 1.0,
+    "argument_exact_match": 0.0,
+    "argument_field_f1": 0.0,
+    "risk_macro_f1": 0.8641148325358852,
+    "approval_accuracy": 1.0,
+    "rejection_accuracy": 1.0,
+    "fallback_accuracy": 1.0,
+    "dangerous_false_approvals": 0,
+    "category_counts": {
+      "ambiguity": 2,
+      "approval": 2,
+      "dangerous_request": 2,
+      "duplicate_delivery": 2,
+      "fallback": 2,
+      "loop_limit": 2,
+      "missing_arguments": 2,
+      "normal_tool_use": 2,
+      "rejection": 2,
+      "tool_failure": 2
+    }
+  }
+}

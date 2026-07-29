@@ -16,6 +16,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
 TESTS = ROOT / "tests"
 BASELINE_PATH = ROOT / "baseline" / "fc-mvp-000.json"
+TOOL_ROUTER_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-schema-eval.json"
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -49,7 +50,7 @@ def main() -> int:
     _validate_project_metadata(baseline)
     _validate_artifact_hashes(baseline)
     audited_files = _audit_import_boundary()
-    bridge_summary, record_count = _validate_fixed_outputs()
+    bridge_summary, record_count, router_summary = _validate_fixed_outputs()
     tests_run = _run_tests()
 
     result = {
@@ -64,6 +65,12 @@ def main() -> int:
         "tests_run": tests_run,
         "manifest_digest": bridge_summary.manifest_digest,
         "dataset_records": record_count,
+        "tool_router_seed_records": router_summary["seed_records"],
+        "tool_router_eval_records": router_summary["eval_records"],
+        "tool_router_eval_digest": router_summary["eval_digest"],
+        "tool_router_dangerous_false_approvals": router_summary["baseline"][
+            "dangerous_false_approvals"
+        ],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -124,10 +131,16 @@ def _audit_import_boundary() -> int:
     return count
 
 
-def _validate_fixed_outputs() -> tuple[Any, int]:
+def _validate_fixed_outputs() -> tuple[Any, int, dict[str, Any]]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
     from fullcycle_bridge.dataset import map_many
+    from fullcycle_bridge.tool_router import (
+        baseline_predict,
+        evaluate,
+        fixture_digest,
+        load_fixture,
+    )
 
     manifest = ROOT / "fixtures" / "bridge_v1" / "valid" / "runtime-manifest.json"
     minimal = ROOT / "fixtures" / "bridge_v1" / "valid" / "minimal-run-export.json"
@@ -144,7 +157,37 @@ def _validate_fixed_outputs() -> tuple[Any, int]:
     ).read_bytes()
     if actual != expected:
         raise GateError("dataset JSONL differs from the frozen fixture")
-    return summary, len(records)
+    router_baseline = _load_json(TOOL_ROUTER_BASELINE_PATH)
+    _validate_named_hashes(router_baseline["artifact_hashes"])
+    seed = load_fixture(ROOT / "fixtures" / "tool_router_v1" / "seed.json")
+    evaluation = load_fixture(ROOT / "fixtures" / "tool_router_v1" / "eval.json")
+    router_summary = {
+        "seed_records": len(seed),
+        "eval_records": len(evaluation),
+        "seed_digest": fixture_digest(seed),
+        "eval_digest": fixture_digest(evaluation),
+        "baseline": evaluate(
+            evaluation, [baseline_predict(record) for record in evaluation]
+        ),
+    }
+    for key in ("seed_records", "eval_records", "seed_digest", "eval_digest"):
+        if router_summary[key] != router_baseline[key]:
+            raise GateError(f"Tool Router baseline mismatch: {key}")
+    if router_summary["baseline"] != router_baseline["deterministic_rule_baseline"]:
+        raise GateError("Tool Router metrics differ from the frozen baseline")
+    return summary, len(records), router_summary
+
+
+def _validate_named_hashes(artifacts: object) -> None:
+    if not isinstance(artifacts, dict) or not artifacts:
+        raise GateError("named artifact hashes are missing")
+    for relative, expected in artifacts.items():
+        path = ROOT / relative
+        if not path.is_file() or path.is_symlink():
+            raise GateError(f"unsafe or missing artifact: {relative}")
+        actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        if actual != expected:
+            raise GateError(f"artifact digest mismatch: {relative}")
 
 
 def _run_tests() -> int:
