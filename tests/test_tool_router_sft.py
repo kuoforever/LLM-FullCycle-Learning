@@ -61,9 +61,13 @@ class ToolRouterSftTests(unittest.TestCase):
             root = Path(temp_dir)
             (root / "z.txt").write_text("z", encoding="utf-8")
             (root / "a.txt").write_text("a", encoding="utf-8")
+            (root / "README.md").write_text("readme", encoding="utf-8")
             manifest = directory_artifact_manifest(root)
-        self.assertEqual([item["path"] for item in manifest], ["a.txt", "z.txt"])
-        self.assertEqual([item["bytes"] for item in manifest], [1, 1])
+        self.assertEqual(
+            [item["path"] for item in manifest],
+            ["a.txt", "README.md", "z.txt"],
+        )
+        self.assertEqual([item["bytes"] for item in manifest], [1, 6, 1])
         self.assertTrue(all(item["sha256"].startswith("sha256:") for item in manifest))
 
     def test_frozen_lora_report_and_adapter_reproduce_offline(self) -> None:

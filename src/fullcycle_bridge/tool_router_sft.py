@@ -66,7 +66,11 @@ def directory_artifact_manifest(directory: Path) -> list[dict[str, Any]]:
     if not directory.is_dir():
         raise ValueError(f"adapter directory does not exist: {directory}")
     artifacts: list[dict[str, Any]] = []
-    for path in sorted(directory.rglob("*")):
+    paths = sorted(
+        directory.rglob("*"),
+        key=lambda path: path.relative_to(directory).as_posix().casefold(),
+    )
+    for path in paths:
         if path.is_file() and not path.is_symlink():
             artifacts.append(
                 {
