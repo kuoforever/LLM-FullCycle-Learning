@@ -1,0 +1,45 @@
+{
+  "config_version": 1,
+  "model": {
+    "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "license": "apache-2.0",
+    "parameters": 1543714304,
+    "weight_file": "model.safetensors",
+    "weight_bytes": 3087467144,
+    "weight_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+  },
+  "tokenizer": {
+    "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
+  },
+  "environment": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "huggingface_hub": "0.29.3",
+    "safetensors": "0.5.3",
+    "tokenizers": "0.21.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "gpu_vram_bytes": 17170956288,
+    "compute_capability": "8.9"
+  },
+  "generation": {
+    "seed": 20260729,
+    "torch_dtype": "bfloat16",
+    "attn_implementation": "sdpa",
+    "do_sample": false,
+    "max_new_tokens": 256,
+    "use_cache": true
+  },
+  "prompt": {
+    "path": "prompts/tool_router_v1.txt",
+    "sha256": "4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97"
+  },
+  "eval": {
+    "path": "fixtures/tool_router_v1/eval.json",
+    "canonical_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+    "records": 20
+  }
+}

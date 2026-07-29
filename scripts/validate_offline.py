@@ -18,6 +18,9 @@ TESTS = ROOT / "tests"
 BASELINE_PATH = ROOT / "baseline" / "fc-mvp-000.json"
 TOOL_ROUTER_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-schema-eval.json"
 TOOL_ROUTER_DATA_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-data-v1.json"
+TOOL_ROUTER_MODEL_BASELINE_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-base-model-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -51,9 +54,13 @@ def main() -> int:
     _validate_project_metadata(baseline)
     _validate_artifact_hashes(baseline)
     audited_files = _audit_import_boundary()
-    bridge_summary, record_count, router_summary, data_report = (
-        _validate_fixed_outputs()
-    )
+    (
+        bridge_summary,
+        record_count,
+        router_summary,
+        data_report,
+        model_metrics,
+    ) = _validate_fixed_outputs()
     tests_run = _run_tests()
 
     result = {
@@ -78,6 +85,11 @@ def main() -> int:
         "tool_router_validation_records": data_report["validation_records"],
         "tool_router_task_families": data_report["task_families"],
         "tool_router_data_report_digest": data_report["report_digest"],
+        "tool_router_base_model_json_validity": model_metrics["json_validity"],
+        "tool_router_base_model_tool_accuracy": model_metrics["tool_accuracy"],
+        "tool_router_base_model_dangerous_action_candidates": model_metrics[
+            "dangerous_action_candidates"
+        ],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -139,7 +151,7 @@ def _audit_import_boundary() -> int:
 
 
 def _validate_fixed_outputs() -> tuple[
-    Any, int, dict[str, Any], dict[str, Any]
+    Any, int, dict[str, Any], dict[str, Any], dict[str, Any]
 ]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
@@ -154,6 +166,7 @@ def _validate_fixed_outputs() -> tuple[
         audit_dataset,
         load_family_manifest,
     )
+    from fullcycle_bridge.tool_router_model_eval import score_raw_outputs
 
     manifest = ROOT / "fixtures" / "bridge_v1" / "valid" / "runtime-manifest.json"
     minimal = ROOT / "fixtures" / "bridge_v1" / "valid" / "minimal-run-export.json"
@@ -206,7 +219,31 @@ def _validate_fixed_outputs() -> tuple[
     )
     if data_report != data_baseline["expected_report"]:
         raise GateError("Tool Router data audit differs from the frozen baseline")
-    return summary, len(records), router_summary, data_report
+    model_baseline = _load_json(TOOL_ROUTER_MODEL_BASELINE_PATH)
+    _validate_named_hashes(model_baseline["artifact_hashes"])
+    prediction_artifact = _load_json(
+        ROOT
+        / "baseline"
+        / "tool-router-qwen2.5-1.5b-instruct-predictions.json"
+    )
+    frozen_report = _load_json(
+        ROOT / "baseline" / "tool-router-qwen2.5-1.5b-instruct-report.json"
+    )
+    raw_outputs = [
+        {
+            "example_id": item["example_id"],
+            "raw_output": item["raw_output"],
+        }
+        for item in prediction_artifact["outputs"]
+    ]
+    model_metrics, parsed_outputs = score_raw_outputs(evaluation, raw_outputs)
+    if model_metrics != model_baseline["metrics"]:
+        raise GateError("Tool Router model metrics differ from the frozen baseline")
+    if model_metrics != frozen_report["metrics"]:
+        raise GateError("Tool Router frozen model report metrics mismatch")
+    if parsed_outputs != frozen_report["parsed_outputs"]:
+        raise GateError("Tool Router frozen parsed outputs mismatch")
+    return summary, len(records), router_summary, data_report, model_metrics
 
 
 def _validate_named_hashes(artifacts: object) -> None:

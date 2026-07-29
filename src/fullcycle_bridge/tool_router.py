@@ -336,7 +336,7 @@ def evaluate(
     risk_pairs: list[tuple[str, str]] = []
     for index, (record, prediction) in enumerate(zip(gold, predicted)):
         decision = record["decision"]
-        _validate_prediction(prediction, record["available_tools"], f"$[{index}]")
+        validate_prediction(prediction, record["available_tools"], f"$[{index}]")
         tool_hits += prediction["selected_tool"] == decision["selected_tool"]
         argument_hits += prediction["arguments"] == decision["arguments"]
         gold_fields = set(decision["arguments"].items())
@@ -378,7 +378,7 @@ def evaluate(
     }
 
 
-def _validate_prediction(
+def validate_prediction(
     value: Mapping[str, Any], available_tools: list[str], path: str
 ) -> None:
     prediction = _object(value, path, DECISION_KEYS)
@@ -527,5 +527,6 @@ __all__ = [
     "evaluate",
     "fixture_digest",
     "load_fixture",
+    "validate_prediction",
     "validate_record",
 ]

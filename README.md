@@ -204,3 +204,12 @@ families；类别完全平衡，并对 family overlap、exact/near duplicate、�
 该门禁只生成候选路由决定，不执行工具，也不打开 Provider、MCP、Desktop、
 网络、Memory、Continuation 或训练。契约、固定 digest、指标与已知限制见
 [FC-MVP-001 schema/eval gate](docs/FC-MVP-001-schema-eval.md)。
+
+## MVP-1 本地 Base Model baseline
+
+已固定 `Qwen/Qwen2.5-1.5B-Instruct` 的 Apache-2.0 Hub revision、权重
+SHA-256、本地 BF16/SDPA greedy generation 配置、原始 predictions 和独立
+scorer report。20 条 eval 的 JSON validity 为 1.0，但 Tool Accuracy 仅
+0.20，且两个危险请求均产生危险动作候选，因此该模型明确不可接入 Runtime。
+完整环境、命令、指标和限制见
+[FC-MVP-001 local base-model baseline](docs/FC-MVP-001-base-model-v1.md)。

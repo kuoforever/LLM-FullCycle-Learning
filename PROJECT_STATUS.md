@@ -8,24 +8,27 @@
 MVP-0 remains frozen. `FC-MVP-001` now has a strict Tool Router decision v1
 contract, a frozen balanced eval set, 200 task-family-disjoint
 train/validation records, deterministic validation, leakage/distribution
-audits, and an offline rule baseline. No model, Provider, Runtime execution, or
-rich trace channel has been opened.
+audits, an offline rule baseline, and a reproducible local prompt-only model
+baseline. The base model failed safety and routing quality gates and is not
+Runtime eligible.
 
 ## Single active objective
 
-Complete the inference-baseline gate of `FC-MVP-001`:
+Complete the first SFT gate of `FC-MVP-001`:
 
 ```text
-separately locked local inference environment + exact base model revision
-        -> JSON-only prompt adapter
-        -> frozen prompt-only/base predictions and eval report
+locked LoRA/QLoRA training config
+        -> train on frozen train/validation v1
+        -> adapter + training evidence + unchanged eval comparison
 ```
 
-Select and pin one appropriately licensed open-weight text model and tokenizer,
-record environment/hardware/seed/generation settings, and evaluate it only
-against the unchanged 20-record eval fixture. Freeze raw predictions before
-scoring with the existing metrics. Do not train, connect Runtime, Provider,
-MCP, Desktop, Memory, Continuation, or Lane B under this next gate.
+Train one parameter-efficient adapter from the pinned Qwen2.5-1.5B revision
+using only the frozen 160/40 train/validation records. Record rank, alpha,
+target modules, sequence length, seed, checkpoints, time, peak VRAM, and
+adapter size. Evaluate against the unchanged 20-record eval and compare with
+the frozen prompt-only baseline. Do not connect Runtime, Provider, MCP,
+Desktop, Memory, Continuation, or Lane B. Runtime eligibility still requires
+zero dangerous action candidates and zero dangerous false approvals.
 
 The `FC-MVP-001` schema/eval gate completed locally on 2026-07-29:
 `tool_router_schema_version=1`, 20 reviewed seed records, 20 frozen eval
@@ -47,6 +50,21 @@ The pinned data report digest is
 `sha256:b58af24bdc3cfd34eb4309f91e977f2f4fc6f76a53a229eaa8d3f757d1ebf9a4`.
 The unified offline gate passed `40 tests` on Python 3.11.15, 3.12.12, and
 3.13.7; Ruff passed and mypy passed all 12 source/script files.
+
+The `FC-MVP-001` inference-baseline gate completed locally on 2026-07-29 with
+`Qwen/Qwen2.5-1.5B-Instruct` at Hub revision
+`989aa7980e4cf806f80c7fef2b1adb7bc71aa306` under Apache-2.0. BF16 greedy SDPA
+inference on an RTX 4090 Laptop GPU completed 20 cases in `74.492267` seconds
+with `3,132,882,944` peak allocated GPU bytes and empty stderr. A second run
+was byte-identical to prediction artifact SHA-256
+`6182e70cdab772597a68d6b7e0bcbbff8b74c20626fa197c68dbced82e0d5f0d`.
+JSON validity was `1.0`, but decision semantic validity was `0.7`, tool
+accuracy was `0.2`, rejection recall was `0.0`, and both dangerous cases
+produced dangerous action candidates. The model is explicitly
+`runtime_eligible=false`. Frozen prediction scoring is reproduced by the
+standard-library gate. The unified offline gate passed `45 tests` on Python
+3.11.15, 3.12.12, and 3.13.7; Ruff passed and mypy passed all 16
+source/script files.
 
 `FC-BRIDGE-001` completed on 2026-07-28 with consumer schema `1.0.0`, Runtime
 commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
@@ -85,7 +103,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; data gate complete, local base-model evaluation next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; reproducible base baseline complete, first SFT next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
