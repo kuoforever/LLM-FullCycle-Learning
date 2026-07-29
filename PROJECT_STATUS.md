@@ -8,27 +8,41 @@
 MVP-0 remains frozen. `FC-MVP-001` now has a strict Tool Router decision v1
 contract, a frozen balanced eval set, 200 task-family-disjoint
 train/validation records, deterministic validation, leakage/distribution
-audits, an offline rule baseline, and a reproducible local prompt-only model
-baseline. The base model failed safety and routing quality gates and is not
+audits, an offline rule baseline, a reproducible local prompt-only model
+baseline, and a reproducible first local LoRA SFT adapter. SFT materially
+improved routing quality but still failed the dangerous-action gate and is not
 Runtime eligible.
 
 ## Single active objective
 
-Complete the first SFT gate of `FC-MVP-001`:
+Complete the safety-repair data gate of `FC-MVP-001`:
 
 ```text
-locked LoRA/QLoRA training config
-        -> train on frozen train/validation v1
-        -> adapter + training evidence + unchanged eval comparison
+frozen SFT v1 badcase taxonomy
+        -> reviewed train/validation-only hard negatives v2
+        -> leakage and dangerous-action pre-training gate
 ```
 
-Train one parameter-efficient adapter from the pinned Qwen2.5-1.5B revision
-using only the frozen 160/40 train/validation records. Record rank, alpha,
-target modules, sequence length, seed, checkpoints, time, peak VRAM, and
-adapter size. Evaluate against the unchanged 20-record eval and compare with
-the frozen prompt-only baseline. Do not connect Runtime, Provider, MCP,
-Desktop, Memory, Continuation, or Lane B. Runtime eligibility still requires
-zero dangerous action candidates and zero dangerous false approvals.
+Classify the one remaining dangerous action candidate, four semantic
+inconsistencies, and validation overfitting without changing the frozen eval.
+Create a reviewed v2 train/validation-only hard-negative increment with
+explicit provenance and task families; reject exact/near eval leakage and
+preserve the canonical eval digest. Do not retrain or connect Runtime,
+Provider, MCP, Desktop, Memory, Continuation, or Lane B in this gate. The next
+training config must be locked only after this data gate passes.
+
+The first `FC-MVP-001` SFT gate completed locally on 2026-07-29. BF16 LoRA
+rank 16 / alpha 32 targeted Q/K/V/O projections for 5 epochs and 100 optimizer
+steps on the frozen 160/40 data. Training took `216.825720` seconds, peak
+allocated GPU memory was `5,217,494,016` bytes, and 4,358,144 parameters
+(`0.281521%`) were trainable. The independent Adapter directory is 17,468,332
+bytes; its 17,462,432-byte weight file has SHA-256
+`1c58a3d08598250cc01bd35a3367fbcc778c551782e6117f686394ede3d65659`.
+Independent loading and safe merge produced identical verification output.
+On the unchanged eval, Tool Accuracy improved from `0.2` to `0.8`, argument
+exact match from `0.0` to `0.35`, and risk Macro F1 from
+`0.4257518796992481` to `0.7373015873015873`. One dangerous action candidate
+remains, so `safety_gate_passed=false` and `runtime_eligible=false`.
 
 The `FC-MVP-001` schema/eval gate completed locally on 2026-07-29:
 `tool_router_schema_version=1`, 20 reviewed seed records, 20 frozen eval
@@ -103,7 +117,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; reproducible base baseline complete, first SFT next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; first LoRA SFT complete, safety-repair data gate next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

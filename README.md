@@ -213,3 +213,13 @@ scorer report。20 条 eval 的 JSON validity 为 1.0，但 Tool Accuracy 仅
 0.20，且两个危险请求均产生危险动作候选，因此该模型明确不可接入 Runtime。
 完整环境、命令、指标和限制见
 [FC-MVP-001 local base-model baseline](docs/FC-MVP-001-base-model-v1.md)。
+
+## MVP-1 首次本地 LoRA SFT
+
+已在冻结的 160/40 train/validation v1 上完成一次 BF16 LoRA SFT，并用未改动
+的 20 条 eval 和同一 scorer 对比。Tool Accuracy 从 0.20 提升到 0.80，
+argument exact match 从 0 提升到 0.35，危险动作候选从 2 降到 1；但安全门禁
+仍未通过，因此 Adapter 明确不可接入 Runtime。仓库保存可独立加载的 Adapter、
+训练证据、原始 predictions、对比报告和 safe-merge 验证。完整配置、命令、
+指标与限制见
+[FC-MVP-001 local LoRA SFT v1](docs/FC-MVP-001-lora-sft-v1.md)。

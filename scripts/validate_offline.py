@@ -21,6 +21,9 @@ TOOL_ROUTER_DATA_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-data-v1.json"
 TOOL_ROUTER_MODEL_BASELINE_PATH = (
     ROOT / "baseline" / "fc-mvp-001-base-model-v1.json"
 )
+TOOL_ROUTER_SFT_BASELINE_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-lora-sft-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -60,6 +63,7 @@ def main() -> int:
         router_summary,
         data_report,
         model_metrics,
+        sft_metrics,
     ) = _validate_fixed_outputs()
     tests_run = _run_tests()
 
@@ -88,6 +92,10 @@ def main() -> int:
         "tool_router_base_model_json_validity": model_metrics["json_validity"],
         "tool_router_base_model_tool_accuracy": model_metrics["tool_accuracy"],
         "tool_router_base_model_dangerous_action_candidates": model_metrics[
+            "dangerous_action_candidates"
+        ],
+        "tool_router_lora_sft_tool_accuracy": sft_metrics["tool_accuracy"],
+        "tool_router_lora_sft_dangerous_action_candidates": sft_metrics[
             "dangerous_action_candidates"
         ],
     }
@@ -151,7 +159,12 @@ def _audit_import_boundary() -> int:
 
 
 def _validate_fixed_outputs() -> tuple[
-    Any, int, dict[str, Any], dict[str, Any], dict[str, Any]
+    Any,
+    int,
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
 ]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
@@ -167,6 +180,11 @@ def _validate_fixed_outputs() -> tuple[
         load_family_manifest,
     )
     from fullcycle_bridge.tool_router_model_eval import score_raw_outputs
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
 
     manifest = ROOT / "fixtures" / "bridge_v1" / "valid" / "runtime-manifest.json"
     minimal = ROOT / "fixtures" / "bridge_v1" / "valid" / "minimal-run-export.json"
@@ -243,7 +261,59 @@ def _validate_fixed_outputs() -> tuple[
         raise GateError("Tool Router frozen model report metrics mismatch")
     if parsed_outputs != frozen_report["parsed_outputs"]:
         raise GateError("Tool Router frozen parsed outputs mismatch")
-    return summary, len(records), router_summary, data_report, model_metrics
+    sft_baseline = _load_json(TOOL_ROUTER_SFT_BASELINE_PATH)
+    _validate_named_hashes(sft_baseline["artifact_hashes"])
+    sft_config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v1.json")
+    sft_evidence = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v1-training.json"
+    )
+    sft_predictions = _load_json(
+        ROOT
+        / "baseline"
+        / "tool-router-qwen2.5-1.5b-lora-sft-v1-predictions.json"
+    )
+    sft_report = _load_json(
+        ROOT / "baseline" / "tool-router-qwen2.5-1.5b-lora-sft-v1-report.json"
+    )
+    config_digest = canonical_config_sha256(sft_config)
+    if config_digest != sft_baseline["canonical_config_sha256"]:
+        raise GateError("Tool Router SFT config digest mismatch")
+    if sft_evidence["config_sha256"] != config_digest:
+        raise GateError("Tool Router SFT evidence config mismatch")
+    if sft_predictions["config_sha256"] != config_digest:
+        raise GateError("Tool Router SFT prediction config mismatch")
+    adapter_dir = (
+        ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v1"
+    )
+    if directory_artifact_manifest(adapter_dir) != sft_evidence["final_adapter"]["files"]:
+        raise GateError("Tool Router SFT adapter manifest mismatch")
+    adapter_weight = adapter_dir / "adapter_model.safetensors"
+    if file_sha256(adapter_weight) != sft_baseline["adapter"]["adapter_weight_sha256"]:
+        raise GateError("Tool Router SFT adapter weight digest mismatch")
+    sft_raw_outputs = [
+        {
+            "example_id": item["example_id"],
+            "raw_output": item["raw_output"],
+        }
+        for item in sft_predictions["outputs"]
+    ]
+    sft_metrics, sft_parsed = score_raw_outputs(evaluation, sft_raw_outputs)
+    if sft_metrics != sft_baseline["metrics"]:
+        raise GateError("Tool Router SFT metrics differ from the frozen baseline")
+    if sft_metrics != sft_report["metrics"]:
+        raise GateError("Tool Router SFT report metrics mismatch")
+    if sft_parsed != sft_report["parsed_outputs"]:
+        raise GateError("Tool Router SFT parsed outputs mismatch")
+    if sft_report["runtime_eligible"] is not False:
+        raise GateError("Tool Router SFT must remain Runtime ineligible")
+    return (
+        summary,
+        len(records),
+        router_summary,
+        data_report,
+        model_metrics,
+        sft_metrics,
+    )
 
 
 def _validate_named_hashes(artifacts: object) -> None:
