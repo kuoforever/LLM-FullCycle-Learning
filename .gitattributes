@@ -1,3 +1,4 @@
 fixtures/**/*.json text eol=lf
 fixtures/**/*.jsonl text eol=lf
+baseline/adapters/** binary
 baseline/adapters/**/*.safetensors filter=lfs diff=lfs merge=lfs -text
