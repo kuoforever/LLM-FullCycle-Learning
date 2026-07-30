@@ -1,5 +1,7 @@
 # Multimodal LLM × Agent Infra：待做任务清单
 
+English companion: [docs/en/task-checklist.md](docs/en/task-checklist.md)
+
 > 用途：作为后续 Codex / Claude Code 的统一执行源。  
 > 当前状态：`guarded-desktop-agent` 可靠执行基线已存在且完整测试为 `1420 passed, 7 skipped`；模型训练、多模态后训练和 Serving 主线尚待实施。  
 > 主目标：以现有 Runtime 为交互环境和安全执行底座，形成可写简历、可演示、可复现的多模态数据 + 后训练 + Eval + Serving + Reliable Agent 闭环。  
@@ -1147,7 +1149,7 @@ Multi-Agent 必须在固定复杂任务上显著优于 Single-Agent，且收益�
 
 # 12. 场景项目
 
-> 每个场景复用同一 Model Factory、Serving、Reliable Runtime、Registry 和 Eval Hub。场景只新增 Environment Adapter、Observation/Action Schema、任务集、Verifier 和 Policy。
+> 每个场景复用同一 Model Lifecycle、Serving、Reliable Runtime、Registry 和 Eval Hub。场景只新增 Environment Adapter、Observation/Action Schema、任务集、Verifier 和 Policy。
 
 ## SCN-001：Desktop GUI Agent
 

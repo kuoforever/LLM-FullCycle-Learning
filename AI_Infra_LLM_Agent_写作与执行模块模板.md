@@ -1,8 +1,9 @@
 # Multimodal LLM × Agent Infra：写作与执行模块模板
 
+English companion: [docs/en/writing-execution-templates.md](docs/en/writing-execution-templates.md)
+
 > 用途：作为项目正式开工后的统一写作、任务分派、实验记录、代码审查和验收模板。  
 > 配套文件：
-> - `AI_Infra_LLM_Agent系统研发行动手册_模型开发项目完整版.pdf`：知识地图、项目路线和学习参考。
 > - `AI_Infra_LLM_Agent_待做任务清单.md`：任务编号、依赖关系、阶段顺序和 Definition of Done。
 > - `多模态LLM全周期_MVP演进路线.md`：当前项目定位、MVP 版本、指标和扩展边界。
 > - `多模态与业务场景覆盖矩阵.md`：模态、环境、模型任务、业务场景和统一场景契约。
@@ -65,7 +66,7 @@ docs/failure-tests/FAIL-001-training-resume.md
 保存为 `docs/project-overview.md`。
 
 ```markdown
-# Multimodal Agent Model Factory × Reliable Runtime
+# Reliable Agent Model Lifecycle
 
 ## 1. 项目目标
 

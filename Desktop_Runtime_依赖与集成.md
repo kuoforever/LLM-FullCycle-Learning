@@ -1,5 +1,7 @@
 # Desktop Runtime 依赖与集成
 
+English: [docs/en/desktop-runtime-integration.md](docs/en/desktop-runtime-integration.md)
+
 > `guarded-desktop-agent` 是本项目的可靠桌面环境和安全执行依赖，不是模型训练仓库。
 
 ## 依赖位置

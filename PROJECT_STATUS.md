@@ -1,7 +1,8 @@
 # Project status
 
-> Updated: 2026-07-29.
-> This is the operational entry point for a new Full Cycle session.
+> Updated: 2026-07-30.
+> This is the operational entry point for a new Reliable Agent Model Lifecycle
+> session.
 
 ## Current phase
 
@@ -108,7 +109,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 3.13 matrix jobs. The exact run and job IDs are recorded in
 `baseline/validation-2026-07-28.json`.
 
-## Full Cycle backlog
+## Project backlog
 
 | ID | Status | Deliverable |
 |---|---|---|
@@ -143,9 +144,14 @@ single active objective.
 
 ## Current decisions
 
+- The official display name is `Reliable Agent Model Lifecycle`; it names the
+  complete target system while implementation claims remain evidence-backed.
+- Existing `FC-*` IDs, `fullcycle_*` contracts, package/CLI names, local
+  directory, and remote repository slug remain unchanged for compatibility.
 - One flagship project and four depth Labs.
 - Desktop GUI is the first environment, not the permanent product boundary.
-- Runtime owns execution safety; Full Cycle owns models and datasets.
+- Runtime owns execution safety; Reliable Agent Model Lifecycle owns models and
+  datasets.
 - Automatic Runtime export is redacted reliability evidence only.
 - Rich multimodal episodes require explicit consent and a separate review.
 - Multi-Agent is formal Project H but does not block the first closed loop.

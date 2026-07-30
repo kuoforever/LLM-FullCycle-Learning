@@ -1,5 +1,7 @@
 # ADR-0001：Lane A Reliability/Verifier Dataset v1
 
+English: [../en/adr/ADR-0001-lane-a-reliability-dataset-v1.md](../en/adr/ADR-0001-lane-a-reliability-dataset-v1.md)
+
 - Status: Accepted
 - Date: 2026-07-28
 - Task: `FC-BRIDGE-002`

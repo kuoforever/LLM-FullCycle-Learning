@@ -1,5 +1,7 @@
 # 多模态 LLM 全周期：MVP 演进路线
 
+English companion: [docs/en/mvp-roadmap.md](docs/en/mvp-roadmap.md)
+
 > 目标：以现有 Reliable Runtime 为执行底座，逐步构建可训练、可评测、可部署、可恢复、可回流的多模态 Agent 系统。每个阶段都必须能独立演示和写入阶段性简历，不等待“全部完成”才交付价值。
 
 ## 1. 总体边界
@@ -476,7 +478,7 @@ experiment_id
 
 ### 旗舰项目
 
-**Multimodal Agent Model Factory × Reliable Runtime**
+**Reliable Agent Model Lifecycle**
 
 证明完整的数据、训练、评测、Serving、执行和回流闭环。
 
@@ -513,7 +515,7 @@ experiment_id
 #### Scene-specific Applied LLM
 
 - 根据目标岗位选择 Document、Browser、Coding、Workflow/Data、DevOps 或 Security；
-- 复用同一 Model Factory、Serving、Runtime 和 Eval；
+- 复用同一 Model Lifecycle、Serving、Runtime 和 Eval；
 - 展示跨环境迁移而不是复制另一套系统。
 
 ## 14. 近期优先级
