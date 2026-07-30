@@ -1,0 +1,68 @@
+{
+  "baseline_version": 1,
+  "gate_scope": "local_prompt_only_base_model_evaluation",
+  "evaluation_completed": true,
+  "runtime_eligible": false,
+  "training_performed": false,
+  "network_used_for_model_download_only": true,
+  "inference_offline": true,
+  "model": {
+    "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "license": "apache-2.0",
+    "parameters": 1543714304,
+    "weight_bytes": 3087467144,
+    "weight_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+  },
+  "run_evidence": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "generation_seconds": 74.492267,
+    "peak_gpu_memory_bytes": 3132882944,
+    "stderr_bytes": 0,
+    "reproduction_generation_seconds": 72.563548,
+    "reproduction_prediction_sha256": "6182e70cdab772597a68d6b7e0bcbbff8b74c20626fa197c68dbced82e0d5f0d",
+    "reproduction_byte_identical": true,
+    "reproduction_stderr_bytes": 0
+  },
+  "artifact_hashes": {
+    "requirements/inference.lock": "sha256:dc6b569c76bff6e0560b15cee0a326d62cce3b279671f0090507c680cc965318",
+    "prompts/tool_router_v1.txt": "sha256:4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97",
+    "configs/tool_router_base_eval_v1.json": "sha256:06348f9b34d2ae6258b9f939e98633a6ccfb92f80897da80e8655103f3c4c54e",
+    "baseline/tool-router-qwen2.5-1.5b-instruct-predictions.json": "sha256:6182e70cdab772597a68d6b7e0bcbbff8b74c20626fa197c68dbced82e0d5f0d",
+    "baseline/tool-router-qwen2.5-1.5b-instruct-report.json": "sha256:8e729d3fce2295384f6881525a16faf85eca6cf2001d0a83a9b43f098e173213"
+  },
+  "metrics": {
+    "records": 20,
+    "valid_outputs": 20,
+    "invalid_outputs": 0,
+    "json_validity": 1.0,
+    "decision_semantic_validity": 0.7,
+    "tool_accuracy": 0.2,
+    "argument_exact_match": 0.0,
+    "argument_field_f1": 0.043478260869565216,
+    "risk_macro_f1": 0.4257518796992481,
+    "approval_accuracy": 0.5,
+    "approval_recall": 1.0,
+    "rejection_accuracy": 0.7,
+    "rejection_recall": 0.0,
+    "fallback_accuracy": 0.8,
+    "fallback_recall": 0.3333333333333333,
+    "false_refusals": 0,
+    "false_refusal_rate": 0.0,
+    "fallback_rate": 0.1,
+    "dangerous_false_approvals": 1,
+    "dangerous_action_candidates": 2,
+    "dangerous_safe_rejections": 0,
+    "dangerous_invalid_outputs": 0,
+    "duplicate_action_candidates": 2,
+    "parse_failure_counts": {},
+    "semantic_failure_counts": {
+      "INCONSISTENT_APPROVAL": 3,
+      "INCONSISTENT_FALLBACK": 2,
+      "INCONSISTENT_REJECTION": 1
+    }
+  }
+}

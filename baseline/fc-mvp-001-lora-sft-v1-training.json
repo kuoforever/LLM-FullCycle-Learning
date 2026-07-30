@@ -1,0 +1,273 @@
+{
+  "evidence_version": 1,
+  "experiment_id": "fc-mvp-001-lora-sft-v1",
+  "config_sha256": "sha256:83f0b23739fb00c8160017a78dec11f32c242c5895ab2793c2dfb77498149661",
+  "model": {
+    "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "license": "apache-2.0",
+    "parameters": 1543714304,
+    "weight_file": "model.safetensors",
+    "weight_bytes": 3087467144,
+    "weight_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+  },
+  "environment": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "peft": "0.14.0",
+    "accelerate": "1.3.0",
+    "huggingface_hub": "0.29.3",
+    "safetensors": "0.5.3",
+    "tokenizers": "0.21.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "gpu_vram_bytes": 17170956288,
+    "compute_capability": "8.9"
+  },
+  "data": {
+    "train_path": "fixtures/tool_router_v1/train.json",
+    "train_digest": "sha256:7b6f148ce3446051db6394fe925269ff46a742772fb853d574daad1879a67898",
+    "train_records": 160,
+    "validation_path": "fixtures/tool_router_v1/validation.json",
+    "validation_digest": "sha256:4a9b7dccd07c1f4124972cfc362ca48eaea3f424db47037ea4f06615aba7e9bb",
+    "validation_records": 40,
+    "eval_path": "fixtures/tool_router_v1/eval.json",
+    "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+    "eval_records": 20
+  },
+  "prompt": {
+    "path": "prompts/tool_router_v1.txt",
+    "sha256": "4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97"
+  },
+  "lora": {
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "bias": "none"
+  },
+  "training": {
+    "seed": 20260729,
+    "torch_dtype": "bfloat16",
+    "attn_implementation": "eager",
+    "max_sequence_length": 448,
+    "epochs": 5,
+    "micro_batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 8,
+    "learning_rate": 0.0002,
+    "weight_decay": 0.0,
+    "warmup_ratio": 0.1,
+    "scheduler": "cosine",
+    "gradient_checkpointing": true,
+    "max_grad_norm": 1.0,
+    "train_on_prompt": false,
+    "save_each_epoch": true
+  },
+  "tokenization": {
+    "train_min_tokens": 387,
+    "train_max_tokens": 404,
+    "train_mean_tokens": 392.375,
+    "validation_min_tokens": 386,
+    "validation_max_tokens": 402,
+    "validation_mean_tokens": 391.9,
+    "train_truncated_records": 0,
+    "validation_truncated_records": 0
+  },
+  "parameters": {
+    "trainable": 4358144,
+    "all_with_adapter": 1548072448,
+    "trainable_percent": 0.28152067467064695
+  },
+  "optimization": {
+    "steps_per_epoch": 20,
+    "total_steps": 100,
+    "warmup_steps": 10,
+    "completed_steps": 100
+  },
+  "epoch_metrics": [
+    {
+      "epoch": 1,
+      "global_step": 20,
+      "train_loss": 0.7567383565008641,
+      "validation_loss": 0.27903354726731777,
+      "learning_rate": 0.00019396926207859084,
+      "elapsed_seconds": 49.191086500068195
+    },
+    {
+      "epoch": 2,
+      "global_step": 40,
+      "train_loss": 0.15083602064987645,
+      "validation_loss": 0.15513463055249305,
+      "learning_rate": 0.00015000000000000001,
+      "elapsed_seconds": 48.37782060005702
+    },
+    {
+      "epoch": 3,
+      "global_step": 60,
+      "train_loss": 0.0387527889397461,
+      "validation_loss": 0.13440373315825127,
+      "learning_rate": 8.263518223330697e-05,
+      "elapsed_seconds": 35.409495599917136
+    },
+    {
+      "epoch": 4,
+      "global_step": 80,
+      "train_loss": 0.008701507346995641,
+      "validation_loss": 0.15646651701099473,
+      "learning_rate": 2.339555568810221e-05,
+      "elapsed_seconds": 35.27424399997108
+    },
+    {
+      "epoch": 5,
+      "global_step": 100,
+      "train_loss": 0.0028598165979929037,
+      "validation_loss": 0.16196080301742768,
+      "learning_rate": 0.0,
+      "elapsed_seconds": 47.82586470001843
+    }
+  ],
+  "checkpoints": [
+    {
+      "epoch": 1,
+      "relative_path": "checkpoints/epoch-01",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:63e6b2e0ed32747afdc2e034fab119b795b270a9d0e2e113b8fe989cee1018d1"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 2,
+      "relative_path": "checkpoints/epoch-02",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:1966c00629cef195fe0b4ceabb493745eeb4f6ab7b110e8df0b89f0aeab1792e"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 3,
+      "relative_path": "checkpoints/epoch-03",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:991a4474198e32ef4ee5694fb04d3fe9c43b0737c54ff632a14671e0195d586c"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 4,
+      "relative_path": "checkpoints/epoch-04",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:401f5eb0f4a8b20bf0fa5d6a3b49bc24f09508568c1ea8a1507eabf312dd8e15"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 5,
+      "relative_path": "checkpoints/epoch-05",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:1c58a3d08598250cc01bd35a3367fbcc778c551782e6117f686394ede3d65659"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    }
+  ],
+  "final_adapter": {
+    "relative_path": "adapter",
+    "files": [
+      {
+        "path": "adapter_config.json",
+        "bytes": 793,
+        "sha256": "sha256:1eb5c2cea0efb7764e7dacc444ca9544cfee9dce81afb650cd3212e7b7a72a0f"
+      },
+      {
+        "path": "adapter_model.safetensors",
+        "bytes": 17462432,
+        "sha256": "sha256:1c58a3d08598250cc01bd35a3367fbcc778c551782e6117f686394ede3d65659"
+      },
+      {
+        "path": "README.md",
+        "bytes": 5107,
+        "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+      }
+    ],
+    "total_bytes": 17468332
+  },
+  "elapsed_seconds": 216.8257200999651,
+  "peak_gpu_memory_bytes": 5217494016,
+  "selection": "final_epoch_locked_before_eval",
+  "runtime_eligible": false
+}

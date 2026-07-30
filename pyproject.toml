@@ -5,13 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fullcycle-runtime-bridge"
 version = "0.2.0"
-description = "Strict offline consumer for guarded-desktop-agent Lane A exports"
+description = "Offline Full Cycle contracts, fixtures, and deterministic gates"
 requires-python = ">=3.11,<3.14"
 dependencies = []
 
 [project.scripts]
 fullcycle-bridge = "fullcycle_bridge.__main__:main"
 fullcycle-dataset = "fullcycle_bridge.dataset_cli:main"
+fullcycle-tool-router = "fullcycle_bridge.tool_router_cli:main"
+fullcycle-tool-router-dataset = "fullcycle_bridge.tool_router_dataset_cli:main"
 
 [tool.setuptools]
 package-dir = {"" = "src"}

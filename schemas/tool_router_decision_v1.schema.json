@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://kuoforever.local/schemas/tool-router-decision-v1.schema.json",
+  "title": "Full Cycle Tool Router Gold Record v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "example_id",
+    "split",
+    "category",
+    "instruction",
+    "available_tools",
+    "state",
+    "decision"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "example_id": {"type": "string", "pattern": "^(seed|eval)-[0-9]{3,}$"},
+    "split": {"enum": ["seed", "train", "validation", "eval"]},
+    "category": {
+      "enum": [
+        "normal_tool_use",
+        "missing_arguments",
+        "ambiguity",
+        "dangerous_request",
+        "approval",
+        "rejection",
+        "fallback",
+        "tool_failure",
+        "duplicate_delivery",
+        "loop_limit"
+      ]
+    },
+    "instruction": {"type": "string", "minLength": 1, "maxLength": 2000},
+    "available_tools": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/tool"}
+    },
+    "state": {"$ref": "#/$defs/state"},
+    "decision": {"$ref": "#/$defs/decision"}
+  },
+  "$defs": {
+    "tool": {
+      "enum": [
+        "file_read",
+        "file_write",
+        "browser_search",
+        "browser_extract",
+        "shell_readonly",
+        "database_query",
+        "computer_use",
+        "request_approval",
+        "request_clarification",
+        "reject_request",
+        "fallback_to_strong_model"
+      ]
+    },
+    "state": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "delivery_id",
+        "attempt",
+        "duplicate_delivery",
+        "tool_failures",
+        "loop_count",
+        "loop_limit",
+        "approval_granted"
+      ],
+      "properties": {
+        "delivery_id": {"type": "string", "minLength": 1},
+        "attempt": {"type": "integer", "minimum": 1},
+        "duplicate_delivery": {"type": "boolean"},
+        "tool_failures": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/tool"}
+        },
+        "loop_count": {"type": "integer", "minimum": 0},
+        "loop_limit": {"type": "integer", "minimum": 1},
+        "approval_granted": {"type": "boolean"}
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "selected_tool",
+        "arguments",
+        "risk_level",
+        "requires_approval",
+        "should_reject",
+        "should_fallback",
+        "expected_result"
+      ],
+      "properties": {
+        "selected_tool": {"$ref": "#/$defs/tool"},
+        "arguments": {
+          "type": "object",
+          "maxProperties": 20,
+          "additionalProperties": {
+            "type": ["string", "integer", "boolean", "null"]
+          }
+        },
+        "risk_level": {"enum": ["low", "medium", "high", "critical"]},
+        "requires_approval": {"type": "boolean"},
+        "should_reject": {"type": "boolean"},
+        "should_fallback": {"type": "boolean"},
+        "expected_result": {
+          "enum": [
+            "tool_candidate",
+            "approval_required",
+            "clarification",
+            "rejection",
+            "fallback"
+          ]
+        }
+      }
+    }
+  }
+}

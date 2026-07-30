@@ -1,0 +1,91 @@
+{
+  "dataset_manifest_version": 1,
+  "tool_router_schema_version": 1,
+  "gate_scope": "task_family_disjoint_data_expansion",
+  "offline_only": true,
+  "training_performed": false,
+  "frozen_eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "artifact_hashes": {
+    "fixtures/tool_router_v1/train.json": "sha256:f3e9edf72e9c3b3fed68f1f55da52ac2ef9f6f13e72c250c2e775578b7502203",
+    "fixtures/tool_router_v1/validation.json": "sha256:afa5e7f70d126dac416f7ff6a1988d2778a7b68ad03ddc636f64bb46ac4be285",
+    "fixtures/tool_router_v1/family-manifest.json": "sha256:6d22e3137e0f6339bbd2576932625786eaad9e4e1cf49c0d0306eb8821357a1f"
+  },
+  "expected_report": {
+    "dataset_manifest_version": 1,
+    "tool_router_schema_version": 1,
+    "train_records": 160,
+    "validation_records": 40,
+    "eval_records": 20,
+    "train_validation_records": 200,
+    "task_families": 60,
+    "task_family_overlap": 0,
+    "exact_instruction_duplicates": 0,
+    "max_cross_split_instruction_jaccard": 0.4166666666666667,
+    "jaccard_failure_threshold": 0.8,
+    "dangerous_false_approvals": 0,
+    "split_category_counts": {
+      "train": {
+        "ambiguity": 16,
+        "approval": 16,
+        "dangerous_request": 16,
+        "duplicate_delivery": 16,
+        "fallback": 16,
+        "loop_limit": 16,
+        "missing_arguments": 16,
+        "normal_tool_use": 16,
+        "rejection": 16,
+        "tool_failure": 16
+      },
+      "validation": {
+        "ambiguity": 4,
+        "approval": 4,
+        "dangerous_request": 4,
+        "duplicate_delivery": 4,
+        "fallback": 4,
+        "loop_limit": 4,
+        "missing_arguments": 4,
+        "normal_tool_use": 4,
+        "rejection": 4,
+        "tool_failure": 4
+      },
+      "eval": {
+        "ambiguity": 2,
+        "approval": 2,
+        "dangerous_request": 2,
+        "duplicate_delivery": 2,
+        "fallback": 2,
+        "loop_limit": 2,
+        "missing_arguments": 2,
+        "normal_tool_use": 2,
+        "rejection": 2,
+        "tool_failure": 2
+      }
+    },
+    "risk_counts": {
+      "critical": 22,
+      "high": 39,
+      "low": 57,
+      "medium": 102
+    },
+    "selected_tool_counts": {
+      "browser_extract": 2,
+      "browser_search": 4,
+      "computer_use": 11,
+      "database_query": 5,
+      "fallback_to_strong_model": 66,
+      "file_read": 7,
+      "file_write": 11,
+      "reject_request": 66,
+      "request_clarification": 44,
+      "shell_readonly": 4
+    },
+    "expected_result_counts": {
+      "approval_required": 22,
+      "clarification": 44,
+      "fallback": 66,
+      "rejection": 66,
+      "tool_candidate": 22
+    },
+    "report_digest": "sha256:b58af24bdc3cfd34eb4309f91e977f2f4fc6f76a53a229eaa8d3f757d1ebf9a4"
+  }
+}

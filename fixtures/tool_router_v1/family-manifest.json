@@ -1,0 +1,687 @@
+{
+  "dataset_manifest_version": 1,
+  "tool_router_schema_version": 1,
+  "frozen_eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "families": [
+    {
+      "family_id": "family-001",
+      "split": "train",
+      "category": "normal_tool_use",
+      "description": "read archived local documents",
+      "example_ids": [
+        "train-family-001-v01",
+        "train-family-001-v02",
+        "train-family-001-v03",
+        "train-family-001-v04"
+      ]
+    },
+    {
+      "family_id": "family-002",
+      "split": "train",
+      "category": "normal_tool_use",
+      "description": "search public release topics",
+      "example_ids": [
+        "train-family-002-v01",
+        "train-family-002-v02",
+        "train-family-002-v03",
+        "train-family-002-v04"
+      ]
+    },
+    {
+      "family_id": "family-003",
+      "split": "train",
+      "category": "normal_tool_use",
+      "description": "query approved inventory identifiers",
+      "example_ids": [
+        "train-family-003-v01",
+        "train-family-003-v02",
+        "train-family-003-v03",
+        "train-family-003-v04"
+      ]
+    },
+    {
+      "family_id": "family-004",
+      "split": "train",
+      "category": "normal_tool_use",
+      "description": "inspect readonly service status",
+      "example_ids": [
+        "train-family-004-v01",
+        "train-family-004-v02",
+        "train-family-004-v03",
+        "train-family-004-v04"
+      ]
+    },
+    {
+      "family_id": "family-005",
+      "split": "validation",
+      "category": "normal_tool_use",
+      "description": "extract text from approved article URLs",
+      "example_ids": [
+        "validation-family-005-v01",
+        "validation-family-005-v02"
+      ]
+    },
+    {
+      "family_id": "family-006",
+      "split": "validation",
+      "category": "normal_tool_use",
+      "description": "open immutable local references",
+      "example_ids": [
+        "validation-family-006-v01",
+        "validation-family-006-v02"
+      ]
+    },
+    {
+      "family_id": "family-007",
+      "split": "train",
+      "category": "missing_arguments",
+      "description": "file read missing path",
+      "example_ids": [
+        "train-family-007-v01",
+        "train-family-007-v02",
+        "train-family-007-v03",
+        "train-family-007-v04"
+      ]
+    },
+    {
+      "family_id": "family-008",
+      "split": "train",
+      "category": "missing_arguments",
+      "description": "browser search missing query",
+      "example_ids": [
+        "train-family-008-v01",
+        "train-family-008-v02",
+        "train-family-008-v03",
+        "train-family-008-v04"
+      ]
+    },
+    {
+      "family_id": "family-009",
+      "split": "train",
+      "category": "missing_arguments",
+      "description": "database lookup missing identifier",
+      "example_ids": [
+        "train-family-009-v01",
+        "train-family-009-v02",
+        "train-family-009-v03",
+        "train-family-009-v04"
+      ]
+    },
+    {
+      "family_id": "family-010",
+      "split": "train",
+      "category": "missing_arguments",
+      "description": "browser extraction missing URL",
+      "example_ids": [
+        "train-family-010-v01",
+        "train-family-010-v02",
+        "train-family-010-v03",
+        "train-family-010-v04"
+      ]
+    },
+    {
+      "family_id": "family-011",
+      "split": "validation",
+      "category": "missing_arguments",
+      "description": "readonly shell missing command",
+      "example_ids": [
+        "validation-family-011-v01",
+        "validation-family-011-v02"
+      ]
+    },
+    {
+      "family_id": "family-012",
+      "split": "validation",
+      "category": "missing_arguments",
+      "description": "computer action missing target",
+      "example_ids": [
+        "validation-family-012-v01",
+        "validation-family-012-v02"
+      ]
+    },
+    {
+      "family_id": "family-013",
+      "split": "train",
+      "category": "ambiguity",
+      "description": "multiple report revisions",
+      "example_ids": [
+        "train-family-013-v01",
+        "train-family-013-v02",
+        "train-family-013-v03",
+        "train-family-013-v04"
+      ]
+    },
+    {
+      "family_id": "family-014",
+      "split": "train",
+      "category": "ambiguity",
+      "description": "multiple matching search topics",
+      "example_ids": [
+        "train-family-014-v01",
+        "train-family-014-v02",
+        "train-family-014-v03",
+        "train-family-014-v04"
+      ]
+    },
+    {
+      "family_id": "family-015",
+      "split": "train",
+      "category": "ambiguity",
+      "description": "multiple customer accounts",
+      "example_ids": [
+        "train-family-015-v01",
+        "train-family-015-v02",
+        "train-family-015-v03",
+        "train-family-015-v04"
+      ]
+    },
+    {
+      "family_id": "family-016",
+      "split": "train",
+      "category": "ambiguity",
+      "description": "multiple desktop buttons",
+      "example_ids": [
+        "train-family-016-v01",
+        "train-family-016-v02",
+        "train-family-016-v03",
+        "train-family-016-v04"
+      ]
+    },
+    {
+      "family_id": "family-017",
+      "split": "validation",
+      "category": "ambiguity",
+      "description": "unclear article source",
+      "example_ids": [
+        "validation-family-017-v01",
+        "validation-family-017-v02"
+      ]
+    },
+    {
+      "family_id": "family-018",
+      "split": "validation",
+      "category": "ambiguity",
+      "description": "unclear configuration file",
+      "example_ids": [
+        "validation-family-018-v01",
+        "validation-family-018-v02"
+      ]
+    },
+    {
+      "family_id": "family-019",
+      "split": "train",
+      "category": "dangerous_request",
+      "description": "broad destructive filesystem request",
+      "example_ids": [
+        "train-family-019-v01",
+        "train-family-019-v02",
+        "train-family-019-v03",
+        "train-family-019-v04"
+      ]
+    },
+    {
+      "family_id": "family-020",
+      "split": "train",
+      "category": "dangerous_request",
+      "description": "safety control bypass",
+      "example_ids": [
+        "train-family-020-v01",
+        "train-family-020-v02",
+        "train-family-020-v03",
+        "train-family-020-v04"
+      ]
+    },
+    {
+      "family_id": "family-021",
+      "split": "train",
+      "category": "dangerous_request",
+      "description": "credential exfiltration",
+      "example_ids": [
+        "train-family-021-v01",
+        "train-family-021-v02",
+        "train-family-021-v03",
+        "train-family-021-v04"
+      ]
+    },
+    {
+      "family_id": "family-022",
+      "split": "train",
+      "category": "dangerous_request",
+      "description": "unbounded database destruction",
+      "example_ids": [
+        "train-family-022-v01",
+        "train-family-022-v02",
+        "train-family-022-v03",
+        "train-family-022-v04"
+      ]
+    },
+    {
+      "family_id": "family-023",
+      "split": "validation",
+      "category": "dangerous_request",
+      "description": "validation malware execution",
+      "example_ids": [
+        "validation-family-023-v01",
+        "validation-family-023-v02"
+      ]
+    },
+    {
+      "family_id": "family-024",
+      "split": "validation",
+      "category": "dangerous_request",
+      "description": "validation audit disabling",
+      "example_ids": [
+        "validation-family-024-v01",
+        "validation-family-024-v02"
+      ]
+    },
+    {
+      "family_id": "family-025",
+      "split": "train",
+      "category": "approval",
+      "description": "write reviewed configuration files",
+      "example_ids": [
+        "train-family-025-v01",
+        "train-family-025-v02",
+        "train-family-025-v03",
+        "train-family-025-v04"
+      ]
+    },
+    {
+      "family_id": "family-026",
+      "split": "train",
+      "category": "approval",
+      "description": "replace existing report files",
+      "example_ids": [
+        "train-family-026-v01",
+        "train-family-026-v02",
+        "train-family-026-v03",
+        "train-family-026-v04"
+      ]
+    },
+    {
+      "family_id": "family-027",
+      "split": "train",
+      "category": "approval",
+      "description": "click final submission controls",
+      "example_ids": [
+        "train-family-027-v01",
+        "train-family-027-v02",
+        "train-family-027-v03",
+        "train-family-027-v04"
+      ]
+    },
+    {
+      "family_id": "family-028",
+      "split": "train",
+      "category": "approval",
+      "description": "confirm irreversible desktop dialogs",
+      "example_ids": [
+        "train-family-028-v01",
+        "train-family-028-v02",
+        "train-family-028-v03",
+        "train-family-028-v04"
+      ]
+    },
+    {
+      "family_id": "family-029",
+      "split": "validation",
+      "category": "approval",
+      "description": "validation file publication",
+      "example_ids": [
+        "validation-family-029-v01",
+        "validation-family-029-v02"
+      ]
+    },
+    {
+      "family_id": "family-030",
+      "split": "validation",
+      "category": "approval",
+      "description": "validation purchase confirmation",
+      "example_ids": [
+        "validation-family-030-v01",
+        "validation-family-030-v02"
+      ]
+    },
+    {
+      "family_id": "family-031",
+      "split": "train",
+      "category": "rejection",
+      "description": "unauthorized private file access",
+      "example_ids": [
+        "train-family-031-v01",
+        "train-family-031-v02",
+        "train-family-031-v03",
+        "train-family-031-v04"
+      ]
+    },
+    {
+      "family_id": "family-032",
+      "split": "train",
+      "category": "rejection",
+      "description": "write through readonly tool",
+      "example_ids": [
+        "train-family-032-v01",
+        "train-family-032-v02",
+        "train-family-032-v03",
+        "train-family-032-v04"
+      ]
+    },
+    {
+      "family_id": "family-033",
+      "split": "train",
+      "category": "rejection",
+      "description": "unsupported database mutation",
+      "example_ids": [
+        "train-family-033-v01",
+        "train-family-033-v02",
+        "train-family-033-v03",
+        "train-family-033-v04"
+      ]
+    },
+    {
+      "family_id": "family-034",
+      "split": "train",
+      "category": "rejection",
+      "description": "unconsented personal data lookup",
+      "example_ids": [
+        "train-family-034-v01",
+        "train-family-034-v02",
+        "train-family-034-v03",
+        "train-family-034-v04"
+      ]
+    },
+    {
+      "family_id": "family-035",
+      "split": "validation",
+      "category": "rejection",
+      "description": "validation privilege escalation",
+      "example_ids": [
+        "validation-family-035-v01",
+        "validation-family-035-v02"
+      ]
+    },
+    {
+      "family_id": "family-036",
+      "split": "validation",
+      "category": "rejection",
+      "description": "validation policy evasion",
+      "example_ids": [
+        "validation-family-036-v01",
+        "validation-family-036-v02"
+      ]
+    },
+    {
+      "family_id": "family-037",
+      "split": "train",
+      "category": "fallback",
+      "description": "image understanding unavailable",
+      "example_ids": [
+        "train-family-037-v01",
+        "train-family-037-v02",
+        "train-family-037-v03",
+        "train-family-037-v04"
+      ]
+    },
+    {
+      "family_id": "family-038",
+      "split": "train",
+      "category": "fallback",
+      "description": "audio understanding unavailable",
+      "example_ids": [
+        "train-family-038-v01",
+        "train-family-038-v02",
+        "train-family-038-v03",
+        "train-family-038-v04"
+      ]
+    },
+    {
+      "family_id": "family-039",
+      "split": "train",
+      "category": "fallback",
+      "description": "unsupported cross-domain planning",
+      "example_ids": [
+        "train-family-039-v01",
+        "train-family-039-v02",
+        "train-family-039-v03",
+        "train-family-039-v04"
+      ]
+    },
+    {
+      "family_id": "family-040",
+      "split": "train",
+      "category": "fallback",
+      "description": "unavailable archive format",
+      "example_ids": [
+        "train-family-040-v01",
+        "train-family-040-v02",
+        "train-family-040-v03",
+        "train-family-040-v04"
+      ]
+    },
+    {
+      "family_id": "family-041",
+      "split": "validation",
+      "category": "fallback",
+      "description": "validation language capability gap",
+      "example_ids": [
+        "validation-family-041-v01",
+        "validation-family-041-v02"
+      ]
+    },
+    {
+      "family_id": "family-042",
+      "split": "validation",
+      "category": "fallback",
+      "description": "validation multi-hop uncertainty",
+      "example_ids": [
+        "validation-family-042-v01",
+        "validation-family-042-v02"
+      ]
+    },
+    {
+      "family_id": "family-043",
+      "split": "train",
+      "category": "tool_failure",
+      "description": "browser search failure",
+      "example_ids": [
+        "train-family-043-v01",
+        "train-family-043-v02",
+        "train-family-043-v03",
+        "train-family-043-v04"
+      ]
+    },
+    {
+      "family_id": "family-044",
+      "split": "train",
+      "category": "tool_failure",
+      "description": "database query failure",
+      "example_ids": [
+        "train-family-044-v01",
+        "train-family-044-v02",
+        "train-family-044-v03",
+        "train-family-044-v04"
+      ]
+    },
+    {
+      "family_id": "family-045",
+      "split": "train",
+      "category": "tool_failure",
+      "description": "file read failure",
+      "example_ids": [
+        "train-family-045-v01",
+        "train-family-045-v02",
+        "train-family-045-v03",
+        "train-family-045-v04"
+      ]
+    },
+    {
+      "family_id": "family-046",
+      "split": "train",
+      "category": "tool_failure",
+      "description": "browser extraction failure",
+      "example_ids": [
+        "train-family-046-v01",
+        "train-family-046-v02",
+        "train-family-046-v03",
+        "train-family-046-v04"
+      ]
+    },
+    {
+      "family_id": "family-047",
+      "split": "validation",
+      "category": "tool_failure",
+      "description": "validation readonly shell failure",
+      "example_ids": [
+        "validation-family-047-v01",
+        "validation-family-047-v02"
+      ]
+    },
+    {
+      "family_id": "family-048",
+      "split": "validation",
+      "category": "tool_failure",
+      "description": "validation desktop tool failure",
+      "example_ids": [
+        "validation-family-048-v01",
+        "validation-family-048-v02"
+      ]
+    },
+    {
+      "family_id": "family-049",
+      "split": "train",
+      "category": "duplicate_delivery",
+      "description": "duplicate file write delivery",
+      "example_ids": [
+        "train-family-049-v01",
+        "train-family-049-v02",
+        "train-family-049-v03",
+        "train-family-049-v04"
+      ]
+    },
+    {
+      "family_id": "family-050",
+      "split": "train",
+      "category": "duplicate_delivery",
+      "description": "duplicate desktop click delivery",
+      "example_ids": [
+        "train-family-050-v01",
+        "train-family-050-v02",
+        "train-family-050-v03",
+        "train-family-050-v04"
+      ]
+    },
+    {
+      "family_id": "family-051",
+      "split": "train",
+      "category": "duplicate_delivery",
+      "description": "duplicate database query delivery",
+      "example_ids": [
+        "train-family-051-v01",
+        "train-family-051-v02",
+        "train-family-051-v03",
+        "train-family-051-v04"
+      ]
+    },
+    {
+      "family_id": "family-052",
+      "split": "train",
+      "category": "duplicate_delivery",
+      "description": "duplicate browser search delivery",
+      "example_ids": [
+        "train-family-052-v01",
+        "train-family-052-v02",
+        "train-family-052-v03",
+        "train-family-052-v04"
+      ]
+    },
+    {
+      "family_id": "family-053",
+      "split": "validation",
+      "category": "duplicate_delivery",
+      "description": "validation duplicate extraction",
+      "example_ids": [
+        "validation-family-053-v01",
+        "validation-family-053-v02"
+      ]
+    },
+    {
+      "family_id": "family-054",
+      "split": "validation",
+      "category": "duplicate_delivery",
+      "description": "validation duplicate shell inspection",
+      "example_ids": [
+        "validation-family-054-v01",
+        "validation-family-054-v02"
+      ]
+    },
+    {
+      "family_id": "family-055",
+      "split": "train",
+      "category": "loop_limit",
+      "description": "browser search loop exhausted",
+      "example_ids": [
+        "train-family-055-v01",
+        "train-family-055-v02",
+        "train-family-055-v03",
+        "train-family-055-v04"
+      ]
+    },
+    {
+      "family_id": "family-056",
+      "split": "train",
+      "category": "loop_limit",
+      "description": "browser extraction loop exhausted",
+      "example_ids": [
+        "train-family-056-v01",
+        "train-family-056-v02",
+        "train-family-056-v03",
+        "train-family-056-v04"
+      ]
+    },
+    {
+      "family_id": "family-057",
+      "split": "train",
+      "category": "loop_limit",
+      "description": "database lookup loop exhausted",
+      "example_ids": [
+        "train-family-057-v01",
+        "train-family-057-v02",
+        "train-family-057-v03",
+        "train-family-057-v04"
+      ]
+    },
+    {
+      "family_id": "family-058",
+      "split": "train",
+      "category": "loop_limit",
+      "description": "file read loop exhausted",
+      "example_ids": [
+        "train-family-058-v01",
+        "train-family-058-v02",
+        "train-family-058-v03",
+        "train-family-058-v04"
+      ]
+    },
+    {
+      "family_id": "family-059",
+      "split": "validation",
+      "category": "loop_limit",
+      "description": "validation desktop loop exhausted",
+      "example_ids": [
+        "validation-family-059-v01",
+        "validation-family-059-v02"
+      ]
+    },
+    {
+      "family_id": "family-060",
+      "split": "validation",
+      "category": "loop_limit",
+      "description": "validation shell loop exhausted",
+      "example_ids": [
+        "validation-family-060-v01",
+        "validation-family-060-v02"
+      ]
+    }
+  ]
+}
