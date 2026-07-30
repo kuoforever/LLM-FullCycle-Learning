@@ -25,3 +25,12 @@ checklist owns detailed requirements. Do not create another competing tracker.
 
 Report outcome, modified files, exact validation results, limitations, and the
 single next objective. Update `PROJECT_STATUS.md` only for real progress.
+
+## GitHub publishing
+
+- When publishing through a pull request, wait for required checks and confirm
+  there are no blocking review findings or merge conflicts.
+- If the pull request is clean and all required checks pass, merge it directly
+  without requesting another confirmation.
+- After merge, delete the merged feature branch from both the remote and the
+  local checkout. Never merge a failing, blocked, or unresolved pull request.
