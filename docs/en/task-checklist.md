@@ -12,12 +12,12 @@ active objective come from [PROJECT_STATUS](../../PROJECT_STATUS.md).
 | IDs | Workstream |
 |---|---|
 | `ENV-*` | WSL, Python, CUDA, and experiment-tracking baseline |
-| `TT-*` | Tiny decoder-only Transformer, generation, KV cache, training, recovery |
+| `TT-*` | Tiny decoder-only Transformer, architecture/operator graph, generation, KV cache, training/recovery, profiling, and one verified kernel experiment |
 | `DATA-*`, `CPT-*` | Data licensing, parsing, cleaning, deduplication, packing, continued pretraining |
 | `MM-*`, `TOOL-*` | Multimodal traces, GUI grounding, Tool Router, SFT, distillation, preference optimization |
 | `RET-*` | Embeddings, retrieval baselines, fine-tuning, reranking, joint evaluation |
 | `VER-*` | Trajectory schemas, hard negatives, verifier/reward models, calibration, release gates |
-| `SERV-*`, `MLOPS-*` | Gateway, vLLM, quantization, concurrency, cache, overload control, registry, rollout |
+| `SERV-*`, `MLOPS-*` | Gateway, vLLM, quantization, concurrency, cache, overload control, packaging and cold start, multi-LoRA hot swap, constrained decoding, scheduler tuning, capacity/SLO/cost, performance gates, tiered degradation, registry, rollout |
 | `RUN-*` | Reliable Runtime contracts, state, recovery, idempotency, policy, memory, observability |
 | `MA-*` | Identity, typed handoffs, coordination, durable state, leases, budgets, verification |
 | `SCN-*` | Desktop, documents, browser, coding, enterprise, DevOps, security, media, simulation |
@@ -29,7 +29,7 @@ active objective come from [PROJECT_STATUS](../../PROJECT_STATUS.md).
 2. Complete one text Tool Router vertical loop.
 3. Add image-text GUI actions without weakening Runtime controls.
 4. Add post-training comparisons and verifier gates.
-5. Add serving/MLOps and bad-case feedback.
+5. Add serving, deployment/inference optimization, MLOps, and bad-case feedback.
 6. Expand environments, infrastructure depth, and multi-agent work only after
    the earlier gates have evidence.
 

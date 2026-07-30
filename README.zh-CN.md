@@ -100,9 +100,9 @@ Environments
 
 | Lab | 证明什么 | 关键产物 |
 |---|---|---|
-| Tiny Transformer & Pretraining | 理解模型结构、训练状态和推理缓存 | Decoder、RoPE、KV Cache、CPT、可恢复训练 |
+| Tiny Transformer & Pretraining | 理解模型结构、算子图、训练状态和推理缓存 | Decoder、MHA/MQA/GQA、RoPE、KV Cache、CPT、可恢复训练 |
 | Multimodal Post-training & Agentic RL | 具备当前 VLM/Agent 后训练能力 | QLoRA、DPO/GRPO、可验证奖励、Verifier、消融 |
-| Distributed Training & Inference Performance | 具备 AI Infra 与性能分析深度 | DDP/FSDP、vLLM、量化、Profiler、Triton 最小实验 |
+| Distributed Training & Inference Performance | 具备 AI Infra 与性能分析深度 | DDP/FSDP、通信集合、vLLM、量化、Profiler、带正确性门禁的 Triton 实验 |
 | Multi-Agent Coordination & Distributed Agent Systems | 具备多 Agent 调度、共享状态、可靠恢复和安全委派能力 | Coordinator、Typed Message、Lease、冲突仲裁、Single-Agent 对照 |
 
 ## MVP 不是一次性 Demo
@@ -118,7 +118,7 @@ Environments
 | MVP-4 | 多模型 Serving | vLLM、量化、缓存、路由、灰度和性能报告 |
 | MVP-5 | Agentic RL | Runtime 作为环境，使用可验证奖励训练 |
 | MVP-6 | 多环境、多模态 | 文档、浏览器、音视频或仿真环境适配 |
-| MVP-7 | AI Infra 深化 | 多卡、故障恢复、性能分析和底层优化实验 |
+| MVP-7 | 架构与 AI Infra 深化 | Decoder/算子拆解、多卡、故障恢复、性能分析和底层 Kernel 优化实验 |
 | MVP-8 | Multi-Agent 系统 | 在 Coding 场景完成协调、委派、恢复和 Single-Agent 对照 |
 
 详见：[多模态 LLM 全周期 MVP 演进路线](多模态LLM全周期_MVP演进路线.md)。

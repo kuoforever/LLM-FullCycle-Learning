@@ -29,10 +29,10 @@ data and traces → governance → post-training → evaluation
 | 1 | Text Tool Router | Dataset, training, frozen eval, and safety-gated candidate output |
 | 2 | Image-text GUI Action Model | Screenshot/UIA/OCR input, grounding, risk, and fallback |
 | 3 | Multimodal post-training and verifier | SFT/distillation/preference comparisons and trajectory gates |
-| 4 | Serving and MLOps | vLLM, quantization, cache, routing, rollout, and rollback evidence |
+| 4 | Serving, deployment optimization, and MLOps | vLLM, quantization, cache, routing, multi-LoRA hot swap, constrained decoding, capacity/SLO/cost bounds, joint quality-performance gate, rollout, and rollback evidence |
 | 5 | Agentic RL | Runtime-backed environment and verifiable rewards |
 | 6 | Multiple environments/modalities | Reuse contracts across documents, browser, media, or simulation |
-| 7 | AI infrastructure depth | Distributed training, recovery, profiling, and inference optimization |
+| 7 | Architecture and AI infrastructure depth | Decoder/operator decomposition, distributed training, recovery, profiling, and verified kernel/inference optimization |
 | 8 | Multi-agent systems | Typed delegation, durable state, leases, conflicts, and single-agent control |
 
 ## Change discipline
@@ -42,6 +42,18 @@ data and traces → governance → post-training → evaluation
 - Bind code, data, model, config, seed, hardware, metrics, and failures.
 - Do not soften Runtime policy or approval contracts to improve model metrics.
 - Do not describe planned capability as implemented.
+
+## MVP-7 depth boundary
+
+- The Tiny Transformer lab maps decoder math and tensor shapes to the
+  RMSNorm, QKV/RoPE/attention, SwiGLU, residual, cache, sampling, and loss
+  operators.
+- Training-system work adds collective communication and state ownership;
+  inference-system work profiles eager/SDPA/FlashAttention paths and one
+  correctness-gated `torch.compile`/Triton hotspot experiment.
+- Service-level deployment work remains in MVP-4; operator/kernel work must
+  report numerical error, fixed shapes and dtypes, warmup methodology,
+  latency/throughput, memory, hardware, and negative results.
 
 ## Portfolio slices
 

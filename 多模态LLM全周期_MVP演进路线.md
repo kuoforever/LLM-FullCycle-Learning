@@ -290,10 +290,27 @@ Trace → Dataset → Train → Eval → Runtime → Badcase
 | 路由 | 全强模型 vs 分层路由 | 成功率、成本、强模型比例 |
 | 过载 | 队列上限、OOM、进程退出 | 拒绝、恢复、丢失请求 |
 
+### 部署与推理优化
+
+- 模型产物、引擎版本和权重 digest 固定；
+- 冷启动分解、warmup 和 readiness 明确；
+- 单 base 多 LoRA Adapter 在线与热切换，Adapter 是本项目主要产出形态；
+- JSON Schema 受约束解码的合法率收益与性能代价；
+- continuous batching、chunked prefill、prefix/KV cache 与 KV cache 量化；
+- speculative decoding 最小验证；
+- SLO、饱和点、容量上限和单位成本模型；
+- 分层降级：BF16 小模型 → 量化小模型 → 确定性规则 → 远端强模型；
+- 单机训练与 Serving 争用同一张 GPU 时的显式资源策略。
+
+对应任务为 `SERV-006～012`。
+
 ### 退出条件
 
 - 有容量边界，不只给出单请求速度；
 - 新模型未过 Eval Gate 不能发布；
+- 量化或调优后的模型必须在同一冻结评测集上报告质量变化；
+- Adapter 切换和版本回滚不需要重启服务；
+- 性能门禁有阈值文件和保留的历史基线；
 - 可一键回滚；
 - 线上 Trace 能关联数据、模型、配置和 Runtime 版本。
 
@@ -352,29 +369,44 @@ Multi-Agent 不是独立业务场景，而是正式的跨场景执行拓扑与�
 
 ## 10. MVP-7：AI Infra 深化
 
+### 大模型架构与算子 Lab
+
+- 从 Decoder block 拆到 operator graph：RMSNorm、QKV/O GEMM、RoPE、
+  scale/mask/softmax、PV、SwiGLU、Residual 和 LM head；
+- 对照 MHA/MQA/GQA、Dense/MoE，以及 Prefill/Decode/Backward 的不同数据流；
+- 记录关键张量 shape、dtype、FLOPs、activation/KV Cache 显存和数值稳定性风险；
+- 用小张量参考实现验证算子分解，不把架构示意当成模型训练成果；
+- 由 PyTorch Profiler/Nsight 定位热点，再完成一个
+  eager/`torch.compile`/Triton 正确性与性能对照。
+
 ### 训练系统 Lab
 
 - DDP/FSDP/DeepSpeed 最小对照；
 - mixed precision、gradient checkpointing、offload；
 - sharded checkpoint 和中断恢复；
-- 数据加载、通信和 GPU 利用率 profiling；
+- 数据加载、通信和 GPU 利用率 profiling，并解释
+  all-reduce/reduce-scatter/all-gather 的位置与代价；
 - 本地单卡完成基线，租用 2–4 GPU 完成一次严格多卡实验。
 
 ### 推理系统 Lab
+
+> MVP-4 拥有服务级部署优化（`SERV-006～012`）；本 Lab 只做引擎与算子级深化，不重复同一批实验。
 
 - vLLM/SGLang 对照；
 - continuous batching、prefix/KV cache；
 - speculative decoding；
 - PyTorch Profiler / Nsight；
 - TensorRT-LLM 或 LMDeploy 最小验证；
-- 一个 Triton kernel 或热点算子实验。
+- Attention eager/SDPA/FlashAttention 对照（环境允许时）；
+- 融合 RMSNorm、RoPE 或 SwiGLU 中至少一个 Triton 热点算子实验。
 
 ### 退出条件
 
 - 报告性能瓶颈、假设、实验和反例；
 - 不把“跑过命令”描述为框架二次开发；
 - 至少一个优化有可复现的速度/显存收益；
-- 正确性测试与性能测试同时保留。
+- 正确性测试与性能测试同时保留；
+- 每个算子实验绑定 shape、dtype、误差阈值、warmup、重复次数和硬件版本。
 
 ## 11. MVP-8：Multi-Agent Coordination & Distributed Agent Systems
 
@@ -501,6 +533,7 @@ experiment_id
 #### AI Infra / ML Systems
 
 - vLLM、量化、缓存、路由和容量测试；
+- 多 LoRA 热切换、受约束解码代价和分层降级；
 - Checkpoint、DDP/FSDP 和故障恢复；
 - Model Registry、Eval Gate、Canary、Rollback；
 - GPU profiling 和一项底层优化。
@@ -527,7 +560,7 @@ P2  固定文本与 GUI Eval
 P3  跑通文本 Tool Router 闭环
 P4  升级图文 GUI Action Model
 P5  做 SFT / DPO 或 GRPO / Verifier 对照
-P6  接入 vLLM 和性能门禁
+P6  接入 vLLM、部署优化和性能门禁
 P7  扩展第二环境
 P8  完成多卡或推理性能 Lab
 P9  完成 Coding 场景的 Single-Agent / Multi-Agent 对照
