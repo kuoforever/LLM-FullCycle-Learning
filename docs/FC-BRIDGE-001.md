@@ -1,5 +1,7 @@
 # FC-BRIDGE-001：Runtime Lane A 离线消费契约
 
+English: [en/FC-BRIDGE-001.md](en/FC-BRIDGE-001.md)
+
 ## 范围
 
 本模块只消费 `guarded-desktop-agent` 自动导出的 Lane A 安全证据：

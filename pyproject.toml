@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fullcycle-runtime-bridge"
 version = "0.2.0"
-description = "Offline Full Cycle contracts, fixtures, and deterministic gates"
+description = "Versioned contracts and deterministic gates for Reliable Agent Model Lifecycle"
 requires-python = ">=3.11,<3.14"
 dependencies = []
 

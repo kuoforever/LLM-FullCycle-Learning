@@ -1,5 +1,26 @@
 # Reliability dataset v1 fixtures
 
+## English
+
+This fixture set pins two Lane A run exports accepted by the bridge v1
+consumer and maps them to two canonical JSONL records:
+
+| Input | Covered signals |
+|---|---|
+| `failure-denial-recovery-budget-sequence.json` | Failure, policy denial, recovery, tool-call budget limit, and a two-tool sequence with outcomes |
+| `unknown-outcome.json` | Unknown dispatch/outcome, required re-observation, and a one-tool sequence with outcome |
+
+`expected-records.jsonl` is the exact-output fixture. Every record preserves
+`data_class=redacted_runtime_evidence` and
+`training_use=reliability_and_verifier_only`, and binds the source snapshot
+through its canonical run-export SHA-256.
+
+Invalid inputs reuse `fixtures/bridge_v1/invalid/`. The mapper must first pass
+the bridge gate and must additionally reject an empty batch or duplicate
+`run_id`. Tests compare CLI JSONL output with the frozen output byte for byte.
+
+## 中文
+
 本 fixture set 固定两个已通过 bridge v1 consumer 的 Lane A run export，并
 映射为两行 canonical JSONL：
 
