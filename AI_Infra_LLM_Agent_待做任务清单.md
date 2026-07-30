@@ -31,6 +31,9 @@ English companion: [docs/en/task-checklist.md](docs/en/task-checklist.md)
 - 不把 GUI 项目描述为自动驾驶或机器人量产经验。
 - 不让模型绕过 Runtime、Policy、Approval 或唯一 MCP 执行边界。
 - 不把模型自报成功作为任务完成证据。
+- 不把启动 vLLM 或跑通一次压测描述为推理引擎优化。
+- 不发布未在同一冻结评测集上重跑的量化或调优模型。
+- 不用单请求延迟代表服务容量。
 
 ---
 
@@ -173,13 +176,14 @@ agent-model-factory/
 实现：
 
 - Token embedding
-- Multi-head causal attention
+- Pre-norm Decoder block
+- Multi-head causal attention，并保留 MQA / GQA 对照入口
 - Causal mask
 - RoPE
 - RMSNorm
-- MLP
+- SwiGLU MLP
 - Residual
-- LM head
+- LM head 与可选 tied embedding
 - Cross entropy
 
 **验收**
@@ -187,6 +191,7 @@ agent-model-factory/
 - 关键张量 shape 测试
 - causal mask 不泄漏未来 token
 - 小 batch 可前向、反向并更新参数
+- 参数量、FLOPs、activation 和 KV Cache 显存估算可由脚本复核
 
 ## TT-002：生成策略
 
@@ -251,6 +256,46 @@ agent-model-factory/
 - 学习率连续
 - loss 无异常跳变
 - 固定条件下结果可复现
+
+## TT-006：大模型架构拆解与算子图
+
+目标不是罗列名词，而是把 Decoder-only LLM 的数学、张量 shape、算子和
+训练/推理执行路径对应起来。
+
+必须覆盖：
+
+- Dense Decoder 主线，以及 Encoder-only、Encoder-Decoder、MoE 的边界对照
+- MHA / MQA / GQA、RoPE、RMSNorm、SwiGLU、Residual 和 tied embedding
+- Prefill、Decode、Backward 三条执行路径
+- Attention 算子链：Q/K/V GEMM → RoPE → QKᵀ → scale/mask → softmax → PV → O projection
+- MLP 算子链：gate/up GEMM → SiLU → elementwise multiply → down GEMM
+- Embedding/gather、KV Cache 读写、top-k/top-p sampling、cross entropy
+- 量化/反量化，以及 MoE top-k router、dispatch、gather/scatter 的最小示意
+- 多卡训练中的 all-reduce、reduce-scatter、all-gather 与参数/梯度/优化器状态归属
+
+**验收**
+
+- 每个核心算子记录输入/输出 shape、dtype、复杂度、显存读写和数值稳定性风险
+- 用小张量将显式算子分解与 PyTorch 参考实现逐项对齐
+- 保存一份可复现的 operator graph/trace，能区分 compute-bound 与 memory-bound 候选
+- 明确哪些内容已实现、哪些只是架构对照，不把示意图当成训练证据
+
+## TT-007：热点算子 Profiling 与 Kernel 最小实验
+
+候选：
+
+- Attention：PyTorch eager / SDPA / FlashAttention（硬件与依赖允许时）
+- 融合 RMSNorm、RoPE 或 SwiGLU 中至少一个热点算子
+- PyTorch eager / `torch.compile` / Triton kernel 对照
+- 不同 batch、sequence length、head dimension、dtype 的 shape sweep
+
+**验收**
+
+- 先用误差阈值、梯度对齐和边界 shape 证明正确，再报告速度
+- 固定 warmup、同步、重复次数、硬件、软件版本和输入分布
+- 报告 p50/p95 latency、tokens/s、峰值显存，并尽可能记录带宽或 TFLOPS
+- PyTorch Profiler 或 Nsight trace 能支持瓶颈判断
+- 至少保留一个负结果或反例，禁止只展示最快配置
 
 ---
 
@@ -795,6 +840,137 @@ agent-model-factory/
 - 有明确拒绝/排队策略
 - 能自动恢复或 fallback
 
+## SERV-006：模型产物打包、权重格式与冷启动
+
+覆盖：
+
+- Adapter、merged weights 和量化产物的固定目录与 digest
+- safetensors / GGUF / AWQ / GPTQ 产物的转换脚本与校验
+- 引擎与依赖版本锁（vLLM、transformers、CUDA、驱动）
+- 权重本地缓存与离线加载
+- 冷启动分解：权重加载、图编译/warmup、首个请求
+
+**验收**
+
+- 有冷启动时间分解和固定 warmup 步骤
+- readiness 探针在 warmup 完成前不放流量
+- 滚动更新期间无失败请求
+- 同一 digest 在两次部署产生相同推理输出
+
+## SERV-007：多 LoRA Adapter 服务与热切换
+
+本项目主要产出是 Adapter，必须验证 Adapter 形态而不是只验证整模部署。
+
+实现：
+
+- Adapter Registry：base + adapter + tokenizer + policy 版本绑定
+- 单 base 多 Adapter 同时在线
+- 按请求选择 Adapter
+- Adapter 上线、下线与版本回滚
+- merged weights 与运行时 Adapter 两种形态对照
+
+**验收**
+
+- 记录 Adapter 数量对显存、TTFT 和吞吐的影响
+- 切换 Adapter 不重启服务，不影响进行中的请求
+- 同一评测集上 Adapter 服务结果与离线评测一致
+- 回滚到上一 Adapter 版本可在固定步骤内完成
+
+## SERV-008：结构化输出与受约束解码
+
+Tool Router 必须输出合法决策 JSON，格式失败不能靠重试掩盖。
+
+对照：
+
+- 纯提示约束
+- JSON Schema guided decoding（xgrammar / outlines / 引擎内置）
+- 重试加校验修复
+
+记录：
+
+- JSON validity 与决策语义合法率
+- TTFT / TPOT / 吞吐代价
+- 语法编译与缓存开销
+- 被约束截断或语义退化的样本
+
+**验收**
+
+- 合法率提升与性能代价同时报告
+- 受约束解码不改变风险判断和审批语义
+- 非法输出仍 fail closed，不进入 Runtime
+
+## SERV-009：推理调度与批处理调优
+
+变量：
+
+- continuous batching 与 chunked prefill
+- `max_num_seqs` / `max_num_batched_tokens`
+- prefix / KV cache 命中率与 block 大小
+- KV cache 量化
+- speculative decoding（draft 模型或 n-gram）
+- 单卡显存分配比例与 swap / offload
+
+**验收**
+
+- 每轮只变更一个变量并有前后对照
+- 至少一项优化有可复现的延迟或吞吐收益
+- 优化后在同一冻结评测集上质量不退化
+- 负收益和失败的调优尝试同样进入报告
+
+## SERV-010：容量规划、SLO 与成本模型
+
+**必须定义**
+
+- p95 TTFT、p95 TPOT、成功率和排队上限的 SLO
+- 开环与闭环两种压测方式
+- 饱和点与最大可承载并发
+- GPU 利用率、显存、功耗和温度采集
+- 每任务 token 数与单位成本
+
+**验收**
+
+- 报告容量边界，而不是单请求速度
+- 压测脚本、负载模型和硬件状态可复现
+- 本地小模型与远端强模型有成本对照
+
+## SERV-011：部署优化门禁与性能回归
+
+**必须包含**
+
+- 阈值配置文件：延迟、吞吐、显存、成本
+- 质量与性能联合门禁：量化或调优后重跑同一冻结评测集
+- 性能回归检测与历史基线保留
+- 统一部署报告格式
+
+**验收**
+
+- 质量或性能任一未过阈值不能发布
+- 历史性能基线不被新结果覆盖
+- 门禁结果绑定 engine / weights / config digest
+
+## SERV-012：分层部署与降级形态
+
+部署层次：
+
+1. 本地 BF16 小模型
+2. 本地量化小模型
+3. 确定性规则
+4. 远端强模型
+
+触发条件：
+
+- 低置信度
+- 队列积压或 SLO 违约
+- 显存不足或引擎故障
+- 训练任务占用同一张 GPU
+
+**验收**
+
+- 降级和恢复都有明确触发条件
+- 降级不放宽 Policy、Approval 或审批边界
+- 记录每层的成功率、延迟和成本
+- 单机训练与 Serving 的资源竞争有显式策略
+
 ## MLOPS-001：模型和数据注册
 
 - Dataset Registry
@@ -1312,6 +1488,8 @@ Multi-Agent 必须在固定复杂任务上显著优于 Single-Agent，且收益�
 | Retriever | Recall@10、MRR、nDCG、stale memory hit |
 | Verifier | Macro F1、AUROC、ECE、false accept |
 | Serving | TTFT、TPOT、tokens/s、p95、throughput、VRAM |
+| Deployment | 冷启动时间、最大并发、量化质量 delta、Adapter 切换开销、单位成本 |
+| Operator / Kernel | 数值误差、p50/p95 latency、tokens/s、峰值显存、带宽/TFLOPS |
 | Runtime | 恢复率、恢复时间、重复副作用、审批命中、故障覆盖 |
 | End-to-end | 任务成功率、平均步骤、Token、延迟、成本 |
 
@@ -1343,12 +1521,14 @@ Multi-Agent 必须在固定复杂任务上显著优于 Single-Agent，且收益�
 ## 第三阶段：第 5 周
 
 - SERV-001~005：vLLM、量化、缓存、路由、过载和性能报告；
+- SERV-006~008：产物打包与冷启动、多 LoRA 热切换、受约束解码；
+- SERV-009~012：调度调优、容量与 SLO、部署门禁、分层降级；
 - MLOPS-001~003：Registry、Eval Gate、Canary、Rollback、Badcase 回流；
 - 完成多模态图像分辨率、张数、并发和显存实验。
 
 ## 第四阶段：第 6 周及以后
 
-- TT-001~005 + CPT-001：Tiny Transformer / Pretraining Lab；
+- TT-001~007 + CPT-001：Tiny Transformer、架构/算子与 Pretraining Lab；
 - RET-001~005：Embedding / Reranker，仅在第二环境需要检索时进入主线；
 - DDP/FSDP/DeepSpeed、Profiler、Nsight、Triton 最小实验；
 - 文档/浏览器成为第二环境，音视频和仿真按需求继续扩展；

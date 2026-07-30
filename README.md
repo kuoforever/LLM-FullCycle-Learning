@@ -45,9 +45,9 @@ boundary. Models may propose actions but never bypass those controls.
 | Area | What it demonstrates |
 |---|---|
 | Flagship lifecycle | Data, post-training, evaluation, serving, runtime integration, and bad-case feedback |
-| Tiny Transformer & Pretraining | Decoder internals, RoPE, KV cache, continued pretraining, and resumable training |
+| Tiny Transformer & Pretraining | Decoder internals, operator graphs, MHA/MQA/GQA, RoPE, KV cache, continued pretraining, and resumable training |
 | Multimodal Post-training & Agentic RL | QLoRA, DPO/GRPO, verifiable rewards, verifier models, and ablations |
-| Distributed Training & Inference | DDP/FSDP, vLLM, quantization, profiling, and minimal kernel experiments |
+| Distributed Training & Inference | DDP/FSDP, collectives, vLLM, quantization, profiling, and correctness-gated Triton kernel experiments |
 | Multi-Agent Systems | Coordination, typed handoffs, leases, conflict handling, recovery, and single-agent controls |
 
 Only capabilities backed by code, tests, metrics, and artifacts are described
@@ -69,7 +69,7 @@ Each MVP keeps a vertical loop and adds one primary variable:
 | MVP-4 | Add multi-model serving, quantization, routing, and rollout controls |
 | MVP-5 | Use the Runtime as an Agentic RL environment |
 | MVP-6 | Add environments and modalities |
-| MVP-7 | Deepen distributed training and inference systems work |
+| MVP-7 | Deepen model architecture, operator/kernel, distributed training, and inference systems work |
 | MVP-8 | Add reliable multi-agent coordination |
 
 See the [English roadmap companion](docs/en/mvp-roadmap.md) and
