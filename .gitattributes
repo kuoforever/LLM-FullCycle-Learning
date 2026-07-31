@@ -1,3 +1,5 @@
+* text=auto eol=lf
+
 fixtures/**/*.json text eol=lf
 fixtures/**/*.jsonl text eol=lf
 schemas/**/*.json text eol=lf
