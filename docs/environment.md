@@ -65,7 +65,7 @@ runnable without them.
 stdlib-only gates passed.
 
 Remote repository:
-`https://github.com/kuoforever/LLM-FullCycle-Learning` (private).
+`https://github.com/kuoforever/reliable-agent-model-lifecycle` (public).
 
 ## Training environment boundary
 
