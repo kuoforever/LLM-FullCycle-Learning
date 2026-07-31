@@ -1,4 +1,9 @@
 fixtures/**/*.json text eol=lf
 fixtures/**/*.jsonl text eol=lf
+schemas/**/*.json text eol=lf
+configs/**/*.json text eol=lf
+prompts/** text eol=lf
+requirements/*.lock text eol=lf
+baseline/**/*.json text eol=lf
 baseline/adapters/** binary
 baseline/adapters/**/*.safetensors filter=lfs diff=lfs merge=lfs -text

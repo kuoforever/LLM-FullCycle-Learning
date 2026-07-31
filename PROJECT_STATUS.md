@@ -86,8 +86,8 @@ commit `8ace897f746a4aa3dd3f8b10af392ea9ba81941d`, one valid producer-pinned
 manifest, one minimal valid run export, and eight invalid fixtures. Validation
 on Python 3.13.7: `12 tests` passed, Ruff passed, mypy passed, and the offline
 CLI accepted the valid fixture with the pinned manifest digest. The repository
-is published as the private GitHub repository
-`kuoforever/LLM-FullCycle-Learning`.
+is published as the GitHub repository
+`kuoforever/reliable-agent-model-lifecycle`.
 
 `FC-BRIDGE-002` completed on 2026-07-28 with
 `reliability_dataset_schema_version=1`, a strict Draft 2020-12 JSON Schema, a
@@ -103,8 +103,8 @@ script reproduced both JSONL records byte-for-byte.
 audits, and two exact dataset records with zero runtime dependencies. Ruff
 0.15.22 and mypy 2.3.0 also passed.
 
-`FC-MVP-000` remote gate completed on 2026-07-28. The private repository is
-`kuoforever/LLM-FullCycle-Learning`; Actions run `30369941536` at head
+`FC-MVP-000` remote gate completed on 2026-07-28. The repository is
+`kuoforever/reliable-agent-model-lifecycle`; Actions run `30369941536` at head
 `80bafb4a5bd5039115519ad7239584be39acb037` passed the Python 3.11, 3.12, and
 3.13 matrix jobs. The exact run and job IDs are recorded in
 `baseline/validation-2026-07-28.json`.
@@ -146,8 +146,17 @@ single active objective.
 
 - The official display name is `Reliable Agent Model Lifecycle`; it names the
   complete target system while implementation claims remain evidence-backed.
-- Existing `FC-*` IDs, `fullcycle_*` contracts, package/CLI names, local
-  directory, and remote repository slug remain unchanged for compatibility.
+- The local directory and the remote repository slug are
+  `reliable-agent-model-lifecycle`, renamed on 2026-07-31 from
+  `LLM-FullCycle-Learning` to match the display name. GitHub redirects the
+  former slug, so frozen evidence URLs such as the `FC-MVP-000` Actions run
+  URL in `baseline/validation-2026-07-28.json` stay resolvable and are left
+  unedited.
+- The remote repository is public. Earlier status and environment lines
+  described it as private; that claim was found to contradict the repository
+  on 2026-07-31 and was corrected rather than the visibility being changed.
+- Existing `FC-*` IDs, `fullcycle_*` contracts, and package/CLI names remain
+  unchanged for compatibility.
 - One flagship project and four depth Labs.
 - Desktop GUI is the first environment, not the permanent product boundary.
 - Runtime owns execution safety; Reliable Agent Model Lifecycle owns models and
