@@ -238,3 +238,11 @@ argument exact match 从 0 提升到 0.35，危险动作候选从 2 降到 1；�
 训练证据、原始 predictions、对比报告和 safe-merge 验证。完整配置、命令、
 指标与限制见
 [FC-MVP-001 local LoRA SFT v1](docs/FC-MVP-001-lora-sft-v1.md)。
+
+## 当前模型证据的规模边界
+
+以上全部模型数字来自单张 RTX 4090 Laptop GPU、1.5B base model、作用于
+Q/K/V/O 投影的 LoRA rank 16、100 个 optimizer step，以及一个按十类每类两条
+构造的 20 条 eval。这些结果在冻结的数据与评测契约下可复现，但在该样本量下
+**只能说明方向，不能确立泛化能力**。它们不构成任何关于大规模预训练、后训练
+或推理服务基础设施的主张——上述三项均未实现。
