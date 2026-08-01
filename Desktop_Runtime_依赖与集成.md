@@ -84,6 +84,46 @@ Lane B 不得把 Runtime 的安全 Trace 改成秘密富日志。
 | `FC-BRIDGE-003` | Full Cycle | Pending review | 设计 Lane B consent/capture/security contract |
 | `FC-BRIDGE-004` | Both | Pending | Pin Runtime commit、contract version 和兼容性测试 |
 
+### ID 对照
+
+两个仓库各自维护一套 ID 且独立更新状态，因此漂移是结构性的，不是偶发的。
+跨仓任务的对应关系如下，任何一侧改状态都必须同时核对另一侧：
+
+| Full Cycle | Runtime | 同一件事 |
+|---|---|---|
+| `FC-BRIDGE-001` | `GDA-FC-002` | Full Cycle 侧的离线 consumer 与 fixture |
+| `FC-BRIDGE-003` | `GDA-FC-003` | Lane B 显式同意采集契约 |
+| `FC-BRIDGE-004` | `GDA-FC-004` | Pin 冻结与交接关闭 |
+
+### 已解决的跨仓状态冲突
+
+以下三条于 2026-07-31 核对 Runtime 工作区后记录，**均需在 Runtime 仓库内修
+正**，本仓库不代改。三条已于 2026-08-01 在 Runtime 仓库内修正，记录见该仓库
+`PROJECT_STATUS.md` 的「Cross-repository correction (2026-08-01)」小节：
+`GDA-FC-002` 改为 `Complete`，`GDA-FC-004` 由 `Complete locally` 降为 `Next`
+并将不可达的 `45bee82` 更正为其 squash merge `8ace897`。原始记录保留如下，
+以便追溯：
+
+1. Runtime `PROJECT_STATUS.md` 的 `GDA-FC-002` 仍为 `Next`，且其「Exact
+   active task」整节指示下一个会话到本仓库来实现该 consumer；但本仓库
+   `FC-BRIDGE-001` 已 Complete 并通过离线门禁。**新会话会被指向一件已完成
+   的工作。**
+2. Runtime `GDA-FC-004` 记为 `Complete locally`，完成证据引用 producer
+   candidate `45bee82`；但在 Runtime 当前 HEAD（`7001375`）上
+   `45bee82` **不是 HEAD 的祖先**（HEAD 的提交信息为 "Recalibrate HUD
+   handoff commit identities after rebase"，该提交已被 rebase 移出历史）。
+   本仓库固定的 `8ace897f` 经核实**是** HEAD 的祖先，因此本仓库的 pin 有
+   效，需要更正的是 Runtime 侧的引用。
+3. 同一件事在两侧状态不一致：Runtime `GDA-FC-004` 为 `Complete locally`，
+   本仓库 `FC-BRIDGE-004` 为 `Pending`。在第 2 条的 commit 引用更正之前，
+   不得按「已完成」处理。
+
+两侧现已一致：`FC-BRIDGE-004` 与 `GDA-FC-004` 同为未完成，且必须在同一次变更
+中 pin 同一个「可从分支到达」的 commit。2026-08-01 另有一项验证：用 Runtime
+当前 HEAD 重新生成的 manifest 与本仓库 `fixtures/bridge_v1` 固定的
+`sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522`
+逐字节一致，说明 Lane A 契约自 `8ace897` 以来没有漂移，本仓库的 pin 无需变更。
+
 ## Consumer Fixture 验收
 
 `FC-BRIDGE-001` 必须：
