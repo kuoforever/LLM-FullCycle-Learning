@@ -53,3 +53,22 @@ The consumer validates canonical manifest SHA-256 digests and fails closed on
 schema, digest, size, or completeness violations. Runtime contract changes
 must update the pin and compatibility fixtures together.
 
+`runtime_git_commit=8ace897f` was re-verified on 2026-07-31 as an ancestor of
+the Runtime working tree HEAD, so this pin is valid. Three cross-repository
+status conflicts found during the same check had to be corrected in the Runtime
+repository, not here; they are recorded in
+[Desktop_Runtime_依赖与集成.md](../../Desktop_Runtime_依赖与集成.md) under
+「已解决的跨仓状态冲突」.
+
+All three were corrected in the Runtime repository on 2026-08-01, under
+`PROJECT_STATUS.md` section "Cross-repository correction (2026-08-01)":
+`GDA-FC-002` became `Complete`, and `GDA-FC-004` was demoted from
+`Complete locally` to `Next` with the unreachable `45bee82` replaced by its
+squash merge `8ace897`. Both sides now agree that the freeze is unfinished.
+
+The same check regenerated a manifest from the Runtime HEAD and reproduced the
+digest pinned in `fixtures/bridge_v1` byte for byte, so the Lane A contract has
+not drifted since `8ace897` and this pin needs no change. `FC-BRIDGE-004`
+remains `Pending`: closing it requires both repositories to pin one
+branch-reachable commit in the same change.
+
