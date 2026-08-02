@@ -21,6 +21,7 @@ English companion documents.
 | Topic | English default | Chinese / source |
 |---|---|---|
 | Runtime bridge consumer | [English version](en/FC-BRIDGE-001.md) | [Chinese source](FC-BRIDGE-001.md) |
+| Runtime freeze pin | [Desktop Runtime integration](en/desktop-runtime-integration.md) | [Canonical record](../baseline/runtime-freeze-v1.json) |
 | Lane A reliability dataset | [English version](en/adr/ADR-0001-lane-a-reliability-dataset-v1.md) | [Chinese source](adr/ADR-0001-lane-a-reliability-dataset-v1.md) |
 | Standard-library offline baseline | [ADR-0002](adr/ADR-0002-stdlib-offline-baseline.md) | English source |
 | Environment baseline | [environment.md](environment.md) | English source |

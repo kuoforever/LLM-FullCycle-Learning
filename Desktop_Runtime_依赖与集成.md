@@ -82,7 +82,7 @@ Lane B 不得把 Runtime 的安全 Trace 改成秘密富日志。
 | `FC-BRIDGE-001` | Full Cycle | Complete | 严格 consumer、合法/非法 fixture 和兼容性失败行为已通过离线验证 |
 | `FC-BRIDGE-002` | Full Cycle | Complete | Lane A 已确定性映射到版本化 Reliability/Verifier Dataset v1 |
 | `FC-BRIDGE-003` | Full Cycle | Pending review | 设计 Lane B consent/capture/security contract |
-| `FC-BRIDGE-004` | Both | Pending | Pin Runtime commit、contract version 和兼容性测试 |
+| `FC-BRIDGE-004` | Both | Complete locally | Pin Runtime commit、contract version 和兼容性测试 |
 
 ### ID 对照
 
@@ -118,11 +118,14 @@ Lane B 不得把 Runtime 的安全 Trace 改成秘密富日志。
    本仓库 `FC-BRIDGE-004` 为 `Pending`。在第 2 条的 commit 引用更正之前，
    不得按「已完成」处理。
 
-两侧现已一致：`FC-BRIDGE-004` 与 `GDA-FC-004` 同为未完成，且必须在同一次变更
-中 pin 同一个「可从分支到达」的 commit。2026-08-01 另有一项验证：用 Runtime
-当前 HEAD 重新生成的 manifest 与本仓库 `fixtures/bridge_v1` 固定的
+两侧已于 2026-08-02 在同一次关闭变更中完成：`FC-BRIDGE-004` 与
+`GDA-FC-004` 共同 pin 可从 Runtime 本地 `main` 到达的 commit
+`324ff2fb5911e332ddb5c5f90eb41296e8faf7a9`。用该候选重新生成的 manifest 与
+本仓库 `fixtures/bridge_v1` 固定的
 `sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522`
-逐字节一致，说明 Lane A 契约自 `8ace897` 以来没有漂移，本仓库的 pin 无需变更。
+逐字节一致，说明 Lane A 契约自 `8ace897` 以来没有漂移。新的冻结 pin 记录在
+`baseline/runtime-freeze-v1.json`，旧 fixture 继续保留 `8ace897` 作为不可改写的
+生成来源。
 
 ## Consumer Fixture 验收
 
@@ -157,14 +160,15 @@ runtime_git_commit=8ace897f746a4aa3dd3f8b10af392ea9ba81941d
 runtime_pull_request=219
 ```
 
-`FC-BRIDGE-004` 仍需在 consumer 测试通过后补齐
-`consumer_schema_version` 和跨仓兼容性结果。
-
-Full Cycle 本地侧已固定 `consumer_schema_version=1.0.0`、
-`reliability_dataset_schema_version=1` 和 Runtime commit `8ace897f`，并在
-Python 3.11-3.13 本地矩阵通过。Full Cycle 远程 Actions run
-`30369941536` 也通过三版本矩阵；consumer 侧 pin 与兼容门禁已具备远程证据。
-`FC-BRIDGE-004` 仍需 Runtime 侧记录/确认该 consumer 结果后共同关闭。
+`FC-BRIDGE-004` 的标准记录 `baseline/runtime-freeze-v1.json` 固定
+`consumer_schema_version=1.0.0`、`reliability_dataset_schema_version=1`、
+Runtime package `0.1.0`、所有 Lane A contract 版本和相同 manifest digest。
+Runtime 在 CPython 3.13.7 上的 clean release preflight 通过 `1566 passed,
+8 skipped`、Ruff、E1/E2、crash reconstruction、stateless replay 和 wheel
+build/install；报告 SHA-256 为
+`dc78f08030b4d3c4fac255a91fb7badf2b06fdb0eb0c487073e1f825260c6d0e`。
+这只关闭离线 Runtime freeze，不新增 provider、desktop、application 或 release
+证据。Lane B 明确 defer 到 `FC-BRIDGE-003` 独立评审，默认关闭。
 
 ## 新会话入口
 
@@ -179,8 +183,7 @@ Python 3.11-3.13 本地矩阵通过。Full Cycle 远程 Actions run
 
 ## Pin 规则
 
-在 `GDA-FC-004` 完成前，不把当前分支或工作区描述为稳定 Runtime
-版本。关闭时必须记录：
+`GDA-FC-004` / `FC-BRIDGE-004` 已在本地关闭。标准记录必须保留：
 
 ```text
 runtime_git_commit
@@ -191,3 +194,6 @@ fullcycle_run_export_version
 consumer_schema_version
 validation_date
 ```
+
+当前标准记录是 `baseline/runtime-freeze-v1.json`；不得用后续工作区或分支名
+静默替换其中的精确 SHA。

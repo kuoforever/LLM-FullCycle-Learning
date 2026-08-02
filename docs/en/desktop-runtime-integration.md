@@ -40,7 +40,7 @@ turn the Runtime safety trace into a hidden rich log.
 ## Current pins
 
 ```text
-runtime_git_commit=8ace897f746a4aa3dd3f8b10af392ea9ba81941d
+runtime_git_commit=324ff2fb5911e332ddb5c5f90eb41296e8faf7a9
 agent_contract_version=0.1.0
 driver_contract_version=1.0.0
 fullcycle_manifest_version=1
@@ -48,6 +48,10 @@ fullcycle_run_export_version=1
 consumer_schema_version=1.0.0
 reliability_dataset_schema_version=1
 ```
+
+The canonical record is `baseline/runtime-freeze-v1.json`. The immutable
+`FC-BRIDGE-001` fixture still names `8ace897` as its generation provenance;
+the later freeze pin does not rewrite that dated evidence.
 
 The consumer validates canonical manifest SHA-256 digests and fails closed on
 schema, digest, size, or completeness violations. Runtime contract changes
@@ -64,11 +68,16 @@ All three were corrected in the Runtime repository on 2026-08-01, under
 `PROJECT_STATUS.md` section "Cross-repository correction (2026-08-01)":
 `GDA-FC-002` became `Complete`, and `GDA-FC-004` was demoted from
 `Complete locally` to `Next` with the unreachable `45bee82` replaced by its
-squash merge `8ace897`. Both sides now agree that the freeze is unfinished.
+squash merge `8ace897`. That correction established the safe resume point for
+the freeze completed below.
 
 The same check regenerated a manifest from the Runtime HEAD and reproduced the
 digest pinned in `fixtures/bridge_v1` byte for byte, so the Lane A contract has
-not drifted since `8ace897` and this pin needs no change. `FC-BRIDGE-004`
-remains `Pending`: closing it requires both repositories to pin one
-branch-reachable commit in the same change.
-
+not drifted since `8ace897`, so the immutable fixture needs no change.
+`FC-BRIDGE-004` completed locally on 2026-08-02: both repositories pin
+branch-reachable Runtime commit
+`324ff2fb5911e332ddb5c5f90eb41296e8faf7a9`. Its CPython 3.13.7 clean release
+preflight passed `1566` tests with `8` skips, all independent offline gates,
+and clean wheel build/install. Lane B is explicitly deferred to the separate
+`FC-BRIDGE-003` consent, security, and privacy review and remains disabled by
+default. This does not add provider, desktop, application, or release evidence.
