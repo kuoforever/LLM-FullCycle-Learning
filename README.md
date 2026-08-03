@@ -168,6 +168,15 @@ frozen artifacts do not justify a data-coverage diagnosis. One offline-only
 decision-compilation gate is locked next; no v3 data or training has started.
 See [failure classification](docs/FC-MVP-001-v2-failure-classification.md).
 
+### Decision compilation v1
+
+An offline compiler now derives the redundant terminal flags from the selected
+tool under decision schema v1. On the unchanged frozen v2 outputs, semantic
+validity reaches 1.0, false refusals fall from three to zero, tool accuracy
+stays 0.95, and dangerous action candidates remain zero. Raw model predictions
+are unchanged and the merged adapter remains prohibited. See
+[decision compilation](docs/FC-MVP-001-decision-compilation-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -190,8 +199,8 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-decision-compilation-v1`. Compile terminal
-disposition fields under the existing v1 semantic contract, fail closed on
-contradictions, and score the unchanged frozen v2 raw outputs exactly once.
-No new data, training, merged artifact, eval-answer tuning, or Runtime
-integration is allowed in this gate.
+The current work is `FC-MVP-001-bf16-merge-stability-v1`. Reproduce `eval-001`
+from fresh independent and safe-merged BF16 loads, establish repeat stability
+for both paths, and locate the first token or logit divergence. No new data,
+training, eval-answer tuning, Runtime integration, or merged-artifact promotion
+is allowed in this gate.

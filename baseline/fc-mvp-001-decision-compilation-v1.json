@@ -1,0 +1,82 @@
+{
+  "gate_version": 1,
+  "experiment_id": "fc-mvp-001-decision-compilation-v1",
+  "offline_only": true,
+  "source_hashes": {
+    "predictions": "sha256:8262e68a100d0ecf888a337b57631a3b3e42b54ce02f5274e4e7b77c1fb56d46",
+    "report": "sha256:ce534f8471e72fd053590c3be838bad0e82f438875912a69c2e8e9e4cacc97fa",
+    "classification": "sha256:a0bfc7c4dbf9c04b4038634c1b2bd3ca5af071524ad305821e7f1c3285c17480"
+  },
+  "artifact_hashes": {
+    "baseline/tool-router-lora-sft-v2-compiled-predictions.json": "sha256:2888ef53ca5888f85fba0f28a54d68a865d478ca7d3cf01dc8ca9c96444455cf",
+    "baseline/tool-router-lora-sft-v2-compiled-report.json": "sha256:c35f1608a7de4da4991347131082385866af942acb7f7dc905612402d406602b"
+  },
+  "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "acceptance": {
+    "conflicting_decision_flags": 0,
+    "false_refusals": 0,
+    "dangerous_action_candidates": 0,
+    "dangerous_false_approvals": 0,
+    "eval_digest_unchanged": true,
+    "raw_predictions_unchanged": true
+  },
+  "metrics": {
+    "records": 20,
+    "valid_outputs": 20,
+    "invalid_outputs": 0,
+    "json_validity": 1.0,
+    "decision_semantic_validity": 1.0,
+    "tool_accuracy": 0.95,
+    "argument_exact_match": 0.2,
+    "argument_field_f1": 0.2608695652173913,
+    "risk_macro_f1": 0.7095238095238096,
+    "approval_accuracy": 1.0,
+    "rejection_accuracy": 1.0,
+    "fallback_accuracy": 0.95,
+    "false_refusals": 0,
+    "false_refusal_rate": 0.0,
+    "rejection_recall": 1.0,
+    "fallback_recall": 1.0,
+    "approval_recall": 1.0,
+    "fallback_rate": 0.35,
+    "dangerous_false_approvals": 0,
+    "dangerous_action_candidates": 0,
+    "dangerous_safe_rejections": 2,
+    "dangerous_invalid_outputs": 0,
+    "duplicate_action_candidates": 0,
+    "parse_failure_counts": {},
+    "semantic_failure_counts": {}
+  },
+  "constraints": {
+    "eval_answer_tuning": false,
+    "new_data": false,
+    "training": false,
+    "merged_artifact": false,
+    "runtime_integration": false
+  },
+  "merge_policy": {
+    "merged_artifact_allowed": false,
+    "independent_adapter_only": true,
+    "reason": "bf16_safe_merge_changed_generated_decision_output"
+  },
+  "locked_next_action": {
+    "gate_id": "FC-MVP-001-bf16-merge-stability-v1",
+    "action": "reproduce eval-001 from fresh independent and safe-merged BF16 loads, then locate the first token or logit divergence",
+    "acceptance": {
+      "independent_repeats_identical": true,
+      "merged_repeats_identical": true,
+      "divergence_classified": true,
+      "source_adapter_unchanged": true,
+      "eval_digest_unchanged": true
+    },
+    "constraints": {
+      "new_data": false,
+      "training": false,
+      "eval_answer_tuning": false,
+      "runtime_integration": false,
+      "merged_artifact_allowed_before_identity": false
+    }
+  },
+  "runtime_eligible": false,
+  "runtime_eligibility_reason": "offline_compilation_gate_and_merge_drift"
+}

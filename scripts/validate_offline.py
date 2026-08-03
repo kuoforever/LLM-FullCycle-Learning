@@ -33,6 +33,15 @@ TOOL_ROUTER_SFT_V2_BASELINE_PATH = (
 TOOL_ROUTER_FAILURE_CLASSIFICATION_PATH = (
     ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-failure-classification.json"
 )
+TOOL_ROUTER_DECISION_COMPILATION_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-decision-compilation-v1.json"
+)
+TOOL_ROUTER_COMPILED_PREDICTIONS_PATH = (
+    ROOT / "baseline" / "tool-router-lora-sft-v2-compiled-predictions.json"
+)
+TOOL_ROUTER_COMPILED_REPORT_PATH = (
+    ROOT / "baseline" / "tool-router-lora-sft-v2-compiled-report.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -76,6 +85,7 @@ def main() -> int:
         sft_metrics,
         sft_v2_metrics,
         failure_classification,
+        decision_compilation,
     ) = _validate_fixed_outputs()
     tests_run = _run_tests()
 
@@ -135,9 +145,18 @@ def main() -> int:
         "tool_router_lora_sft_v2_failure_report_digest": failure_classification[
             "report_digest"
         ],
-        "tool_router_lora_sft_v2_next_gate": failure_classification[
+        "tool_router_failure_classification_next_gate": failure_classification[
             "locked_next_action"
         ]["gate_id"],
+        "tool_router_compiled_decision_semantic_validity": decision_compilation[
+            "metrics"
+        ]["decision_semantic_validity"],
+        "tool_router_compiled_false_refusals": decision_compilation["metrics"][
+            "false_refusals"
+        ],
+        "tool_router_next_gate": decision_compilation["locked_next_action"][
+            "gate_id"
+        ],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -208,6 +227,7 @@ def _validate_fixed_outputs() -> tuple[
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
+    dict[str, Any],
 ]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
@@ -223,6 +243,9 @@ def _validate_fixed_outputs() -> tuple[
         load_family_manifest,
     )
     from fullcycle_bridge.tool_router_model_eval import score_raw_outputs
+    from fullcycle_bridge.tool_router_decision_compilation import (
+        compile_frozen_v2_outputs,
+    )
     from fullcycle_bridge.tool_router_failure_classification import (
         classify_v2_failures,
     )
@@ -473,6 +496,47 @@ def _validate_fixed_outputs() -> tuple[
     )
     if failure_classification != failure_baseline:
         raise GateError("Tool Router SFT v2 failure classification drift")
+    decision_compilation = _load_json(TOOL_ROUTER_DECISION_COMPILATION_PATH)
+    compiled_predictions = _load_json(TOOL_ROUTER_COMPILED_PREDICTIONS_PATH)
+    compiled_report = _load_json(TOOL_ROUTER_COMPILED_REPORT_PATH)
+    classification_path = TOOL_ROUTER_FAILURE_CLASSIFICATION_PATH
+    compilation_source_hashes = {
+        "predictions": failure_source_hashes["predictions"],
+        "report": failure_source_hashes["report"],
+        "classification": (
+            "sha256:" + hashlib.sha256(classification_path.read_bytes()).hexdigest()
+        ),
+    }
+    if decision_compilation["source_hashes"] != compilation_source_hashes:
+        raise GateError("Tool Router decision compilation source drift")
+    _validate_named_hashes(decision_compilation["artifact_hashes"])
+    reproduced_compilation = compile_frozen_v2_outputs(
+        sft_v2_predictions,
+        sft_v2_report,
+        failure_classification,
+        compilation_source_hashes,
+    )
+    if reproduced_compilation != compiled_predictions:
+        raise GateError("Tool Router compiled predictions drift")
+    compiled_raw_outputs = [
+        {"example_id": item["example_id"], "raw_output": item["raw_output"]}
+        for item in compiled_predictions["outputs"]
+    ]
+    compiled_metrics, compiled_parsed = score_raw_outputs(
+        evaluation, compiled_raw_outputs
+    )
+    if (
+        compiled_metrics != compiled_report["metrics"]
+        or compiled_metrics != decision_compilation["metrics"]
+        or compiled_parsed != compiled_report["parsed_outputs"]
+        or compiled_report["acceptance"] != decision_compilation["acceptance"]
+    ):
+        raise GateError("Tool Router decision compilation report drift")
+    if (
+        decision_compilation["runtime_eligible"] is not False
+        or compiled_report["runtime_eligible"] is not False
+    ):
+        raise GateError("Tool Router compiled output must remain Runtime ineligible")
     return (
         summary,
         len(records),
@@ -483,6 +547,7 @@ def _validate_fixed_outputs() -> tuple[
         sft_metrics,
         sft_v2_metrics,
         failure_classification,
+        decision_compilation,
     )
 
 

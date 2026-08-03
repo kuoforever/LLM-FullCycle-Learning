@@ -13,26 +13,42 @@ audits, an offline rule baseline, a reproducible local prompt-only model
 baseline, two reproducible local LoRA SFT adapters, and a passed v2
 safety-repair data gate. LoRA SFT v2 passed the narrow dangerous-action gate,
 and its frozen failure-classification gate now separates decision-contract
-inconsistency from BF16 load/merge output drift. It remains Runtime ineligible.
+inconsistency from BF16 load/merge output drift. Decision compilation v1
+removes the former without changing raw model output. The adapter remains
+Runtime ineligible while merge stability is unresolved.
 
 ## Single active objective
 
-Complete `FC-MVP-001-decision-compilation-v1`:
+Complete `FC-MVP-001-bf16-merge-stability-v1`:
 
 ```text
-frozen LoRA SFT v2 raw outputs
-        -> compile one terminal disposition under decision v1
-        -> fail closed on contradictions
-        -> score once on the unchanged frozen eval
+frozen independent adapter and eval-001 prompt
+        -> repeat fresh independent BF16 loads
+        -> repeat fresh safe-merged BF16 loads
+        -> locate the first token or logit divergence
 ```
 
-Derive `expected_result`, `should_reject`, and `should_fallback` from the
-selected terminal tool under the existing v1 semantic contract; contradictory
-independently generated flags fail closed. Preserve the frozen raw predictions
-and eval digest. Acceptance is zero conflicts, false refusals, dangerous action
-candidates, and dangerous false approvals. Do not add data, train, use the
-merged artifact, tune against eval answers, or connect Runtime, Provider, MCP,
-Desktop, Memory, Continuation, or Lane B.
+Use the pinned model, adapter, prompt, seed, dtype, and exact `eval-001` input.
+Require repeat identity within the independent path and within the merged path,
+then classify the earliest cross-path divergence. Do not add data, train, tune
+against eval answers, connect Runtime/Provider/MCP/Desktop, or permit the
+merged artifact before output identity is restored.
+
+The `FC-MVP-001-decision-compilation-v1` gate completed locally on 2026-08-03.
+It compiles redundant terminal fields from `selected_tool` without modifying
+the frozen raw prediction artifact. Exactly `eval-001`, `eval-014`, and
+`eval-020` change `expected_result` and `should_reject`; no selected tool,
+argument, risk, approval, instruction, or source artifact changes. On the same
+eval digest, decision semantic validity rises from `0.85` to `1.0`, rejection
+accuracy from `0.85` to `1.0`, false refusals fall from three to zero, tool
+accuracy remains `0.95`, and dangerous action candidates and false approvals
+remain zero. The gate record SHA-256 is
+`0e798d3404acd4fc6965d773a5ee2f8b3c593eb7865774a0acaadf7d2073a6de`.
+The unified offline gate passes 71 tests on Python 3.11.15, 3.12.12, and
+3.13.7; Ruff passes the repository and mypy reports no issues in 27
+source/script files. The compiled output remains Runtime ineligible because
+merge drift is still unresolved.
+[Evidence](docs/FC-MVP-001-decision-compilation-v1.md).
 
 The `FC-MVP-001` v2 failure-classification gate completed locally on
 2026-08-03. The three semantic conflicts are exactly `eval-001`, `eval-014`,
@@ -173,7 +189,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; failure classification frozen, decision-compilation v1 gate next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; decision compilation frozen, BF16 merge-stability gate next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
