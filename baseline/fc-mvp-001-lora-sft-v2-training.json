@@ -1,0 +1,213 @@
+{
+  "evidence_version": 1,
+  "experiment_id": "fc-mvp-001-lora-sft-v2",
+  "config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "model": {
+    "repo_id": "Qwen/Qwen2.5-1.5B-Instruct",
+    "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+    "license": "apache-2.0",
+    "parameters": 1543714304,
+    "weight_file": "model.safetensors",
+    "weight_bytes": 3087467144,
+    "weight_sha256": "dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee"
+  },
+  "environment": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "peft": "0.14.0",
+    "accelerate": "1.3.0",
+    "huggingface_hub": "0.29.3",
+    "safetensors": "0.5.3",
+    "tokenizers": "0.21.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "gpu_vram_bytes": 17170956288,
+    "compute_capability": "8.9"
+  },
+  "data": {
+    "train_path": "fixtures/tool_router_v2/train.json",
+    "train_digest": "sha256:a34b8c786cc67daf62b3aedfffb7cff00dcfe72525b61c9554af369bcd775064",
+    "train_records": 176,
+    "validation_path": "fixtures/tool_router_v2/validation.json",
+    "validation_digest": "sha256:93a9c3c1ebef78b30ebf3ed65d0b3679a5fb5b4a63efe4030d3bd695ca7f2522",
+    "validation_records": 48,
+    "eval_path": "fixtures/tool_router_v1/eval.json",
+    "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+    "eval_records": 20
+  },
+  "prompt": {
+    "path": "prompts/tool_router_v1.txt",
+    "sha256": "4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97"
+  },
+  "lora": {
+    "rank": 16,
+    "alpha": 32,
+    "dropout": 0.05,
+    "target_modules": [
+      "q_proj",
+      "k_proj",
+      "v_proj",
+      "o_proj"
+    ],
+    "bias": "none"
+  },
+  "training": {
+    "seed": 20260803,
+    "torch_dtype": "bfloat16",
+    "attn_implementation": "eager",
+    "max_sequence_length": 448,
+    "epochs": 3,
+    "micro_batch_size": 2,
+    "gradient_accumulation_steps": 4,
+    "effective_batch_size": 8,
+    "learning_rate": 0.0002,
+    "weight_decay": 0.0,
+    "warmup_ratio": 0.1,
+    "scheduler": "cosine",
+    "gradient_checkpointing": true,
+    "max_grad_norm": 1.0,
+    "train_on_prompt": false,
+    "save_each_epoch": true
+  },
+  "tokenization": {
+    "train_min_tokens": 387,
+    "train_max_tokens": 404,
+    "train_mean_tokens": 392.97727272727275,
+    "validation_min_tokens": 386,
+    "validation_max_tokens": 402,
+    "validation_mean_tokens": 392.2083333333333,
+    "train_truncated_records": 0,
+    "validation_truncated_records": 0
+  },
+  "parameters": {
+    "trainable": 4358144,
+    "all_with_adapter": 1548072448,
+    "trainable_percent": 0.28152067467064695
+  },
+  "optimization": {
+    "steps_per_epoch": 22,
+    "total_steps": 66,
+    "warmup_steps": 7,
+    "completed_steps": 66
+  },
+  "epoch_metrics": [
+    {
+      "epoch": 1,
+      "global_step": 22,
+      "train_loss": 0.6745195180093023,
+      "validation_loss": 0.24104571606342992,
+      "learning_rate": 0.0001697631521134985,
+      "elapsed_seconds": 58.99450910001178
+    },
+    {
+      "epoch": 2,
+      "global_step": 44,
+      "train_loss": 0.12439917073458094,
+      "validation_loss": 0.15420725882480232,
+      "learning_rate": 6.111758245266794e-05,
+      "elapsed_seconds": 54.696743400010746
+    },
+    {
+      "epoch": 3,
+      "global_step": 66,
+      "train_loss": 0.048164372840388256,
+      "validation_loss": 0.1448025729090053,
+      "learning_rate": 0.0,
+      "elapsed_seconds": 55.516845300007844
+    }
+  ],
+  "checkpoints": [
+    {
+      "epoch": 1,
+      "relative_path": "checkpoints/epoch-01",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:e18dea7d2a181be71b7b0c477bd23dfcc64f118825eb8b2b280227cd22a9849b"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 2,
+      "relative_path": "checkpoints/epoch-02",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:780d670ff70c166ae98f4f27ec44208f32c8f422996f290b7211568b1f5f86aa"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    },
+    {
+      "epoch": 3,
+      "relative_path": "checkpoints/epoch-03",
+      "files": [
+        {
+          "path": "adapter_config.json",
+          "bytes": 793,
+          "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+        },
+        {
+          "path": "adapter_model.safetensors",
+          "bytes": 17462432,
+          "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+        },
+        {
+          "path": "README.md",
+          "bytes": 5107,
+          "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+        }
+      ],
+      "total_bytes": 17468332
+    }
+  ],
+  "final_adapter": {
+    "relative_path": "adapter",
+    "files": [
+      {
+        "path": "adapter_config.json",
+        "bytes": 793,
+        "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+      },
+      {
+        "path": "adapter_model.safetensors",
+        "bytes": 17462432,
+        "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+      },
+      {
+        "path": "README.md",
+        "bytes": 5107,
+        "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+      }
+    ],
+    "total_bytes": 17468332
+  },
+  "elapsed_seconds": 169.52723630002583,
+  "peak_gpu_memory_bytes": 5217494016,
+  "selection": "final_epoch_locked_before_eval",
+  "runtime_eligible": false
+}

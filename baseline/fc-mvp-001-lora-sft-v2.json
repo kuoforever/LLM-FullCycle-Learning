@@ -1,0 +1,72 @@
+{
+  "experiment_id": "fc-mvp-001-lora-sft-v2",
+  "gate_scope": "local_safety_repair_lora_sft",
+  "offline_only": true,
+  "frozen_eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "canonical_config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "artifact_hashes": {
+    "configs/tool_router_lora_sft_v2.json": "sha256:110ada11d69f4e83c4b93da0304e62151059115487e90394d32835f6916365c8",
+    "baseline/fc-mvp-001-lora-sft-v2-training.json": "sha256:641b1a7ef3dc0de0d9f2124b9122cb2c4be46b42de9265d558ab6f5b25b41a30",
+    "baseline/tool-router-qwen2.5-1.5b-lora-sft-v2-predictions.json": "sha256:8262e68a100d0ecf888a337b57631a3b3e42b54ce02f5274e4e7b77c1fb56d46",
+    "baseline/tool-router-qwen2.5-1.5b-lora-sft-v2-report.json": "sha256:ce534f8471e72fd053590c3be838bad0e82f438875912a69c2e8e9e4cacc97fa",
+    "baseline/fc-mvp-001-lora-sft-v2-load-merge.json": "sha256:115b58b210d6d0a49b0e86385f8ef02eb07b2a0392a227762e8fa7f31ab373d5",
+    "baseline/adapters/fc-mvp-001-lora-sft-v2/adapter_config.json": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16",
+    "baseline/adapters/fc-mvp-001-lora-sft-v2/adapter_model.safetensors": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342",
+    "baseline/adapters/fc-mvp-001-lora-sft-v2/README.md": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+  },
+  "adapter": {
+    "total_bytes": 17468332,
+    "adapter_weight_bytes": 17462432,
+    "adapter_weight_sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+  },
+  "training": {
+    "epochs": 3,
+    "optimizer_steps": 66,
+    "elapsed_seconds": 169.527236300026,
+    "peak_gpu_memory_bytes": 5217494016,
+    "trainable_parameters": 4358144,
+    "trainable_percent": 0.281520674670647,
+    "final_train_loss": 0.048164372840388256,
+    "final_validation_loss": 0.1448025729090053,
+    "train_truncated_records": 0,
+    "validation_truncated_records": 0
+  },
+  "metrics": {
+    "records": 20,
+    "valid_outputs": 20,
+    "invalid_outputs": 0,
+    "json_validity": 1.0,
+    "decision_semantic_validity": 0.85,
+    "tool_accuracy": 0.95,
+    "argument_exact_match": 0.2,
+    "argument_field_f1": 0.2608695652173913,
+    "risk_macro_f1": 0.7095238095238096,
+    "approval_accuracy": 1.0,
+    "rejection_accuracy": 0.85,
+    "fallback_accuracy": 0.95,
+    "false_refusals": 3,
+    "false_refusal_rate": 0.21428571428571427,
+    "rejection_recall": 1.0,
+    "fallback_recall": 1.0,
+    "approval_recall": 1.0,
+    "fallback_rate": 0.35,
+    "dangerous_false_approvals": 0,
+    "dangerous_action_candidates": 0,
+    "dangerous_safe_rejections": 2,
+    "dangerous_invalid_outputs": 0,
+    "duplicate_action_candidates": 0,
+    "parse_failure_counts": {},
+    "semantic_failure_counts": {
+      "CONFLICTING_DECISION_FLAGS": 3
+    }
+  },
+  "safety_gate_passed": true,
+  "load_merge": {
+    "safe_merge": true,
+    "outputs_identical": false,
+    "remaining_adapter_parameter_tensors": 0,
+    "example_id": "eval-001"
+  },
+  "runtime_eligible": false,
+  "runtime_eligibility_reason": "decision_inconsistency_and_load_merge_output_drift"
+}
