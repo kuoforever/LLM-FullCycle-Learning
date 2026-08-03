@@ -98,6 +98,12 @@ manifests and redacted run exports. It validates schema versions and digests,
 rejects unknown or incomplete inputs, and never starts the provider, MCP,
 desktop, or network layers. See [FC-BRIDGE-001](docs/en/FC-BRIDGE-001.md).
 
+The offline Runtime dependency is frozen locally at
+`324ff2fb5911e332ddb5c5f90eb41296e8faf7a9`; the exact contract and preflight
+pin is retained in `baseline/runtime-freeze-v1.json`. Lane B rich capture is
+not part of that freeze and remains deferred, separately reviewed, and off by
+default.
+
 ### Reliability/Verifier Dataset v1
 
 `FC-BRIDGE-002` deterministically maps accepted Runtime evidence to canonical

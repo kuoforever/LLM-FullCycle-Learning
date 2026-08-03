@@ -97,6 +97,20 @@ tool-sequence signals. Validation on Python 3.13.7: `21 tests` passed, Ruff
 passed, mypy passed, the JSON Schema and two records validated, and the offline
 script reproduced both JSONL records byte-for-byte.
 
+`FC-BRIDGE-004` completed locally on 2026-08-02. The canonical
+`baseline/runtime-freeze-v1.json` pins Runtime commit
+`324ff2fb5911e332ddb5c5f90eb41296e8faf7a9`, package `0.1.0`, every Lane A
+contract version, consumer schema `1.0.0`, and manifest digest
+`sha256:6abe3431ea0e6b4065f21e9a6c6fe34de772f9c3c86a2437f8d14f95a5d6f522`.
+The Runtime clean preflight passed `1566` tests with `8` skips on CPython
+3.13.7; its sanitized report SHA-256 is
+`dc78f08030b4d3c4fac255a91fb7badf2b06fdb0eb0c487073e1f825260c6d0e`.
+The coordinated consumer offline gate passed `53 tests`, all seven frozen
+artifact hashes, and exact bridge/dataset reproduction on Python 3.13.7; Ruff
+passed and mypy reported no issues in 21 source/script files.
+The old `8ace897` fixture pin remains immutable generation provenance. Lane B
+is explicitly deferred to `FC-BRIDGE-003` and remains disabled by default.
+
 `FC-MVP-000` local gates completed on 2026-07-28 at implementation commit
 `01167034d797d4d6855b1ba916b60564d29ba210`: Python 3.11.15, 3.12.12, and
 3.13.7 each passed `21 tests`, seven artifact hashes, five source import-boundary
@@ -117,6 +131,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-001` | Complete | Strict manifest/run-export consumer and offline compatibility fixtures |
 | `FC-BRIDGE-002` | Complete | Lane A reliability/Verifier dataset mapping |
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
+| `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
 | `FC-MVP-001` | In progress | Text Tool Router closed loop; first LoRA SFT complete, safety-repair data gate next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
@@ -163,6 +178,9 @@ single active objective.
   datasets.
 - Automatic Runtime export is redacted reliability evidence only.
 - Rich multimodal episodes require explicit consent and a separate review.
+- Runtime freeze commit `324ff2fb5911e332ddb5c5f90eb41296e8faf7a9`
+  is pinned by `baseline/runtime-freeze-v1.json`; Lane B was deferred without
+  changing the immutable Lane A fixture provenance.
 - Multi-Agent is formal Project H but does not block the first closed loop.
 - Runtime Lane A producer v1 passed `1428` tests plus Ruff, mypy, docs, wheel
   build/install, and offline release gates, then PR #219 passed the Python
