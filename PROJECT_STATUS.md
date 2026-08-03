@@ -1,6 +1,6 @@
 # Project status
 
-> Updated: 2026-07-30.
+> Updated: 2026-08-03.
 > This is the operational entry point for a new Reliable Agent Model Lifecycle
 > session.
 
@@ -10,27 +10,50 @@ MVP-0 remains frozen. `FC-MVP-001` now has a strict Tool Router decision v1
 contract, a frozen balanced eval set, 200 task-family-disjoint
 train/validation records, deterministic validation, leakage/distribution
 audits, an offline rule baseline, a reproducible local prompt-only model
-baseline, and a reproducible first local LoRA SFT adapter. SFT materially
-improved routing quality but still failed the dangerous-action gate and is not
-Runtime eligible.
+baseline, two reproducible local LoRA SFT adapters, and a passed v2
+safety-repair data gate. LoRA SFT v2 passed the narrow dangerous-action gate,
+but decision inconsistencies and load/merge output drift keep it Runtime
+ineligible.
 
 ## Single active objective
 
-Complete the safety-repair data gate of `FC-MVP-001`:
+Complete the v2 failure-classification gate of `FC-MVP-001`:
 
 ```text
-frozen SFT v1 badcase taxonomy
-        -> reviewed train/validation-only hard negatives v2
-        -> leakage and dangerous-action pre-training gate
+frozen LoRA SFT v2 evidence
+        -> classify decision conflicts, false refusals, and merge drift
+        -> lock one bounded repair contract before v3 data or training
 ```
 
-Classify the one remaining dangerous action candidate, four semantic
-inconsistencies, and validation overfitting without changing the frozen eval.
-Create a reviewed v2 train/validation-only hard-negative increment with
-explicit provenance and task families; reject exact/near eval leakage and
-preserve the canonical eval digest. Do not retrain or connect Runtime,
-Provider, MCP, Desktop, Memory, Continuation, or Lane B in this gate. The next
-training config must be locked only after this data gate passes.
+Use only the frozen v2 prediction, report, training, and load/merge evidence.
+Do not tune against eval answers or begin another training run in this gate.
+Determine whether each failure belongs to data coverage, decision-contract
+consistency, or BF16 adapter-merge stability, then lock one exact next action.
+Do not connect Runtime, Provider, MCP, Desktop, Memory, Continuation, or Lane B.
+
+The `FC-MVP-001` LoRA SFT v2 gate completed locally on 2026-08-03. The locked
+three-epoch BF16 LoRA run trained for 66 optimizer steps on the passed 176/48
+data in `169.527236` seconds with `5,217,494,016` peak allocated GPU bytes.
+On the unchanged eval, Tool Accuracy improved from `0.8` to `0.95`, dangerous
+action candidates fell from one to zero, and dangerous false approvals stayed
+zero. The narrow safety gate passed. Decision semantic validity is only
+`0.85`, with three `CONFLICTING_DECISION_FLAGS` outputs and three false
+refusals. `safe_merge` removed all adapter tensors but changed one boolean on
+`eval-001`, so output identity failed. The adapter and all raw evidence are
+frozen, and `runtime_eligible=false`. The unified offline gate passed `63`
+tests on Python 3.11.15, 3.12.12, and 3.13.7; Ruff and mypy passed.
+
+The `FC-MVP-001` safety-repair data gate completed locally on 2026-08-03. The
+frozen SFT v1 diagnosis records one dangerous action candidate, four semantic
+inconsistencies across four eval cases, and validation overfitting after epoch
+3. A reviewed train/validation-only increment added 16/8 records and eight
+disjoint repair families, producing 176/48 records across 68 families while
+preserving v1 as the exact prefix and keeping the eval digest unchanged. Eval
+answers are excluded, maximum cross-split instruction token Jaccard is
+`0.4166666666666667` under the `0.8` rejection threshold, and dangerous action
+candidates and dangerous false approvals are both zero. The pinned repair
+report digest is
+`sha256:2383731556a66ba81de670378c18afcd0493d368dc157d6a5a4e51e5904ee4b2`.
 
 The first `FC-MVP-001` SFT gate completed locally on 2026-07-29. BF16 LoRA
 rank 16 / alpha 32 targeted Q/K/V/O projections for 5 epochs and 100 optimizer
@@ -133,7 +156,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; first LoRA SFT complete, safety-repair data gate next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; LoRA SFT v2 frozen, classify decision and merge instability next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

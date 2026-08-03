@@ -18,11 +18,17 @@ TESTS = ROOT / "tests"
 BASELINE_PATH = ROOT / "baseline" / "fc-mvp-000.json"
 TOOL_ROUTER_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-schema-eval.json"
 TOOL_ROUTER_DATA_BASELINE_PATH = ROOT / "baseline" / "fc-mvp-001-data-v1.json"
+TOOL_ROUTER_SAFETY_REPAIR_BASELINE_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-safety-repair-data-v2.json"
+)
 TOOL_ROUTER_MODEL_BASELINE_PATH = (
     ROOT / "baseline" / "fc-mvp-001-base-model-v1.json"
 )
 TOOL_ROUTER_SFT_BASELINE_PATH = (
     ROOT / "baseline" / "fc-mvp-001-lora-sft-v1.json"
+)
+TOOL_ROUTER_SFT_V2_BASELINE_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-lora-sft-v2.json"
 )
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
@@ -62,8 +68,10 @@ def main() -> int:
         record_count,
         router_summary,
         data_report,
+        safety_repair_report,
         model_metrics,
         sft_metrics,
+        sft_v2_metrics,
     ) = _validate_fixed_outputs()
     tests_run = _run_tests()
 
@@ -89,6 +97,21 @@ def main() -> int:
         "tool_router_validation_records": data_report["validation_records"],
         "tool_router_task_families": data_report["task_families"],
         "tool_router_data_report_digest": data_report["report_digest"],
+        "tool_router_safety_repair_train_records": safety_repair_report[
+            "train_records"
+        ],
+        "tool_router_safety_repair_validation_records": safety_repair_report[
+            "validation_records"
+        ],
+        "tool_router_safety_repair_task_families": safety_repair_report[
+            "task_families"
+        ],
+        "tool_router_safety_repair_dangerous_action_candidates": (
+            safety_repair_report["dangerous_action_candidates"]
+        ),
+        "tool_router_safety_repair_report_digest": safety_repair_report[
+            "report_digest"
+        ],
         "tool_router_base_model_json_validity": model_metrics["json_validity"],
         "tool_router_base_model_tool_accuracy": model_metrics["tool_accuracy"],
         "tool_router_base_model_dangerous_action_candidates": model_metrics[
@@ -97,6 +120,13 @@ def main() -> int:
         "tool_router_lora_sft_tool_accuracy": sft_metrics["tool_accuracy"],
         "tool_router_lora_sft_dangerous_action_candidates": sft_metrics[
             "dangerous_action_candidates"
+        ],
+        "tool_router_lora_sft_v2_tool_accuracy": sft_v2_metrics["tool_accuracy"],
+        "tool_router_lora_sft_v2_dangerous_action_candidates": sft_v2_metrics[
+            "dangerous_action_candidates"
+        ],
+        "tool_router_lora_sft_v2_decision_semantic_validity": sft_v2_metrics[
+            "decision_semantic_validity"
         ],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
@@ -165,6 +195,8 @@ def _validate_fixed_outputs() -> tuple[
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
+    dict[str, Any],
+    dict[str, Any],
 ]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
@@ -180,6 +212,10 @@ def _validate_fixed_outputs() -> tuple[
         load_family_manifest,
     )
     from fullcycle_bridge.tool_router_model_eval import score_raw_outputs
+    from fullcycle_bridge.tool_router_safety_repair import (
+        audit_safety_repair_dataset,
+        load_badcase_taxonomy,
+    )
     from fullcycle_bridge.tool_router_sft import (
         canonical_config_sha256,
         directory_artifact_manifest,
@@ -237,6 +273,41 @@ def _validate_fixed_outputs() -> tuple[
     )
     if data_report != data_baseline["expected_report"]:
         raise GateError("Tool Router data audit differs from the frozen baseline")
+    safety_repair_baseline = _load_json(TOOL_ROUTER_SAFETY_REPAIR_BASELINE_PATH)
+    _validate_named_hashes(safety_repair_baseline["base_artifact_hashes"])
+    _validate_named_hashes(safety_repair_baseline["artifact_hashes"])
+    taxonomy_source = safety_repair_baseline["source_badcase_taxonomy"]
+    _validate_named_hashes({taxonomy_source["path"]: taxonomy_source["sha256"]})
+    safety_repair_train = load_fixture(
+        ROOT / "fixtures" / "tool_router_v2" / "train.json"
+    )
+    safety_repair_validation = load_fixture(
+        ROOT / "fixtures" / "tool_router_v2" / "validation.json"
+    )
+    safety_repair_manifest = load_family_manifest(
+        ROOT / "fixtures" / "tool_router_v2" / "family-manifest.json"
+    )
+    safety_repair_taxonomy = load_badcase_taxonomy(ROOT / taxonomy_source["path"])
+    if (
+        safety_repair_taxonomy["source_prediction_sha256"]
+        != taxonomy_source["source_prediction_sha256"]
+        or safety_repair_taxonomy["source_report_sha256"]
+        != taxonomy_source["source_report_sha256"]
+    ):
+        raise GateError("Tool Router safety-repair source provenance mismatch")
+    safety_repair_report = audit_safety_repair_dataset(
+        train,
+        validation,
+        safety_repair_train,
+        safety_repair_validation,
+        evaluation,
+        family_manifest,
+        safety_repair_manifest,
+        safety_repair_taxonomy,
+        router_summary["eval_digest"],
+    )
+    if safety_repair_report != safety_repair_baseline["expected_report"]:
+        raise GateError("Tool Router safety-repair audit differs from frozen baseline")
     model_baseline = _load_json(TOOL_ROUTER_MODEL_BASELINE_PATH)
     _validate_named_hashes(model_baseline["artifact_hashes"])
     prediction_artifact = _load_json(
@@ -306,13 +377,71 @@ def _validate_fixed_outputs() -> tuple[
         raise GateError("Tool Router SFT parsed outputs mismatch")
     if sft_report["runtime_eligible"] is not False:
         raise GateError("Tool Router SFT must remain Runtime ineligible")
+    sft_v2_baseline = _load_json(TOOL_ROUTER_SFT_V2_BASELINE_PATH)
+    _validate_named_hashes(sft_v2_baseline["artifact_hashes"])
+    sft_v2_config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    sft_v2_evidence = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    )
+    sft_v2_predictions = _load_json(
+        ROOT
+        / "baseline"
+        / "tool-router-qwen2.5-1.5b-lora-sft-v2-predictions.json"
+    )
+    sft_v2_report = _load_json(
+        ROOT / "baseline" / "tool-router-qwen2.5-1.5b-lora-sft-v2-report.json"
+    )
+    sft_v2_load_merge = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-load-merge.json"
+    )
+    sft_v2_config_digest = canonical_config_sha256(sft_v2_config)
+    if sft_v2_config_digest != sft_v2_baseline["canonical_config_sha256"]:
+        raise GateError("Tool Router SFT v2 config digest mismatch")
+    if sft_v2_evidence["config_sha256"] != sft_v2_config_digest:
+        raise GateError("Tool Router SFT v2 evidence config mismatch")
+    sft_v2_adapter_dir = (
+        ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    )
+    if (
+        directory_artifact_manifest(sft_v2_adapter_dir)
+        != sft_v2_evidence["final_adapter"]["files"]
+    ):
+        raise GateError("Tool Router SFT v2 adapter manifest mismatch")
+    sft_v2_raw_outputs = [
+        {
+            "example_id": item["example_id"],
+            "raw_output": item["raw_output"],
+        }
+        for item in sft_v2_predictions["outputs"]
+    ]
+    sft_v2_metrics, sft_v2_parsed = score_raw_outputs(
+        evaluation, sft_v2_raw_outputs
+    )
+    if sft_v2_metrics != sft_v2_baseline["metrics"]:
+        raise GateError("Tool Router SFT v2 metrics differ from frozen baseline")
+    if sft_v2_metrics != sft_v2_report["metrics"]:
+        raise GateError("Tool Router SFT v2 report metrics mismatch")
+    if sft_v2_parsed != sft_v2_report["parsed_outputs"]:
+        raise GateError("Tool Router SFT v2 parsed outputs mismatch")
+    if not sft_v2_report["safety_gate_passed"]:
+        raise GateError("Tool Router SFT v2 safety gate must remain passed")
+    if sft_v2_report["runtime_eligible"] is not False:
+        raise GateError("Tool Router SFT v2 must remain Runtime ineligible")
+    if (
+        sft_v2_load_merge["outputs_identical"] is not False
+        or sft_v2_load_merge["safe_merge"] is not True
+        or sft_v2_load_merge["remaining_adapter_parameter_tensors"] != 0
+    ):
+        raise GateError("Tool Router SFT v2 load/merge evidence mismatch")
     return (
         summary,
         len(records),
         router_summary,
         data_report,
+        safety_repair_report,
         model_metrics,
         sft_metrics,
+        sft_v2_metrics,
     )
 
 

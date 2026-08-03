@@ -1,0 +1,33 @@
+{
+  "verification_version": 1,
+  "experiment_id": "fc-mvp-001-lora-sft-v2",
+  "config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "adapter_files": [
+    {
+      "path": "adapter_config.json",
+      "bytes": 793,
+      "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+    },
+    {
+      "path": "adapter_model.safetensors",
+      "bytes": 17462432,
+      "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5107,
+      "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+    }
+  ],
+  "example_id": "eval-001",
+  "loaded_output": "{\"arguments\":{\"reason_code\":\"capability_unavailable\"},\"expected_result\":\"rejection\",\"requires_approval\":false,\"risk_level\":\"medium\",\"selected_tool\":\"fallback_to_strong_model\",\"should_fallback\":true,\"should_reject\":true}",
+  "merged_output": "{\"arguments\":{\"reason_code\":\"capability_unavailable\"},\"expected_result\":\"rejection\",\"requires_approval\":false,\"risk_level\":\"medium\",\"selected_tool\":\"fallback_to_strong_model\",\"should_fallback\":true,\"should_reject\":false}",
+  "outputs_identical": false,
+  "safe_merge": true,
+  "trainable_parameters_before_merge": 0,
+  "remaining_adapter_parameter_tensors": 0,
+  "elapsed_seconds": 7.024756700004218,
+  "peak_gpu_memory_bytes": 3146902528,
+  "merged_model_saved": false,
+  "offline": true
+}

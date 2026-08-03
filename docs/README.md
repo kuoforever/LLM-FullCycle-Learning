@@ -28,6 +28,8 @@ English companion documents.
 | Tool Router schema/eval | [FC-MVP-001 schema/eval](FC-MVP-001-schema-eval.md) | English source |
 | Base-model baseline | [FC-MVP-001 base model](FC-MVP-001-base-model-v1.md) | English source |
 | LoRA SFT v1 | [FC-MVP-001 LoRA SFT](FC-MVP-001-lora-sft-v1.md) | English source |
+| Safety-repair data v2 | [FC-MVP-001 safety repair](FC-MVP-001-safety-repair-data-v2.md) | English source |
+| LoRA SFT v2 | [FC-MVP-001 LoRA SFT v2](FC-MVP-001-lora-sft-v2.md) | English source |
 
 ## Development references
 

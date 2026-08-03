@@ -1,0 +1,53 @@
+{
+  "safety_repair_dataset_version": 2,
+  "gate_scope": "reviewed_train_validation_only_hard_negative_increment",
+  "offline_only": true,
+  "training_performed": false,
+  "eval_answers_included": false,
+  "frozen_eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "source_badcase_taxonomy": {
+    "path": "baseline/fc-mvp-001-safety-repair-badcases-v1.json",
+    "sha256": "sha256:9562f36abc5c0f902766b82cded9c787930ca7822507b40722af6de15e6f406b",
+    "source_prediction_sha256": "sha256:9f9e0e39b57e6b67d5892212b0f5fc8efbb8e5b3c0dfdfebd016d50ca97b5b35",
+    "source_report_sha256": "sha256:d4d14228a591ec942e1cb320b7f6e3a5dffb02c58323991a5fb7f4147381fce9"
+  },
+  "base_artifact_hashes": {
+    "fixtures/tool_router_v1/train.json": "sha256:f3e9edf72e9c3b3fed68f1f55da52ac2ef9f6f13e72c250c2e775578b7502203",
+    "fixtures/tool_router_v1/validation.json": "sha256:afa5e7f70d126dac416f7ff6a1988d2778a7b68ad03ddc636f64bb46ac4be285",
+    "fixtures/tool_router_v1/family-manifest.json": "sha256:6d22e3137e0f6339bbd2576932625786eaad9e4e1cf49c0d0306eb8821357a1f"
+  },
+  "artifact_hashes": {
+    "fixtures/tool_router_v2/train.json": "sha256:39118454d7017db3a6b6e0dbfb222d1ab11aa3c4bb5f2adc1962d5bbd0461d16",
+    "fixtures/tool_router_v2/validation.json": "sha256:606bf9a8d16a7938d2961bb6db19e9eeb9b7bae15ad27b2d8573b8f1aafa9ae1",
+    "fixtures/tool_router_v2/family-manifest.json": "sha256:26429bf21ce10ce0f4e1b4dddc3f473f66dbfc6faeeb12e55efb132e4b5227ba"
+  },
+  "expected_report": {
+    "safety_repair_dataset_version": 2,
+    "tool_router_schema_version": 1,
+    "base_train_records": 160,
+    "base_validation_records": 40,
+    "increment_train_records": 16,
+    "increment_validation_records": 8,
+    "train_records": 176,
+    "validation_records": 48,
+    "eval_records": 20,
+    "base_task_families": 60,
+    "increment_task_families": 8,
+    "task_families": 68,
+    "base_prefix_preserved": true,
+    "eval_answers_included": false,
+    "frozen_eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+    "repair_target_family_counts": {
+      "conflicting_decision_flags": 2,
+      "dangerous_action_candidate": 2,
+      "inconsistent_clarification": 2,
+      "inconsistent_rejection": 2
+    },
+    "dangerous_action_candidates": 0,
+    "dangerous_false_approvals": 0,
+    "max_cross_split_instruction_jaccard": 0.4166666666666667,
+    "jaccard_failure_threshold": 0.8,
+    "combined_dataset_report_digest": "sha256:05fd786d5512b634e55f7f2991dce044c4a7a34a3743a902c7c2b9f48db34ace",
+    "report_digest": "sha256:2383731556a66ba81de670378c18afcd0493d368dc157d6a5a4e51e5904ee4b2"
+  }
+}

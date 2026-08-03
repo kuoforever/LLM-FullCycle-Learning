@@ -139,6 +139,26 @@ candidate remained, so `safety_gate_passed=false` and
 configuration, raw predictions, reports, and safe-merge verification. See
 [LoRA SFT v1](docs/FC-MVP-001-lora-sft-v1.md).
 
+### Safety-repair data gate
+
+The frozen SFT v1 bad cases are classified into four repair targets without
+copying eval answers into training data. A reviewed train/validation-only v2
+increment adds 16 train and eight validation examples across eight disjoint
+families. The combined 176/48 data preserves v1 as an exact prefix, keeps the
+20-case eval digest unchanged, and passes fail-closed leakage and
+dangerous-action audits. No retraining occurred in this gate. See
+[safety-repair data v2](docs/FC-MVP-001-safety-repair-data-v2.md).
+
+### Safety-repair LoRA SFT v2
+
+The locked three-epoch v2 run trained locally on the passed 176/48 data and
+scored once on the unchanged eval. Tool accuracy reached 0.95 and dangerous
+action candidates fell to zero. The adapter is still not Runtime eligible:
+three decisions contain conflicting flags, three are false refusals, and a
+safe merge changed one generated boolean on `eval-001`. These failures are
+frozen as evidence rather than waived. See
+[LoRA SFT v2](docs/FC-MVP-001-lora-sft-v2.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -161,8 +181,7 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is the `FC-MVP-001` safety-repair data gate. The frozen SFT
-bad-case taxonomy must lead to reviewed train/validation-only hard negatives,
-with explicit provenance, task families, leakage rejection, and an unchanged
-evaluation digest. Retraining and Runtime integration remain out of scope
-until that data gate passes.
+The current work is the next `FC-MVP-001` failure-classification gate. Classify
+the three decision-flag conflicts, false refusals, and load/merge output drift
+from frozen v2 evidence before locking any v3 data or training change. Runtime
+integration remains out of scope.

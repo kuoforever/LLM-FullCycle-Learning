@@ -98,8 +98,7 @@ def main() -> int:
     after = _generate(merged, encoded, tokenizer, config)
     torch.cuda.synchronize()
     elapsed = time.perf_counter() - started
-    if before != after:
-        raise RuntimeError("merged model output differs from loaded adapter output")
+    outputs_identical = before == after
     remaining_adapter_parameters = sum(
         ".lora_" in name for name, _ in merged.named_parameters()
     )
@@ -114,7 +113,7 @@ def main() -> int:
         "example_id": record["example_id"],
         "loaded_output": before,
         "merged_output": after,
-        "outputs_identical": True,
+        "outputs_identical": outputs_identical,
         "safe_merge": True,
         "trainable_parameters_before_merge": trainable_before_merge,
         "remaining_adapter_parameter_tensors": remaining_adapter_parameters,
@@ -130,6 +129,12 @@ def main() -> int:
         newline="\n",
     )
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
+    if not outputs_identical:
+        print(
+            "merged model output differs from loaded adapter output",
+            file=sys.stderr,
+        )
+        return 2
     return 0
 
 
