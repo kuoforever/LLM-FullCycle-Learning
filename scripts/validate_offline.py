@@ -30,6 +30,9 @@ TOOL_ROUTER_SFT_BASELINE_PATH = (
 TOOL_ROUTER_SFT_V2_BASELINE_PATH = (
     ROOT / "baseline" / "fc-mvp-001-lora-sft-v2.json"
 )
+TOOL_ROUTER_FAILURE_CLASSIFICATION_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-failure-classification.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -72,6 +75,7 @@ def main() -> int:
         model_metrics,
         sft_metrics,
         sft_v2_metrics,
+        failure_classification,
     ) = _validate_fixed_outputs()
     tests_run = _run_tests()
 
@@ -128,6 +132,12 @@ def main() -> int:
         "tool_router_lora_sft_v2_decision_semantic_validity": sft_v2_metrics[
             "decision_semantic_validity"
         ],
+        "tool_router_lora_sft_v2_failure_report_digest": failure_classification[
+            "report_digest"
+        ],
+        "tool_router_lora_sft_v2_next_gate": failure_classification[
+            "locked_next_action"
+        ]["gate_id"],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -197,6 +207,7 @@ def _validate_fixed_outputs() -> tuple[
     dict[str, Any],
     dict[str, Any],
     dict[str, Any],
+    dict[str, Any],
 ]:
     from fullcycle_bridge import validate_files
     from fullcycle_bridge.consumer import canonical_json_bytes
@@ -212,6 +223,9 @@ def _validate_fixed_outputs() -> tuple[
         load_family_manifest,
     )
     from fullcycle_bridge.tool_router_model_eval import score_raw_outputs
+    from fullcycle_bridge.tool_router_failure_classification import (
+        classify_v2_failures,
+    )
     from fullcycle_bridge.tool_router_safety_repair import (
         audit_safety_repair_dataset,
         load_badcase_taxonomy,
@@ -433,6 +447,32 @@ def _validate_fixed_outputs() -> tuple[
         or sft_v2_load_merge["remaining_adapter_parameter_tensors"] != 0
     ):
         raise GateError("Tool Router SFT v2 load/merge evidence mismatch")
+    failure_baseline = _load_json(TOOL_ROUTER_FAILURE_CLASSIFICATION_PATH)
+    failure_source_paths = {
+        "predictions": (
+            ROOT
+            / "baseline"
+            / "tool-router-qwen2.5-1.5b-lora-sft-v2-predictions.json"
+        ),
+        "report": (
+            ROOT / "baseline" / "tool-router-qwen2.5-1.5b-lora-sft-v2-report.json"
+        ),
+        "training": ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json",
+        "load_merge": ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-load-merge.json",
+    }
+    failure_source_hashes = {
+        name: "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
+        for name, path in failure_source_paths.items()
+    }
+    failure_classification = classify_v2_failures(
+        sft_v2_predictions,
+        sft_v2_report,
+        sft_v2_evidence,
+        sft_v2_load_merge,
+        failure_source_hashes,
+    )
+    if failure_classification != failure_baseline:
+        raise GateError("Tool Router SFT v2 failure classification drift")
     return (
         summary,
         len(records),
@@ -442,6 +482,7 @@ def _validate_fixed_outputs() -> tuple[
         model_metrics,
         sft_metrics,
         sft_v2_metrics,
+        failure_classification,
     )
 
 

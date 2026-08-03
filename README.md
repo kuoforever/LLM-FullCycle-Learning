@@ -159,6 +159,15 @@ safe merge changed one generated boolean on `eval-001`. These failures are
 frozen as evidence rather than waived. See
 [LoRA SFT v2](docs/FC-MVP-001-lora-sft-v2.md).
 
+### LoRA SFT v2 failure classification
+
+The frozen v2 evidence assigns the three conflicting decisions and the
+count-aligned false refusals to decision-contract consistency. The one-field
+load/merge drift is a separate BF16 adapter-merge stability failure. The
+frozen artifacts do not justify a data-coverage diagnosis. One offline-only
+decision-compilation gate is locked next; no v3 data or training has started.
+See [failure classification](docs/FC-MVP-001-v2-failure-classification.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -181,7 +190,8 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is the next `FC-MVP-001` failure-classification gate. Classify
-the three decision-flag conflicts, false refusals, and load/merge output drift
-from frozen v2 evidence before locking any v3 data or training change. Runtime
-integration remains out of scope.
+The current work is `FC-MVP-001-decision-compilation-v1`. Compile terminal
+disposition fields under the existing v1 semantic contract, fail closed on
+contradictions, and score the unchanged frozen v2 raw outputs exactly once.
+No new data, training, merged artifact, eval-answer tuning, or Runtime
+integration is allowed in this gate.
