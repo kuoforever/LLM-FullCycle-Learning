@@ -17,26 +17,84 @@ inconsistency from BF16 load/merge output drift. Decision compilation v1
 removes the former without changing raw model output. Merge stability v1
 proves the latter is a deterministic BF16 logit-boundary flip rather than
 within-path nondeterminism, and merge numerics v1 traces it to BF16
-materialization of LoRA updates at the first projection. The Adapter remains
-Runtime ineligible while the pre-registered FP32 remediation is untested.
+materialization of LoRA updates at the first projection. The pre-registered
+FP32 remediation is repeat-stable but fails output identity and reproduces the
+safe-merged BF16 token sequence instead of the independent BF16 Adapter
+reference. FP32 merge drift analysis now reproduces both frozen paths and
+confirms that their first generated-token boundary contains a raw-logit argmax
+flip, not merely a logits-processor flip. Because that comparison couples
+compute dtype with attached-versus-merged execution, the Adapter remains
+Runtime ineligible until a same-dtype FP32 control isolates those factors.
 
 ## Single active objective
 
-Complete `FC-MVP-001-bf16-merge-remediation-v1`:
+Complete `FC-MVP-001-fp32-attached-merge-isolation-v1`:
 
 ```text
-pinned base + Adapter loaded in FP32
-        -> safe merge in FP32
-        -> retain FP32 for greedy SDPA generation
-        -> repeat twice and compare with independent BF16 reference
+fresh independent FP32 attached Adapter x2 + frozen eval-001
+        -> establish repeat stability -> exact cached scores/raw logits
+fresh locked FP32 safe-merged candidate + frozen eval-001
+        -> reproduce candidate -> same-dtype attached/merged comparison
+frozen BF16 attached/merged token controls
+        -> contextualize without changing either frozen path
 ```
 
-Use the pinned model, Adapter, prompt, seed, and exact `eval-001` input. The
-only candidate is FP32 base plus FP32 Adapter, safe-merged and retained in FP32
-for greedy SDPA inference. Require two fresh candidate loads to be token
-identical and to match the frozen independent BF16 Adapter output exactly.
-Do not add data, train, tune against eval answers, run the full eval before
-identity, connect Runtime/Provider/MCP/Desktop, or promote a merged artifact.
+Add only one new control: materialize the same pinned BF16 checkpoint values as
+FP32, load the frozen FP32 Adapter with `autocast_adapter_dtype=False`, retain
+the Adapter attached without merge, and run the unchanged greedy SDPA
+generation on exact `eval-001`. Require two fresh attached-FP32 runs to be
+repeat-stable, one fresh locked FP32 safe-merged run to reproduce its frozen
+token/output digests, and compare tokens plus processed scores/raw logits from
+the same cached `generate(use_cache=True)` steps. Keep the frozen BF16 paths as
+token-level context only. Classify the same-dtype attached-versus-merged effect
+without claiming a shared low-level CUDA kernel. Do not alter an existing path,
+change backend/decoding, add data, train, tune against eval answers, run the
+full eval, connect Runtime/Provider/MCP/Desktop, or save/promote a merged
+artifact.
+
+The `FC-MVP-001-fp32-merge-drift-analysis-v1` gate completed locally on
+2026-08-04. One fresh independent BF16 attached-Adapter path and one fresh
+locked FP32 safe-merged path each reproduce their frozen 48-token and decoded
+output digests. Their first generated-token boundary remains zero-based index
+`45`: BF16 attached chooses token `1866` (`true`), while FP32 merged chooses
+token `3849` (`false`). Processed generation-score margins are
+`0.4545440673828125` and `2.4415740966796875`; raw-logit margins from the same
+cached `generate` call are `0.5` and `2.68572998046875`. The raw-logit vector's
+maximum absolute delta is `1.9437971115112305`, mean absolute delta is
+`0.22757971286773682`, and all `151,936` vocabulary elements differ at this
+step. The classification is
+`deterministic_bf16_attached_vs_fp32_merged_raw_logit_boundary_flip`,
+`analysis_gate.passed=true`, and `remediation_gate.passed=false`. This locates
+the first token/argmax boundary but does not isolate dtype from merge execution
+or claim earlier logits are identical. The run took `13.201921800035052`
+seconds and peaked at `6,268,076,032` allocated GPU bytes. The gate record
+SHA-256 is
+`ae5d1c7ace24c6cfcfed0eca60354cd3dfa9579fa0aea4e1f64c66eb73e41ea3`.
+No merged artifact was saved or permitted, and Runtime eligibility remains
+false. The unified offline gate passes 95 tests on Python 3.11.15, 3.12.12,
+and 3.13.7; Ruff passes the repository and mypy reports no issues in 35
+source/script files.
+[Evidence](docs/FC-MVP-001-fp32-merge-drift-analysis-v1.md).
+
+The `FC-MVP-001-bf16-merge-remediation-v1` gate completed locally on
+2026-08-04 and falsified its sole pre-registered candidate. Two fresh FP32
+safe-merged loads are token-identical at 48 generated tokens, both with digest
+`sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca`.
+They do not match the frozen independent BF16 Adapter digest
+`sha256:e23b3f5ed71ec57f44ccacfadf8d79abfb21be622f13cae83cf14274cc54e173`;
+instead, they match the prior safe-merged BF16 token and output digests. Both
+runs verify 338 FP32 base tensors, 224 FP32 LoRA tensors across 112 targets,
+zero LoRA tensors after FP32 safe merge, FP32 generation scores, greedy SDPA,
+disabled autocast/TF32, tied embeddings, and isolated fresh-load lifecycles.
+The classification is `deterministic_fp32_merge_output_drift` and
+`remediation_gate.passed=false`. The run took `18.06072970002424` seconds and
+peaked at `6,248,754,688` allocated GPU bytes. The gate record SHA-256 is
+`7f3c5aff55e69c08a7676d33636a52a5a2bb43f025dae8a2db362041354050b3`.
+No merged artifact was saved or permitted, and Runtime eligibility remains
+false. The unified offline gate passes 87 tests on Python 3.11.15, 3.12.12,
+and 3.13.7; Ruff passes the repository and mypy reports no issues in 33
+source/script files.
+[Evidence](docs/FC-MVP-001-bf16-merge-remediation-v1.md).
 
 The `FC-MVP-001-bf16-merge-numerics-v1` gate completed locally on 2026-08-04.
 At the exact cached generation step for token index `45`, the embedding and
@@ -224,7 +282,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; BF16 rounding root cause frozen, FP32 merge remediation next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; FP32 remediation failure frozen, exact FP32/BF16 logit drift next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

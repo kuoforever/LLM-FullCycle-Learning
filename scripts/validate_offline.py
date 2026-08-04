@@ -48,6 +48,12 @@ TOOL_ROUTER_MERGE_STABILITY_PATH = (
 TOOL_ROUTER_MERGE_NUMERICS_PATH = (
     ROOT / "baseline" / "fc-mvp-001-bf16-merge-numerics-v1.json"
 )
+TOOL_ROUTER_MERGE_REMEDIATION_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-bf16-merge-remediation-v1.json"
+)
+TOOL_ROUTER_FP32_MERGE_DRIFT_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-fp32-merge-drift-analysis-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -95,6 +101,11 @@ def main() -> int:
     ) = _validate_fixed_outputs()
     merge_stability = _validate_merge_stability()
     merge_numerics = _validate_merge_numerics(merge_stability)
+    merge_remediation = _validate_merge_remediation(
+        merge_stability,
+        merge_numerics,
+    )
+    fp32_merge_drift = _validate_fp32_merge_drift(merge_remediation)
     tests_run = _run_tests()
 
     result = {
@@ -178,7 +189,34 @@ def main() -> int:
         "tool_router_merge_numerics_first_module": merge_numerics[
             "module_analysis"
         ]["first_divergent_module"],
-        "tool_router_next_gate": merge_numerics["locked_next_action"][
+        "tool_router_merge_numerics_next_gate": merge_numerics[
+            "locked_next_action"
+        ]["gate_id"],
+        "tool_router_merge_remediation_classification": merge_remediation[
+            "classification"
+        ],
+        "tool_router_merge_remediation_passed": merge_remediation[
+            "remediation_gate"
+        ]["passed"],
+        "tool_router_merge_remediation_matches_bf16_merged": merge_remediation[
+            "remediation_gate"
+        ]["frozen_bf16_merged_token_identity"],
+        "tool_router_merge_remediation_next_gate": merge_remediation[
+            "locked_next_action"
+        ]["gate_id"],
+        "tool_router_fp32_merge_drift_classification": fp32_merge_drift[
+            "classification"
+        ],
+        "tool_router_fp32_merge_drift_first_token_index": fp32_merge_drift[
+            "token_analysis"
+        ]["first_divergent_token_index"],
+        "tool_router_fp32_merge_drift_analysis_passed": fp32_merge_drift[
+            "analysis_gate"
+        ]["passed"],
+        "tool_router_fp32_merge_drift_remediation_passed": fp32_merge_drift[
+            "remediation_gate"
+        ]["passed"],
+        "tool_router_next_gate": fp32_merge_drift["locked_next_action"][
             "gate_id"
         ],
     }
@@ -691,6 +729,949 @@ def _validate_merge_numerics(stability: dict[str, Any]) -> dict[str, Any]:
     ):
         raise GateError("Tool Router merge-numerics acceptance drift")
     return gate
+
+
+def _validate_merge_remediation(
+    stability: dict[str, Any],
+    numerics: dict[str, Any],
+) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    gate = _load_json(TOOL_ROUTER_MERGE_REMEDIATION_PATH)
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    expected_top_level = {
+        "merge_remediation_version",
+        "experiment_id",
+        "source_experiment_id",
+        "stability_evidence_sha256",
+        "numerics_evidence_sha256",
+        "training_lock_sha256",
+        "config_sha256",
+        "adapter_files",
+        "model_weight_sha256",
+        "prompt_sha256",
+        "eval_digest",
+        "example_id",
+        "input_token_count",
+        "input_token_ids_sha256",
+        "storage_audit",
+        "reference",
+        "frozen_bf16_merged_control",
+        "candidate_protocol",
+        "runs",
+        "analysis",
+        "classification",
+        "remediation_gate",
+        "acceptance",
+        "elapsed_seconds",
+        "peak_gpu_memory_bytes",
+        "merged_artifact_saved",
+        "merged_artifact_allowed",
+        "constraints",
+        "locked_next_action",
+        "runtime_eligible",
+        "runtime_eligibility_reason",
+        "offline",
+    }
+    if (
+        set(gate) != expected_top_level
+        or gate.get("merge_remediation_version") != 1
+        or gate.get("experiment_id")
+        != "fc-mvp-001-bf16-merge-remediation-v1"
+        or gate.get("source_experiment_id") != config.get("experiment_id")
+        or gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != directory_artifact_manifest(adapter)
+        or gate.get("stability_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_STABILITY_PATH)
+        or gate.get("numerics_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_NUMERICS_PATH)
+        or gate.get("training_lock_sha256")
+        != file_sha256(ROOT / "requirements" / "training.lock")
+        or gate.get("model_weight_sha256")
+        != f"sha256:{config['model']['weight_sha256']}"
+        or gate.get("prompt_sha256")
+        != file_sha256(ROOT / config["prompt"]["path"])
+        or gate.get("eval_digest") != fixture_digest(evaluation)
+        or gate.get("eval_digest") != numerics.get("eval_digest")
+        or gate.get("input_token_count") != stability.get("input_token_count")
+        or gate.get("input_token_ids_sha256")
+        != stability.get("input_token_ids_sha256")
+        or gate.get("example_id") != "eval-001"
+    ):
+        raise GateError("Tool Router merge-remediation source drift")
+    if gate.get("storage_audit") != {
+        "base_checkpoint": {
+            "tensors": 338,
+            "elements": 1543714304,
+            "dtype_tensors": {"bfloat16": 338},
+            "dtype_elements": {"bfloat16": 1543714304},
+        },
+        "adapter": {
+            "tensors": 224,
+            "elements": 4358144,
+            "dtype_tensors": {"float32": 224},
+            "dtype_elements": {"float32": 4358144},
+        },
+    }:
+        raise GateError("Tool Router merge-remediation storage dtype drift")
+
+    independent = [
+        run for run in stability["runs"] if run.get("path") == "independent"
+    ]
+    merged = [run for run in stability["runs"] if run.get("path") == "merged"]
+    reference = gate.get("reference")
+    control = gate.get("frozen_bf16_merged_control")
+    if (
+        len(independent) != 2
+        or len(merged) != 2
+        or not isinstance(reference, dict)
+        or reference.get("path") != "independent_bf16_adapter"
+        or reference.get("token_count") != independent[0].get("token_count")
+        or reference.get("token_ids_sha256")
+        != independent[0].get("token_ids_sha256")
+        or reference.get("output_sha256") != independent[0].get("output_sha256")
+        or not isinstance(control, dict)
+        or control.get("path") != "safe_merged_bf16"
+        or control.get("token_count") != merged[0].get("token_count")
+        or control.get("token_ids_sha256") != merged[0].get("token_ids_sha256")
+        or control.get("output_sha256") != merged[0].get("output_sha256")
+    ):
+        raise GateError("Tool Router merge-remediation frozen references drift")
+
+    protocol = gate.get("candidate_protocol")
+    expected_protocol = {
+        "checkpoint_storage_dtype": "bfloat16",
+        "base_load_dtype": "float32",
+        "adapter_storage_dtype": "float32",
+        "adapter_load_dtype": "float32",
+        "merge_dtype": "float32",
+        "inference_dtype": "float32",
+        "safe_merge": True,
+        "adapter_names": ["default"],
+        "attn_implementation": "sdpa",
+        "attention_class": "Qwen2Attention",
+        "attention_dispatch": "ALL_ATTENTION_FUNCTIONS['sdpa']",
+        "output_attentions": False,
+        "do_sample": False,
+        "max_new_tokens": 256,
+        "use_cache": True,
+        "repetition_penalty": 1.1,
+        "model_eos_token_ids": [151645, 151643],
+        "model_pad_token_id": 151643,
+        "call_pad_token_id": 151645,
+        "tf32": False,
+        "autocast": False,
+        "device": "cuda:0",
+        "fresh_loads": 2,
+        "max_residual_cuda_bytes": 16777216,
+    }
+    if protocol != expected_protocol:
+        raise GateError("Tool Router merge-remediation protocol drift")
+
+    runs = gate.get("runs")
+    if (
+        not isinstance(runs, list)
+        or len(runs) != 2
+        or [run.get("path") for run in runs]
+        != ["fp32_safe_merged", "fp32_safe_merged"]
+        or [run.get("repeat") for run in runs] != [1, 2]
+        or runs[0].get("token_count") != runs[1].get("token_count")
+        or runs[0].get("token_count") != reference.get("token_count")
+        or runs[0].get("token_count") != control.get("token_count")
+        or runs[0].get("token_ids_sha256")
+        != runs[1].get("token_ids_sha256")
+        or runs[0].get("output_sha256") != runs[1].get("output_sha256")
+        or runs[0].get("token_ids_sha256") != control.get("token_ids_sha256")
+        or runs[0].get("output_sha256") != control.get("output_sha256")
+        or runs[0].get("token_ids_sha256") == reference.get("token_ids_sha256")
+    ):
+        raise GateError("Tool Router merge-remediation run evidence drift")
+    for run in runs:
+        precision = run.get("precision_audit")
+        if not isinstance(precision, dict):
+            raise GateError("Tool Router merge-remediation precision evidence missing")
+        pre = precision.get("pre_merge")
+        post = precision.get("post_merge")
+        generation = precision.get("generation")
+        if (
+            not isinstance(pre, dict)
+            or not isinstance(post, dict)
+            or not isinstance(generation, dict)
+            or pre.get("lora_target_modules") != 112
+            or pre.get("lora_parameter_tensors") != 224
+            or pre.get("adapter_parameters_finite") is not True
+            or pre.get("active_adapters") != ["default"]
+            or pre.get("is_peft_model") is not True
+            or pre.get("input_output_embeddings_tied") is not True
+            or pre.get("attn_implementation") != "sdpa"
+            or pre.get("attention_class") != "Qwen2Attention"
+            or pre.get("output_attentions") is not False
+            or pre.get("hf_device_map") is not None
+            or not _fp32_cuda_inventory(
+                pre.get("base_parameters"),
+                expected_elements=1543714304,
+            )
+            or not _fp32_cuda_inventory(
+                pre.get("adapter_parameters"),
+                expected_elements=4358144,
+            )
+            or not _fp32_cuda_inventory(
+                pre.get("floating_buffers"),
+                expected_elements=64,
+            )
+            or post.get("lora_target_modules") != 0
+            or post.get("lora_parameter_tensors") != 0
+            or post.get("is_peft_model") is not False
+            or post.get("input_output_embeddings_tied") is not True
+            or post.get("attn_implementation") != "sdpa"
+            or post.get("attention_class") != "Qwen2Attention"
+            or post.get("output_attentions") is not False
+            or post.get("hf_device_map") is not None
+            or not _fp32_cuda_inventory(
+                post.get("parameters"),
+                expected_elements=1543714304,
+            )
+            or not _fp32_cuda_inventory(
+                post.get("floating_buffers"),
+                expected_elements=64,
+            )
+            or generation
+            != {
+                "score_dtypes": ["float32"],
+                "all_scores_float32": True,
+                "autocast_enabled": False,
+                "training": False,
+            }
+            or not isinstance(run.get("memory_allocated_before_load_bytes"), int)
+            or run["memory_allocated_before_load_bytes"]
+            > protocol["max_residual_cuda_bytes"]
+            or not isinstance(run.get("memory_allocated_after_release_bytes"), int)
+            or run["memory_allocated_after_release_bytes"]
+            > protocol["max_residual_cuda_bytes"]
+        ):
+            raise GateError("Tool Router merge-remediation FP32 audit drift")
+
+    acceptance = gate.get("acceptance")
+    expected_acceptance = {
+        "upstream_evidence_locked",
+        "frozen_input_reproduced",
+        "candidate_runs_completed",
+        "candidate_result_classified",
+        "candidate_protocol_executed",
+        "source_storage_dtypes_locked",
+        "frozen_bf16_merged_control_compared",
+        "fresh_load_memory_isolated",
+        "source_adapter_unchanged",
+        "source_model_unchanged",
+        "eval_digest_unchanged",
+        "prompt_digest_unchanged",
+    }
+    remediation = gate.get("remediation_gate")
+    next_action = gate.get("locked_next_action")
+    constraints = {
+        "new_data": False,
+        "training": False,
+        "eval_answer_tuning": False,
+        "runtime_integration": False,
+        "full_eval_run": False,
+        "merged_artifact_promotion": False,
+    }
+    if (
+        not isinstance(acceptance, dict)
+        or set(acceptance) != expected_acceptance
+        or not all(value is True for value in acceptance.values())
+        or gate.get("classification") != "deterministic_fp32_merge_output_drift"
+        or not isinstance(remediation, dict)
+        or set(remediation)
+        != {
+            "candidate_repeats_identical",
+            "independent_bf16_reference_token_identity",
+            "independent_bf16_reference_output_identity",
+            "frozen_bf16_merged_token_identity",
+            "frozen_bf16_merged_output_identity",
+            "passed",
+        }
+        or remediation.get("candidate_repeats_identical") is not True
+        or remediation.get("independent_bf16_reference_token_identity") is not False
+        or remediation.get("independent_bf16_reference_output_identity") is not False
+        or remediation.get("frozen_bf16_merged_token_identity") is not True
+        or remediation.get("frozen_bf16_merged_output_identity") is not True
+        or remediation.get("passed") is not False
+        or gate.get("merged_artifact_saved") is not False
+        or gate.get("merged_artifact_allowed") is not False
+        or gate.get("constraints") != constraints
+        or gate.get("runtime_eligible") is not False
+        or gate.get("runtime_eligibility_reason")
+        != "deterministic_fp32_merge_output_drift"
+        or gate.get("offline") is not True
+        or not isinstance(next_action, dict)
+        or next_action.get("gate_id")
+        != "FC-MVP-001-fp32-merge-drift-analysis-v1"
+    ):
+        raise GateError("Tool Router merge-remediation acceptance drift")
+    return gate
+
+
+def _validate_fp32_merge_drift(remediation: dict[str, Any]) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_fp32_merge_drift import analyze_path_tokens
+    from fullcycle_bridge.tool_router_merge_remediation import token_ids_sha256
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    gate = _load_json(TOOL_ROUTER_FP32_MERGE_DRIFT_PATH)
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    training = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    )
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    expected_top_level = {
+        "fp32_merge_drift_analysis_version",
+        "experiment_id",
+        "source_experiment_id",
+        "remediation_evidence_sha256",
+        "stability_evidence_sha256",
+        "numerics_evidence_sha256",
+        "training_lock_sha256",
+        "config_sha256",
+        "adapter_files",
+        "model_weight_sha256",
+        "prompt_sha256",
+        "eval_digest",
+        "example_id",
+        "input_token_count",
+        "input_token_ids_sha256",
+        "storage_audit",
+        "protocol",
+        "frozen_references",
+        "runs",
+        "reproduction",
+        "token_analysis",
+        "selection_score_evidence",
+        "raw_logit_evidence",
+        "classification",
+        "analysis_gate",
+        "remediation_gate",
+        "acceptance",
+        "elapsed_seconds",
+        "peak_gpu_memory_bytes",
+        "merged_artifact_saved",
+        "merged_artifact_allowed",
+        "constraints",
+        "locked_next_action",
+        "runtime_eligible",
+        "runtime_eligibility_reason",
+        "offline",
+    }
+    if (
+        set(gate) != expected_top_level
+        or file_sha256(TOOL_ROUTER_FP32_MERGE_DRIFT_PATH)
+        != "sha256:ae5d1c7ace24c6cfcfed0eca60354cd3dfa9579fa0aea4e1f64c66eb73e41ea3"
+        or gate.get("fp32_merge_drift_analysis_version") != 1
+        or gate.get("experiment_id")
+        != "fc-mvp-001-fp32-merge-drift-analysis-v1"
+        or gate.get("source_experiment_id") != config.get("experiment_id")
+        or gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != directory_artifact_manifest(adapter)
+        or gate.get("adapter_files") != training["final_adapter"]["files"]
+        or gate.get("stability_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_STABILITY_PATH)
+        or gate.get("numerics_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_NUMERICS_PATH)
+        or gate.get("remediation_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_REMEDIATION_PATH)
+        or gate.get("training_lock_sha256")
+        != file_sha256(ROOT / "requirements" / "training.lock")
+        or gate.get("model_weight_sha256")
+        != f"sha256:{config['model']['weight_sha256']}"
+        or gate.get("prompt_sha256")
+        != file_sha256(ROOT / config["prompt"]["path"])
+        or gate.get("eval_digest") != fixture_digest(evaluation)
+        or gate.get("example_id") != "eval-001"
+        or gate.get("input_token_count") != 339
+        or gate.get("input_token_count") != remediation.get("input_token_count")
+        or gate.get("input_token_ids_sha256")
+        != remediation.get("input_token_ids_sha256")
+    ):
+        raise GateError("Tool Router FP32 merge-drift source drift")
+
+    expected_storage = {
+        "base_checkpoint": {
+            "tensors": 338,
+            "elements": 1543714304,
+            "dtype_tensors": {"bfloat16": 338},
+            "dtype_elements": {"bfloat16": 1543714304},
+        },
+        "adapter": {
+            "tensors": 224,
+            "elements": 4358144,
+            "dtype_tensors": {"float32": 224},
+            "dtype_elements": {"float32": 4358144},
+        },
+    }
+    expected_protocol = {
+        "freshness_scope": "fresh_model_load_lifecycle_in_fixed_process",
+        "path_order": ["independent_bf16_adapter", "fp32_safe_merged"],
+        "fresh_loads_per_path": 1,
+        "max_residual_cuda_bytes": 16777216,
+        "paths": {
+            "independent_bf16_adapter": {
+                "checkpoint_storage_dtype": "bfloat16",
+                "base_load_dtype": "bfloat16",
+                "adapter_storage_dtype": "float32",
+                "adapter_runtime_dtype": "float32",
+                "merge": False,
+                "inference_parameter_dtypes": ["bfloat16", "float32"],
+            },
+            "fp32_safe_merged": {
+                "checkpoint_storage_dtype": "bfloat16",
+                "base_load_dtype": "float32",
+                "adapter_storage_dtype": "float32",
+                "adapter_runtime_dtype": "float32",
+                "merge_dtype": "float32",
+                "inference_dtype": "float32",
+                "merge": True,
+                "safe_merge": True,
+                "adapter_names": ["default"],
+            },
+        },
+        "generation": {
+            "attn_implementation": "sdpa",
+            "attention_class": "Qwen2Attention",
+            "attention_dispatch": "ALL_ATTENTION_FUNCTIONS['sdpa']",
+            "output_attentions": False,
+            "do_sample": False,
+            "max_new_tokens": 256,
+            "use_cache": True,
+            "repetition_penalty": 1.1,
+            "model_eos_token_ids": [151645, 151643],
+            "model_pad_token_id": 151643,
+            "call_pad_token_id": 151645,
+            "return_dict_in_generate": True,
+            "output_scores": True,
+            "output_logits": True,
+            "tf32": False,
+            "autocast": False,
+            "device": "cuda:0",
+        },
+        "sdp_kernel_flags": {
+            "flash_sdp_enabled": True,
+            "math_sdp_enabled": True,
+            "mem_efficient_sdp_enabled": True,
+            "cudnn_sdp_enabled": True,
+            "fp16_bf16_reduction_math_sdp_allowed": False,
+        },
+    }
+    if gate.get("storage_audit") != expected_storage:
+        raise GateError("Tool Router FP32 merge-drift storage audit drift")
+    if gate.get("protocol") != expected_protocol:
+        raise GateError("Tool Router FP32 merge-drift protocol drift")
+
+    references = gate.get("frozen_references")
+    remediation_runs = remediation.get("runs")
+    if (
+        not isinstance(references, dict)
+        or set(references) != {"independent_bf16_adapter", "fp32_safe_merged"}
+        or references.get("independent_bf16_adapter")
+        != remediation.get("reference")
+        or not isinstance(remediation_runs, list)
+        or len(remediation_runs) != 2
+        or references.get("fp32_safe_merged")
+        != {
+            "path": "fp32_safe_merged",
+            "source_experiment_id": remediation.get("experiment_id"),
+            "fresh_runs": 2,
+            "token_count": remediation_runs[0].get("token_count"),
+            "token_ids_sha256": remediation_runs[0].get("token_ids_sha256"),
+            "output_sha256": remediation_runs[0].get("output_sha256"),
+        }
+    ):
+        raise GateError("Tool Router FP32 merge-drift frozen references drift")
+
+    runs = gate.get("runs")
+    expected_run_keys = {
+        "path",
+        "fresh_load",
+        "generated_token_ids",
+        "token_count",
+        "token_ids_sha256",
+        "output_sha256",
+        "precision_audit",
+        "generation_trace",
+        "path_protocol_passed",
+        "peak_gpu_memory_bytes",
+        "memory_allocated_before_load_bytes",
+        "memory_allocated_after_release_bytes",
+    }
+    if (
+        not isinstance(runs, list)
+        or len(runs) != 2
+        or any(not isinstance(run, dict) for run in runs)
+        or any(set(run) != expected_run_keys for run in runs)
+        or [run.get("path") for run in runs]
+        != ["independent_bf16_adapter", "fp32_safe_merged"]
+        or [run.get("fresh_load") for run in runs] != [1, 1]
+    ):
+        raise GateError("Tool Router FP32 merge-drift runs are invalid")
+    for run in runs:
+        path_name = run["path"]
+        token_ids = run.get("generated_token_ids")
+        reference = references[path_name]
+        trace = run.get("generation_trace")
+        if (
+            not isinstance(token_ids, list)
+            or len(token_ids) != 48
+            or any(
+                not isinstance(token_id, int) or isinstance(token_id, bool)
+                for token_id in token_ids
+            )
+            or run.get("token_count") != len(token_ids)
+            or run.get("token_ids_sha256") != token_ids_sha256(token_ids)
+            or run.get("token_ids_sha256") != reference.get("token_ids_sha256")
+            or run.get("output_sha256") != reference.get("output_sha256")
+            or run.get("path_protocol_passed") is not True
+            or not isinstance(run.get("peak_gpu_memory_bytes"), int)
+            or not isinstance(run.get("memory_allocated_before_load_bytes"), int)
+            or not isinstance(run.get("memory_allocated_after_release_bytes"), int)
+            or run["memory_allocated_before_load_bytes"]
+            > expected_protocol["max_residual_cuda_bytes"]
+            or run["memory_allocated_after_release_bytes"]
+            > expected_protocol["max_residual_cuda_bytes"]
+            or not isinstance(trace, dict)
+            or set(trace)
+            != {
+                "step_count",
+                "vocabulary_size",
+                "cache_returned",
+                "scores",
+                "raw_logits",
+            }
+            or trace.get("step_count") != len(token_ids)
+            or trace.get("vocabulary_size") != 151936
+            or trace.get("cache_returned") is not True
+        ):
+            raise GateError("Tool Router FP32 merge-drift run evidence drift")
+        for trace_key, evidence_key in (
+            ("scores", "selection_score_evidence"),
+            ("raw_logits", "raw_logit_evidence"),
+        ):
+            summary = trace.get(trace_key)
+            evidence = gate.get(evidence_key)
+            expected_summary_keys = {
+                "native_dtypes",
+                "shape_per_step",
+                "comparison_dtype",
+                "all_finite",
+                "trace_sha256",
+                "divergent_step_index",
+                "divergent_step_comparison_vector_sha256",
+            }
+            if (
+                not isinstance(summary, dict)
+                or set(summary) != expected_summary_keys
+                or summary.get("native_dtypes") != ["float32"]
+                or summary.get("shape_per_step") != [1, 151936]
+                or summary.get("comparison_dtype") != "float32"
+                or summary.get("all_finite") is not True
+                or not _is_canonical_sha256(summary.get("trace_sha256"))
+                or summary.get("divergent_step_index") != 45
+                or not isinstance(evidence, dict)
+                or summary.get("divergent_step_comparison_vector_sha256")
+                != evidence.get("paths", {}).get(path_name, {}).get(
+                    "comparison_vector_sha256"
+                )
+            ):
+                raise GateError("Tool Router FP32 merge-drift trace linkage drift")
+
+    _validate_fp32_drift_precision(runs)
+    reproduction = gate.get("reproduction")
+    if reproduction != {
+        "independent_bf16_token_identity": True,
+        "independent_bf16_output_identity": True,
+        "fp32_candidate_token_identity": True,
+        "fp32_candidate_output_identity": True,
+    }:
+        raise GateError("Tool Router FP32 merge-drift reproduction drift")
+
+    token_analysis = gate.get("token_analysis")
+    recomputed = analyze_path_tokens(
+        runs[0]["generated_token_ids"],
+        runs[1]["generated_token_ids"],
+    )
+    if (
+        not isinstance(token_analysis, dict)
+        or set(token_analysis) != set(recomputed) | {
+            "independent_token_text",
+            "candidate_token_text",
+        }
+        or any(token_analysis.get(key) != value for key, value in recomputed.items())
+        or token_analysis.get("first_divergent_token_index") != 45
+        or token_analysis.get("independent_token_id") != 1866
+        or token_analysis.get("candidate_token_id") != 3849
+        or token_analysis.get("independent_token_text") != "true"
+        or token_analysis.get("candidate_token_text") != "false"
+    ):
+        raise GateError("Tool Router FP32 merge-drift token analysis drift")
+
+    _validate_fp32_step_evidence(
+        gate,
+        runs,
+        evidence_key="selection_score_evidence",
+        source="generated.scores",
+        semantics="processed_prediction_scores_after_logits_processors",
+        value_key="score",
+        expected_values={
+            "independent_bf16_adapter": [
+                34.54545211791992,
+                34.09090805053711,
+                25.75,
+                21.93181800842285,
+                21.5,
+            ],
+            "fp32_safe_merged": [
+                35.61100387573242,
+                33.169429779052734,
+                24.49706268310547,
+                23.684528350830078,
+                21.257160186767578,
+            ],
+        },
+        expected_top_ids={
+            "independent_bf16_adapter": [1866, 3849, 830, 895, 2641],
+            "fp32_safe_merged": [3849, 1866, 830, 895, 2641],
+        },
+        expected_delta={
+            "vocabulary_elements": 151936,
+            "nonzero_elements": 151936,
+            "max_abs_delta": 1.9437971115112305,
+            "mean_abs_delta": 0.2275839000940323,
+            "root_mean_square_delta": 0.29325070977211,
+        },
+    )
+    _validate_fp32_step_evidence(
+        gate,
+        runs,
+        evidence_key="raw_logit_evidence",
+        source="generated.logits",
+        semantics="unprocessed_lm_head_prediction_scores",
+        value_key="raw_logit",
+        expected_values={
+            "independent_bf16_adapter": [38.0, 37.5, 25.75, 24.125, 21.5],
+            "fp32_safe_merged": [
+                39.17210388183594,
+                36.48637390136719,
+                26.052982330322266,
+                24.49706268310547,
+                21.257160186767578,
+            ],
+        },
+        expected_top_ids={
+            "independent_bf16_adapter": [1866, 3849, 830, 895, 2641],
+            "fp32_safe_merged": [3849, 1866, 895, 830, 2641],
+        },
+        expected_delta={
+            "vocabulary_elements": 151936,
+            "nonzero_elements": 151936,
+            "max_abs_delta": 1.9437971115112305,
+            "mean_abs_delta": 0.22757971286773682,
+            "root_mean_square_delta": 0.2932598292827606,
+        },
+    )
+
+    expected_classification = (
+        "deterministic_bf16_attached_vs_fp32_merged_raw_logit_boundary_flip"
+    )
+    analysis_gate = gate.get("analysis_gate")
+    remediation_gate = gate.get("remediation_gate")
+    acceptance = gate.get("acceptance")
+    expected_acceptance = {
+        "upstream_evidence_locked",
+        "frozen_input_reproduced",
+        "independent_bf16_reference_reproduced",
+        "fp32_candidate_reproduced",
+        "first_divergent_token_located",
+        "exact_processed_scores_captured",
+        "exact_raw_logits_captured",
+        "generation_score_alignment_verified",
+        "path_protocols_executed",
+        "source_storage_dtypes_locked",
+        "fresh_load_memory_isolated",
+        "source_adapter_unchanged",
+        "source_model_unchanged",
+        "eval_digest_unchanged",
+        "prompt_digest_unchanged",
+    }
+    constraints = {
+        "failed_candidate_change": False,
+        "locked_path_dtype_change": False,
+        "locked_path_backend_change": False,
+        "locked_path_decoding_change": False,
+        "new_data": False,
+        "training": False,
+        "eval_answer_tuning": False,
+        "runtime_integration": False,
+        "full_eval_run": False,
+        "merged_artifact_promotion": False,
+    }
+    next_action = gate.get("locked_next_action")
+    if (
+        gate.get("classification") != expected_classification
+        or analysis_gate
+        != {
+            "frozen_paths_reproduced": True,
+            "first_divergent_token_located": True,
+            "exact_cached_generate_step_captured": True,
+            "processed_score_argmax_matches_generated_token": True,
+            "raw_logits_captured": True,
+            "passed": True,
+        }
+        or remediation_gate
+        != {
+            "candidate_failure_reproduced": True,
+            "independent_bf16_reference_identity": False,
+            "passed": False,
+        }
+        or not isinstance(acceptance, dict)
+        or set(acceptance) != expected_acceptance
+        or not all(value is True for value in acceptance.values())
+        or gate.get("peak_gpu_memory_bytes")
+        != max(run["peak_gpu_memory_bytes"] for run in runs)
+        or not isinstance(gate.get("elapsed_seconds"), (int, float))
+        or isinstance(gate.get("elapsed_seconds"), bool)
+        or gate["elapsed_seconds"] <= 0
+        or gate.get("merged_artifact_saved") is not False
+        or gate.get("merged_artifact_allowed") is not False
+        or gate.get("constraints") != constraints
+        or not isinstance(next_action, dict)
+        or set(next_action) != {"gate_id", "action", "acceptance", "constraints"}
+        or next_action.get("gate_id")
+        != "FC-MVP-001-fp32-attached-merge-isolation-v1"
+        or next_action.get("acceptance")
+        != {
+            "attached_fp32_repeat_stable": True,
+            "fp32_candidate_reproduced": True,
+            "same_dtype_exact_step_compared": True,
+            "same_dtype_attached_vs_merged_effect_classified": True,
+            "source_inputs_unchanged": True,
+        }
+        or next_action.get("constraints") != constraints
+        or gate.get("runtime_eligible") is not False
+        or gate.get("runtime_eligibility_reason") != expected_classification
+        or gate.get("offline") is not True
+    ):
+        raise GateError("Tool Router FP32 merge-drift acceptance drift")
+    return gate
+
+
+def _validate_fp32_drift_precision(runs: list[dict[str, Any]]) -> None:
+    expected_generation = {
+        "score_dtypes": ["float32"],
+        "all_scores_float32": True,
+        "raw_logit_dtypes": ["float32"],
+        "all_raw_logits_float32": True,
+        "autocast_enabled": False,
+        "training": False,
+    }
+    independent = runs[0].get("precision_audit")
+    if (
+        not isinstance(independent, dict)
+        or independent.get("base_parameters")
+        != _expected_cuda_inventory("bfloat16", 1543714304, 338)
+        or independent.get("adapter_parameters")
+        != _expected_cuda_inventory("float32", 4358144, 224)
+        or independent.get("floating_buffers")
+        != _expected_cuda_inventory("float32", 64, 1)
+        or independent.get("lora_target_modules") != 112
+        or independent.get("lora_parameter_tensors") != 224
+        or independent.get("adapter_parameters_finite") is not True
+        or independent.get("active_adapters") != ["default"]
+        or independent.get("is_peft_model") is not True
+        or independent.get("input_output_embeddings_tied") is not True
+        or independent.get("attn_implementation") != "sdpa"
+        or independent.get("attention_class") != "Qwen2Attention"
+        or independent.get("output_attentions") is not False
+        or independent.get("hf_device_map") is not None
+        or independent.get("generation") != expected_generation
+    ):
+        raise GateError("Tool Router independent BF16 precision audit drift")
+
+    candidate = runs[1].get("precision_audit")
+    if not isinstance(candidate, dict):
+        raise GateError("Tool Router FP32 candidate precision audit missing")
+    pre = candidate.get("pre_merge")
+    post = candidate.get("post_merge")
+    if (
+        not isinstance(pre, dict)
+        or pre.get("base_parameters")
+        != _expected_cuda_inventory("float32", 1543714304, 338)
+        or pre.get("adapter_parameters")
+        != _expected_cuda_inventory("float32", 4358144, 224)
+        or pre.get("floating_buffers")
+        != _expected_cuda_inventory("float32", 64, 1)
+        or pre.get("lora_target_modules") != 112
+        or pre.get("lora_parameter_tensors") != 224
+        or pre.get("adapter_parameters_finite") is not True
+        or pre.get("active_adapters") != ["default"]
+        or pre.get("is_peft_model") is not True
+        or pre.get("input_output_embeddings_tied") is not True
+        or pre.get("attn_implementation") != "sdpa"
+        or pre.get("attention_class") != "Qwen2Attention"
+        or pre.get("output_attentions") is not False
+        or pre.get("hf_device_map") is not None
+        or not isinstance(post, dict)
+        or post.get("parameters")
+        != _expected_cuda_inventory("float32", 1543714304, 338)
+        or post.get("floating_buffers")
+        != _expected_cuda_inventory("float32", 64, 1)
+        or post.get("lora_target_modules") != 0
+        or post.get("lora_parameter_tensors") != 0
+        or post.get("is_peft_model") is not False
+        or post.get("input_output_embeddings_tied") is not True
+        or post.get("attn_implementation") != "sdpa"
+        or post.get("attention_class") != "Qwen2Attention"
+        or post.get("output_attentions") is not False
+        or post.get("hf_device_map") is not None
+        or candidate.get("generation") != expected_generation
+    ):
+        raise GateError("Tool Router FP32 candidate precision audit drift")
+
+
+def _validate_fp32_step_evidence(
+    gate: dict[str, Any],
+    runs: list[dict[str, Any]],
+    *,
+    evidence_key: str,
+    source: str,
+    semantics: str,
+    value_key: str,
+    expected_values: dict[str, list[float]],
+    expected_top_ids: dict[str, list[int]],
+    expected_delta: dict[str, Any],
+) -> None:
+    evidence = gate.get(evidence_key)
+    expected_keys = {
+        "step_index",
+        "common_prefix_generated_tokens",
+        "source",
+        "semantics",
+        "comparison_dtype",
+        "top_k",
+        "paths",
+        "delta",
+    }
+    if (
+        not isinstance(evidence, dict)
+        or set(evidence) != expected_keys
+        or evidence.get("step_index") != 45
+        or evidence.get("common_prefix_generated_tokens") != 45
+        or evidence.get("source") != source
+        or evidence.get("semantics") != semantics
+        or evidence.get("comparison_dtype") != "float32"
+        or evidence.get("top_k") != 5
+        or evidence.get("delta") != expected_delta
+        or set(evidence.get("paths", {}))
+        != {"independent_bf16_adapter", "fp32_safe_merged"}
+    ):
+        raise GateError(f"Tool Router FP32 merge-drift {evidence_key} drift")
+    paths = evidence["paths"]
+    top_values_key = f"top_{value_key}s"
+    emitted_value_key = f"emitted_token_{value_key}"
+    expected_path_keys = {
+        "top_token_ids",
+        "top_token_texts",
+        top_values_key,
+        "top_margin",
+        "emitted_token_id",
+        "emitted_token_text",
+        emitted_value_key,
+        "compared_tokens",
+        "comparison_vector_sha256",
+    }
+    for run in runs:
+        path_name = run["path"]
+        path = paths.get(path_name)
+        top_ids = expected_top_ids[path_name]
+        top_values = expected_values[path_name]
+        if (
+            not isinstance(path, dict)
+            or set(path) != expected_path_keys
+            or path.get("top_token_ids") != top_ids
+            or path.get(top_values_key) != top_values
+            or path.get("top_margin") != top_values[0] - top_values[1]
+            or path.get("emitted_token_id") != run["generated_token_ids"][45]
+            or path.get("emitted_token_id") != top_ids[0]
+            or path.get(emitted_value_key) != top_values[0]
+            or not _is_canonical_sha256(path.get("comparison_vector_sha256"))
+            or run["generation_trace"][
+                "scores" if source == "generated.scores" else "raw_logits"
+            ]["divergent_step_comparison_vector_sha256"]
+            != path.get("comparison_vector_sha256")
+        ):
+            raise GateError(
+                f"Tool Router FP32 merge-drift {evidence_key} path drift"
+            )
+        compared = path.get("compared_tokens")
+        if (
+            not isinstance(compared, list)
+            or [item.get("token_id") for item in compared] != [1866, 3849]
+        ):
+            raise GateError(
+                f"Tool Router FP32 merge-drift {evidence_key} token drift"
+            )
+        for item in compared:
+            token_id = item["token_id"]
+            position = top_ids.index(token_id)
+            if (
+                item.get(value_key) != top_values[position]
+                or item.get("rank") != position + 1
+            ):
+                raise GateError(
+                    f"Tool Router FP32 merge-drift {evidence_key} rank drift"
+                )
+
+
+def _expected_cuda_inventory(
+    dtype: str,
+    elements: int,
+    tensors: int,
+) -> dict[str, Any]:
+    return {
+        "floating_tensors": tensors,
+        "floating_elements": elements,
+        "dtypes": {dtype: elements},
+        "devices": {"cuda:0": elements},
+    }
+
+
+def _is_canonical_sha256(value: object) -> bool:
+    if not isinstance(value, str) or not value.startswith("sha256:"):
+        return False
+    digest = value.removeprefix("sha256:")
+    return len(digest) == 64 and all(
+        character in "0123456789abcdef" for character in digest
+    )
+
+
+def _fp32_cuda_inventory(value: object, *, expected_elements: int) -> bool:
+    return (
+        isinstance(value, dict)
+        and isinstance(value.get("floating_tensors"), int)
+        and value["floating_tensors"] > 0
+        and value.get("floating_elements") == expected_elements
+        and value.get("dtypes") == {"float32": expected_elements}
+        and value.get("devices") == {"cuda:0": expected_elements}
+    )
 
 
 def _run_tests() -> int:

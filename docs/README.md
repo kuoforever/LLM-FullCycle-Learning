@@ -34,6 +34,8 @@ English companion documents.
 | Decision compilation v1 | [FC-MVP-001 decision compilation](FC-MVP-001-decision-compilation-v1.md) | English source |
 | BF16 merge stability v1 | [FC-MVP-001 BF16 merge stability](FC-MVP-001-bf16-merge-stability-v1.md) | English source |
 | BF16 merge numerics v1 | [FC-MVP-001 BF16 merge numerics](FC-MVP-001-bf16-merge-numerics-v1.md) | English source |
+| BF16 merge remediation v1 | [FC-MVP-001 BF16 merge remediation](FC-MVP-001-bf16-merge-remediation-v1.md) | English source |
+| FP32 merge drift analysis v1 | [FC-MVP-001 FP32 merge drift analysis](FC-MVP-001-fp32-merge-drift-analysis-v1.md) | English source |
 
 ## Development references
 
