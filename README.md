@@ -224,6 +224,20 @@ it does not isolate a root cause. The analysis gate passes, the remediation
 gate remains failed, and Runtime eligibility remains false. See
 [FP32 merge drift analysis](docs/FC-MVP-001-fp32-merge-drift-analysis-v1.md).
 
+### FP32 attached/merge isolation v1
+
+Two fresh FP32 attached-Adapter runs are exactly repeat-stable across tokens,
+decoded output, all processed-score vectors, all raw-logit vectors, and the
+precision audit. The unchanged FP32 safe-merged path reproduces its frozen
+evidence. All three runs emit the same 48 tokens and output, so there is no
+same-dtype token boundary. At the pre-registered BF16 context step 45,
+attached and merged FP32 retain the same `false` argmax but differ in 150,968
+of 151,936 score and raw-logit elements, with maximum absolute delta
+`0.0001735687255859375`. This isolates a small deterministic execution-form
+numerical effect without proving a PEFT bug or a token-level remediation.
+The isolation gate passes; remediation and Runtime eligibility remain false.
+See [FP32 attached/merge isolation](docs/FC-MVP-001-fp32-attached-merge-isolation-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -247,11 +261,11 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-fp32-attached-merge-isolation-v1`. Add only a
-fresh independent FP32 attached-Adapter control on the same frozen `eval-001`,
-establish its two-run stability, reproduce the unchanged FP32 safe-merged
-candidate, and compare the two same-dtype paths at the exact cached generation
-step. The failed candidate, existing BF16 controls, prompt, seed, SDPA dispatch,
-generation semantics, Adapter, and eval digest must not change. No new data,
-training, eval-answer tuning, Runtime integration, full-eval run, or
-merged-artifact promotion is allowed.
+The current work is `FC-MVP-001-fp32-attached-merge-numerics-v1`. Reproduce
+the repeat-stable FP32 attached path and unchanged FP32 safe-merged path at the
+frozen comparison step index `45`, then locate the first module-level
+numerical divergence in execution order and quantify its operation boundary.
+There is no same-dtype token boundary to claim. The failed candidate, BF16
+context, prompt, seed, SDPA dispatch, generation semantics, Adapter, and eval
+digest must not change. No new data, training, eval-answer tuning, Runtime
+integration, full-eval run, or merged-artifact promotion is allowed.

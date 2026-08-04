@@ -23,34 +23,63 @@ safe-merged BF16 token sequence instead of the independent BF16 Adapter
 reference. FP32 merge drift analysis now reproduces both frozen paths and
 confirms that their first generated-token boundary contains a raw-logit argmax
 flip, not merely a logits-processor flip. Because that comparison couples
-compute dtype with attached-versus-merged execution, the Adapter remains
-Runtime ineligible until a same-dtype FP32 control isolates those factors.
+compute dtype with attached-versus-merged execution, FP32 attached/merge
+isolation adds the missing same-dtype control. Two fresh attached runs are
+exactly repeat-stable, the unchanged merged path reproduces, and both forms
+emit identical tokens and output while retaining small deterministic numerical
+trace drift. The Adapter remains Runtime ineligible; the next gate must locate
+the first module-level FP32 execution-form divergence without inventing a
+same-dtype token boundary.
 
 ## Single active objective
 
-Complete `FC-MVP-001-fp32-attached-merge-isolation-v1`:
+Complete `FC-MVP-001-fp32-attached-merge-numerics-v1`:
 
 ```text
-fresh independent FP32 attached Adapter x2 + frozen eval-001
-        -> establish repeat stability -> exact cached scores/raw logits
-fresh locked FP32 safe-merged candidate + frozen eval-001
-        -> reproduce candidate -> same-dtype attached/merged comparison
-frozen BF16 attached/merged token controls
-        -> contextualize without changing either frozen path
+repeat-stable FP32 attached Adapter + frozen eval-001/index 45
+        -> reproduce locked path -> capture execution-order module outputs
+unchanged FP32 safe-merged candidate + same frozen input/index 45
+        -> reproduce locked path -> capture paired module outputs
+first unequal paired module
+        -> quantify operation-order boundary -> freeze narrow numerics evidence
 ```
 
-Add only one new control: materialize the same pinned BF16 checkpoint values as
-FP32, load the frozen FP32 Adapter with `autocast_adapter_dtype=False`, retain
-the Adapter attached without merge, and run the unchanged greedy SDPA
-generation on exact `eval-001`. Require two fresh attached-FP32 runs to be
-repeat-stable, one fresh locked FP32 safe-merged run to reproduce its frozen
-token/output digests, and compare tokens plus processed scores/raw logits from
-the same cached `generate(use_cache=True)` steps. Keep the frozen BF16 paths as
-token-level context only. Classify the same-dtype attached-versus-merged effect
-without claiming a shared low-level CUDA kernel. Do not alter an existing path,
-change backend/decoding, add data, train, tune against eval answers, run the
-full eval, connect Runtime/Provider/MCP/Desktop, or save/promote a merged
-artifact.
+Reproduce the locked FP32 attached and FP32 safe-merged paths at exact
+`eval-001` comparison step index `45`. Capture comparable module outputs in
+execution order, locate the first numerical divergence, and quantify the
+operation-order boundary while preserving both full-path token/output and
+comparison-step evidence. The gate must not claim a same-dtype token boundary,
+because the frozen paths have token identity. Keep BF16 evidence as context
+only. Do not alter either FP32 path, change backend/decoding, add data, train,
+tune against eval answers, run the full eval, connect
+Runtime/Provider/MCP/Desktop, or save/promote a merged artifact.
+
+The `FC-MVP-001-fp32-attached-merge-isolation-v1` gate completed locally on
+2026-08-04. Two fresh independent FP32 attached-Adapter loads are exactly
+repeat-stable across 48 generated tokens, decoded output, all processed-score
+and raw-logit vectors, precision audit, and frozen-step vectors. One fresh
+unchanged FP32 safe-merged load reproduces its frozen token/output/full-trace
+and index-45 vector digests. All three runs share token digest
+`sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca`
+and output digest
+`sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca`,
+so there is no same-dtype token boundary. At the pre-registered BF16 context
+step `45`, both FP32 forms emit `false`, but `150,968/151,936` processed-score
+and raw-logit elements differ. Both have maximum absolute delta
+`0.0001735687255859375`; processed-score mean/RMS deltas are
+`0.00002052841409749817`/`0.000026467831048648804`, and raw-logit mean/RMS
+deltas are `0.00002052839772659354`/`0.000026469620934221894`. The
+classification is
+`deterministic_fp32_attached_vs_merged_numerical_drift_without_token_drift`,
+`isolation_gate.passed=true`, `remediation_gate.passed=false`, and
+`runtime_eligible=false`. The run took `29.405898299999535` seconds and peaked
+at `6,285,651,968` allocated GPU bytes. The gate record SHA-256 is
+`37d8d35bc3802a76bd7e0ab484f3b86e01b03852212ae9aaf3d9cec318fb5e26`.
+No BF16 GPU path was rerun, and no merged artifact was saved or permitted. The
+unified offline gate passes 106 tests on Python 3.11.15, 3.12.12, and 3.13.7;
+Ruff passes the repository and mypy reports no issues in 37 source/script
+files.
+[Evidence](docs/FC-MVP-001-fp32-attached-merge-isolation-v1.md).
 
 The `FC-MVP-001-fp32-merge-drift-analysis-v1` gate completed locally on
 2026-08-04. One fresh independent BF16 attached-Adapter path and one fresh
@@ -282,7 +311,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; FP32 remediation failure frozen, exact FP32/BF16 logit drift next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; same-dtype FP32 token identity and numerical drift frozen, first module divergence next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
