@@ -42,6 +42,9 @@ TOOL_ROUTER_COMPILED_PREDICTIONS_PATH = (
 TOOL_ROUTER_COMPILED_REPORT_PATH = (
     ROOT / "baseline" / "tool-router-lora-sft-v2-compiled-report.json"
 )
+TOOL_ROUTER_MERGE_STABILITY_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-bf16-merge-stability-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -87,6 +90,7 @@ def main() -> int:
         failure_classification,
         decision_compilation,
     ) = _validate_fixed_outputs()
+    merge_stability = _validate_merge_stability()
     tests_run = _run_tests()
 
     result = {
@@ -154,7 +158,14 @@ def main() -> int:
         "tool_router_compiled_false_refusals": decision_compilation["metrics"][
             "false_refusals"
         ],
-        "tool_router_next_gate": decision_compilation["locked_next_action"][
+        "tool_router_decision_compilation_next_gate": decision_compilation[
+            "locked_next_action"
+        ]["gate_id"],
+        "tool_router_merge_classification": merge_stability["classification"],
+        "tool_router_merge_first_divergent_token_index": merge_stability[
+            "token_analysis"
+        ]["first_divergent_token_index"],
+        "tool_router_next_gate": merge_stability["locked_next_action"][
             "gate_id"
         ],
     }
@@ -561,6 +572,62 @@ def _validate_named_hashes(artifacts: object) -> None:
         actual = "sha256:" + hashlib.sha256(path.read_bytes()).hexdigest()
         if actual != expected:
             raise GateError(f"artifact digest mismatch: {relative}")
+
+
+def _validate_merge_stability() -> dict[str, Any]:
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    gate = _load_json(TOOL_ROUTER_MERGE_STABILITY_PATH)
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    training = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    )
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    runs = gate.get("runs")
+    if (
+        gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != directory_artifact_manifest(adapter)
+        or gate.get("adapter_files") != training["final_adapter"]["files"]
+        or gate.get("eval_digest") != fixture_digest(evaluation)
+        or gate.get("prompt_sha256")
+        != file_sha256(ROOT / config["prompt"]["path"])
+    ):
+        raise GateError("Tool Router merge-stability source drift")
+    if not isinstance(runs, list) or len(runs) != 4:
+        raise GateError("Tool Router merge-stability runs are invalid")
+    token_digests = [run.get("token_ids_sha256") for run in runs]
+    if not (
+        token_digests[0] == token_digests[1]
+        and token_digests[2] == token_digests[3]
+        and token_digests[0] != token_digests[2]
+    ):
+        raise GateError("Tool Router merge-stability repeat evidence drift")
+    acceptance = gate.get("acceptance")
+    token_analysis = gate.get("token_analysis")
+    locked_next_action = gate.get("locked_next_action")
+    if (
+        not isinstance(acceptance, dict)
+        or not acceptance
+        or not all(value is True for value in acceptance.values())
+        or not isinstance(token_analysis, dict)
+        or token_analysis.get("first_divergent_token_index") != 45
+        or gate.get("classification")
+        != "deterministic_bf16_merge_logit_boundary_flip"
+        or gate.get("merged_artifact_allowed") is not False
+        or gate.get("merged_artifact_saved") is not False
+        or gate.get("runtime_eligible") is not False
+        or not isinstance(locked_next_action, dict)
+        or locked_next_action.get("gate_id")
+        != "FC-MVP-001-bf16-merge-numerics-v1"
+    ):
+        raise GateError("Tool Router merge-stability acceptance drift")
+    return gate
 
 
 def _run_tests() -> int:

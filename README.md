@@ -177,11 +177,22 @@ stays 0.95, and dangerous action candidates remain zero. Raw model predictions
 are unchanged and the merged adapter remains prohibited. See
 [decision compilation](docs/FC-MVP-001-decision-compilation-v1.md).
 
+### BF16 merge stability v1
+
+Two fresh independent Adapter loads and two fresh safe-merged BF16 loads are
+each token-identical within their own path on frozen `eval-001`. The paths
+diverge deterministically at generated token index 45: the independent path
+selects `true`, while the merged path selects `false`. Logits captured from the
+exact cached generation step confirm an argmax boundary flip. The merged form
+remains prohibited and Runtime eligibility remains false. See
+[BF16 merge stability](docs/FC-MVP-001-bf16-merge-stability-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
-base model, LoRA rank 16 over Q/K/V/O projections, 100 optimizer steps, and a
-20-case evaluation set built as ten categories with two cases each. These
+base model, LoRA rank 16 over Q/K/V/O projections, a 100-step v1 run or
+66-step v2 run, and a 20-case evaluation set built as ten categories with two
+cases each. These
 results are reproducible and were produced under frozen data and evaluation
 contracts, but at this sample size they indicate direction only and do not
 establish generalization. They are not a claim about large-scale pretraining,
@@ -199,8 +210,8 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-bf16-merge-stability-v1`. Reproduce `eval-001`
-from fresh independent and safe-merged BF16 loads, establish repeat stability
-for both paths, and locate the first token or logit divergence. No new data,
-training, eval-answer tuning, Runtime integration, or merged-artifact promotion
-is allowed in this gate.
+The current work is `FC-MVP-001-bf16-merge-numerics-v1`. On the frozen
+`eval-001` common prefix, locate the earliest module-level divergence between
+independent and merged BF16 execution and quantify Adapter-update versus
+safe-merged-weight rounding. No new data, training, eval-answer tuning, Runtime
+integration, full-eval run, or merged-artifact promotion is allowed.

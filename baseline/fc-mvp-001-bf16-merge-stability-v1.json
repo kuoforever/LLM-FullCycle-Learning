@@ -1,0 +1,154 @@
+
+{
+  "merge_stability_version": 1,
+  "experiment_id": "fc-mvp-001-bf16-merge-stability-v1",
+  "source_experiment_id": "fc-mvp-001-lora-sft-v2",
+  "config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "adapter_files": [
+    {
+      "path": "adapter_config.json",
+      "bytes": 793,
+      "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+    },
+    {
+      "path": "adapter_model.safetensors",
+      "bytes": 17462432,
+      "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5107,
+      "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+    }
+  ],
+  "model_weight_sha256": "sha256:dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee",
+  "prompt_sha256": "sha256:4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97",
+  "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "example_id": "eval-001",
+  "input_token_count": 339,
+  "input_token_ids_sha256": "sha256:3bd24b9f36966889e543dda2aea25f5c0f29db40a8fccf1453d0657a06a4429f",
+  "repeats_per_path": 2,
+  "environment": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "peft": "0.14.0",
+    "accelerate": "1.3.0",
+    "huggingface_hub": "0.29.3",
+    "safetensors": "0.5.3",
+    "tokenizers": "0.21.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "gpu_vram_bytes": 17170956288,
+    "compute_capability": "8.9",
+    "torch_dtype": "bfloat16",
+    "attn_implementation": "sdpa",
+    "do_sample": false,
+    "tf32": false
+  },
+  "runs": [
+    {
+      "path": "independent",
+      "repeat": 1,
+      "token_count": 48,
+      "token_ids_sha256": "sha256:e23b3f5ed71ec57f44ccacfadf8d79abfb21be622f13cae83cf14274cc54e173",
+      "output_sha256": "sha256:b3bef0f22aad858ad94275466af0cc082dbb7fe42a7814320aa4a8995dff0bc5"
+    },
+    {
+      "path": "independent",
+      "repeat": 2,
+      "token_count": 48,
+      "token_ids_sha256": "sha256:e23b3f5ed71ec57f44ccacfadf8d79abfb21be622f13cae83cf14274cc54e173",
+      "output_sha256": "sha256:b3bef0f22aad858ad94275466af0cc082dbb7fe42a7814320aa4a8995dff0bc5"
+    },
+    {
+      "path": "merged",
+      "repeat": 1,
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca"
+    },
+    {
+      "path": "merged",
+      "repeat": 2,
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca"
+    }
+  ],
+  "token_analysis": {
+    "independent_repeats_identical": true,
+    "merged_repeats_identical": true,
+    "cross_path_identical": false,
+    "first_divergent_token_index": 45,
+    "independent_token_id": 1866,
+    "merged_token_id": 3849,
+    "classification": "deterministic_cross_path_token_drift"
+  },
+  "logit_evidence": {
+    "common_prefix_generated_tokens": 45,
+    "score_source": "exact_generate_step_with_use_cache_true",
+    "independent_top_token_ids": [
+      1866,
+      3849
+    ],
+    "independent_top_scores": [
+      34.54545211791992,
+      34.09090805053711
+    ],
+    "merged_top_token_ids": [
+      3849,
+      1866
+    ],
+    "merged_top_scores": [
+      36.59090805053711,
+      32.5
+    ],
+    "independent_divergent_token_text": "true",
+    "merged_divergent_token_text": "false",
+    "independent_margin": 0.4545440673828125,
+    "merged_margin": 4.090908050537109,
+    "max_abs_logit_delta": 3.0,
+    "mean_abs_logit_delta": 0.3340962529182434
+  },
+  "classification": "deterministic_bf16_merge_logit_boundary_flip",
+  "acceptance": {
+    "independent_repeats_identical": true,
+    "merged_repeats_identical": true,
+    "divergence_classified": true,
+    "logit_argmax_matches_generated_token": true,
+    "source_adapter_unchanged": true,
+    "eval_digest_unchanged": true
+  },
+  "elapsed_seconds": 13.611415299994405,
+  "peak_gpu_memory_bytes": 6246685696,
+  "merged_artifact_saved": false,
+  "merged_artifact_allowed": false,
+  "constraints": {
+    "new_data": false,
+    "training": false,
+    "eval_answer_tuning": false,
+    "runtime_integration": false,
+    "full_eval_run": false
+  },
+  "locked_next_action": {
+    "gate_id": "FC-MVP-001-bf16-merge-numerics-v1",
+    "action": "on the frozen eval-001 common prefix, locate the earliest independent-versus-merged BF16 module divergence and quantify adapter-update versus safe-merged-weight rounding",
+    "acceptance": {
+      "earliest_module_divergence_located": true,
+      "merge_rounding_quantified": true,
+      "source_adapter_unchanged": true,
+      "eval_digest_unchanged": true
+    },
+    "constraints": {
+      "new_data": false,
+      "training": false,
+      "eval_answer_tuning": false,
+      "runtime_integration": false,
+      "merged_artifact_promotion": false
+    }
+  },
+  "runtime_eligible": false,
+  "runtime_eligibility_reason": "deterministic_bf16_merge_logit_boundary_flip",
+  "offline": true
+}

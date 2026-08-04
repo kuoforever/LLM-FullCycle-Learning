@@ -1,6 +1,6 @@
 # Project status
 
-> Updated: 2026-08-03.
+> Updated: 2026-08-04.
 > This is the operational entry point for a new Reliable Agent Model Lifecycle
 > session.
 
@@ -14,25 +14,43 @@ baseline, two reproducible local LoRA SFT adapters, and a passed v2
 safety-repair data gate. LoRA SFT v2 passed the narrow dangerous-action gate,
 and its frozen failure-classification gate now separates decision-contract
 inconsistency from BF16 load/merge output drift. Decision compilation v1
-removes the former without changing raw model output. The adapter remains
-Runtime ineligible while merge stability is unresolved.
+removes the former without changing raw model output. Merge stability v1 now
+proves the latter is a deterministic BF16 logit-boundary flip rather than
+within-path nondeterminism. The Adapter remains Runtime ineligible while the
+underlying merge numerics are unresolved.
 
 ## Single active objective
 
-Complete `FC-MVP-001-bf16-merge-stability-v1`:
+Complete `FC-MVP-001-bf16-merge-numerics-v1`:
 
 ```text
-frozen independent adapter and eval-001 prompt
-        -> repeat fresh independent BF16 loads
-        -> repeat fresh safe-merged BF16 loads
-        -> locate the first token or logit divergence
+frozen eval-001 common prefix at token index 45
+        -> capture paired module outputs
+        -> locate earliest module-level divergence
+        -> quantify adapter-update versus merged-weight rounding
 ```
 
-Use the pinned model, adapter, prompt, seed, dtype, and exact `eval-001` input.
-Require repeat identity within the independent path and within the merged path,
-then classify the earliest cross-path divergence. Do not add data, train, tune
-against eval answers, connect Runtime/Provider/MCP/Desktop, or permit the
-merged artifact before output identity is restored.
+Use the pinned model, Adapter, prompt, seed, dtype, exact `eval-001` input, and
+the already frozen 45-token common generated prefix. Locate the earliest
+module whose output differs and measure how BF16 safe-merge rounding changes
+the effective LoRA update. Do not add data, train, tune against eval answers,
+run the full eval, connect Runtime/Provider/MCP/Desktop, or promote a merged
+artifact.
+
+The `FC-MVP-001-bf16-merge-stability-v1` gate completed locally on 2026-08-04.
+Two fresh independent Adapter loads are token-identical to each other, and two
+fresh safe-merged BF16 loads are token-identical to each other. The paths first
+diverge at zero-based generated token index `45`: independent loading chooses
+token `1866` (`true`) while safe merge chooses token `3849` (`false`). Scores
+captured from the exact cached generation step confirm a deterministic argmax
+flip: the independent margin is `0.4545440673828125`, the merged margin is
+`4.090908050537109`, maximum absolute logit delta is `3.0`, and mean absolute
+delta is `0.3340962529182434`. The gate record SHA-256 is
+`82bc73310625855770d6cc90aab6b5ed0e78fc1cd3c7684fd007ac8379c67abc`.
+No merged artifact was saved or permitted, and Runtime eligibility remains
+false. The unified offline gate passes 77 tests; Ruff passes the repository
+and mypy reports no issues in 29 source/script files.
+[Evidence](docs/FC-MVP-001-bf16-merge-stability-v1.md).
 
 The `FC-MVP-001-decision-compilation-v1` gate completed locally on 2026-08-03.
 It compiles redundant terminal fields from `selected_tool` without modifying
@@ -189,7 +207,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; decision compilation frozen, BF16 merge-stability gate next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; BF16 merge boundary flip frozen, merge numerics next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
