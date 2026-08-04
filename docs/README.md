@@ -36,6 +36,7 @@ English companion documents.
 | BF16 merge numerics v1 | [FC-MVP-001 BF16 merge numerics](FC-MVP-001-bf16-merge-numerics-v1.md) | English source |
 | BF16 merge remediation v1 | [FC-MVP-001 BF16 merge remediation](FC-MVP-001-bf16-merge-remediation-v1.md) | English source |
 | FP32 merge drift analysis v1 | [FC-MVP-001 FP32 merge drift analysis](FC-MVP-001-fp32-merge-drift-analysis-v1.md) | English source |
+| FP32 attached/merge isolation v1 | [FC-MVP-001 FP32 attached/merge isolation](FC-MVP-001-fp32-attached-merge-isolation-v1.md) | English source |
 
 ## Development references
 

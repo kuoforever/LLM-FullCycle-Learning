@@ -1,0 +1,1017 @@
+{
+  "fp32_attached_merge_isolation_version": 1,
+  "experiment_id": "fc-mvp-001-fp32-attached-merge-isolation-v1",
+  "source_experiment_id": "fc-mvp-001-lora-sft-v2",
+  "drift_evidence_sha256": "sha256:ae5d1c7ace24c6cfcfed0eca60354cd3dfa9579fa0aea4e1f64c66eb73e41ea3",
+  "remediation_evidence_sha256": "sha256:7f3c5aff55e69c08a7676d33636a52a5a2bb43f025dae8a2db362041354050b3",
+  "stability_evidence_sha256": "sha256:82bc73310625855770d6cc90aab6b5ed0e78fc1cd3c7684fd007ac8379c67abc",
+  "numerics_evidence_sha256": "sha256:eb39674127ac93fea2ce6415b3a2fea0d20f6da916b76f1532392533db3e805f",
+  "training_lock_sha256": "sha256:e6e23f51834b1815578368ce54c78034e72a7158395892e77fdf75594548931f",
+  "config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "adapter_files": [
+    {
+      "path": "adapter_config.json",
+      "bytes": 793,
+      "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+    },
+    {
+      "path": "adapter_model.safetensors",
+      "bytes": 17462432,
+      "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5107,
+      "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+    }
+  ],
+  "model_weight_sha256": "sha256:dd924a11b4c220f385b51ffa522daea7c9f3d850e31b162bb5661df483c6d3ee",
+  "prompt_sha256": "sha256:4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97",
+  "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "example_id": "eval-001",
+  "input_token_count": 339,
+  "input_token_ids_sha256": "sha256:3bd24b9f36966889e543dda2aea25f5c0f29db40a8fccf1453d0657a06a4429f",
+  "storage_audit": {
+    "base_checkpoint": {
+      "tensors": 338,
+      "elements": 1543714304,
+      "dtype_tensors": {
+        "bfloat16": 338
+      },
+      "dtype_elements": {
+        "bfloat16": 1543714304
+      }
+    },
+    "adapter": {
+      "tensors": 224,
+      "elements": 4358144,
+      "dtype_tensors": {
+        "float32": 224
+      },
+      "dtype_elements": {
+        "float32": 4358144
+      }
+    }
+  },
+  "protocol": {
+    "freshness_scope": "fresh_model_load_lifecycle_in_fixed_process",
+    "run_plan": [
+      {
+        "run_id": "fp32_attached-r1",
+        "path": "fp32_attached_adapter",
+        "repeat": 1
+      },
+      {
+        "run_id": "fp32_attached-r2",
+        "path": "fp32_attached_adapter",
+        "repeat": 2
+      },
+      {
+        "run_id": "fp32_safe_merged-r1",
+        "path": "fp32_safe_merged",
+        "repeat": 1
+      }
+    ],
+    "fresh_loads_per_path": {
+      "fp32_attached_adapter": 2,
+      "fp32_safe_merged": 1
+    },
+    "max_residual_cuda_bytes": 16777216,
+    "paths": {
+      "fp32_attached_adapter": {
+        "checkpoint_storage_dtype": "bfloat16",
+        "base_load_dtype": "float32",
+        "adapter_storage_dtype": "float32",
+        "adapter_runtime_dtype": "float32",
+        "autocast_adapter_dtype": false,
+        "merge": false,
+        "inference_parameter_dtype": "float32"
+      },
+      "fp32_safe_merged": {
+        "checkpoint_storage_dtype": "bfloat16",
+        "base_load_dtype": "float32",
+        "adapter_storage_dtype": "float32",
+        "adapter_runtime_dtype": "float32",
+        "autocast_adapter_dtype": false,
+        "merge_dtype": "float32",
+        "inference_parameter_dtype": "float32",
+        "merge": true,
+        "safe_merge": true,
+        "adapter_names": [
+          "default"
+        ]
+      }
+    },
+    "generation": {
+      "attn_implementation": "sdpa",
+      "attention_class": "Qwen2Attention",
+      "attention_dispatch": "ALL_ATTENTION_FUNCTIONS['sdpa']",
+      "low_level_cuda_kernel_identity_claimed": false,
+      "output_attentions": false,
+      "do_sample": false,
+      "max_new_tokens": 256,
+      "use_cache": true,
+      "repetition_penalty": 1.1,
+      "model_eos_token_ids": [
+        151645,
+        151643
+      ],
+      "model_pad_token_id": 151643,
+      "call_pad_token_id": 151645,
+      "return_dict_in_generate": true,
+      "output_scores": true,
+      "output_logits": true,
+      "generate_return_dtype_semantics": "return_tensor_dtype_not_internal_compute_dtype",
+      "tf32": false,
+      "autocast": false,
+      "device": "cuda:0"
+    },
+    "sdp_kernel_flags": {
+      "flash_sdp_enabled": true,
+      "math_sdp_enabled": true,
+      "mem_efficient_sdp_enabled": true,
+      "cudnn_sdp_enabled": true,
+      "fp16_bf16_reduction_math_sdp_allowed": false
+    }
+  },
+  "frozen_fp32_merged_reference": {
+    "path": "fp32_safe_merged",
+    "source_experiment_id": "fc-mvp-001-fp32-merge-drift-analysis-v1",
+    "token_count": 48,
+    "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+    "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca",
+    "score_trace_sha256": "sha256:1b7b93ba7cba872cfb8dd4d50e452df8fb76b76e4ddda5c513ec9697e67e1fe9",
+    "raw_logit_trace_sha256": "sha256:a0a03e4bf73123db942a0e44122b3d312d3885aa195a49782d0dd92a9d4a65ee",
+    "comparison_step_index": 45,
+    "comparison_score_vector_sha256": "sha256:c645fd357a4d34fc94dab70978e90143886051e898edfc0049ad67a370a14d8b",
+    "comparison_raw_logit_vector_sha256": "sha256:87d3bee7986814bb3a9bb22b249247235cc52e8444ba96b22b82b409ed1e0c93"
+  },
+  "frozen_bf16_context": {
+    "context_only": true,
+    "gpu_paths_rerun": false,
+    "source_experiment_id": "fc-mvp-001-bf16-merge-stability-v1",
+    "first_divergent_token_index": 45,
+    "paths": {
+      "bf16_attached_adapter": {
+        "token_count": 48,
+        "token_ids_sha256": "sha256:e23b3f5ed71ec57f44ccacfadf8d79abfb21be622f13cae83cf14274cc54e173",
+        "output_sha256": "sha256:b3bef0f22aad858ad94275466af0cc082dbb7fe42a7814320aa4a8995dff0bc5",
+        "boundary_token_id": 1866
+      },
+      "bf16_safe_merged": {
+        "token_count": 48,
+        "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+        "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca",
+        "boundary_token_id": 3849
+      }
+    }
+  },
+  "runs": [
+    {
+      "run_id": "fp32_attached-r1",
+      "path": "fp32_attached_adapter",
+      "repeat": 1,
+      "fresh_load": true,
+      "generated_token_ids": [
+        4913,
+        16370,
+        22317,
+        19895,
+        4136,
+        3252,
+        81251,
+        4907,
+        10334,
+        58640,
+        7325,
+        5287,
+        3252,
+        265,
+        7606,
+        2198,
+        41375,
+        95613,
+        788,
+        3849,
+        1335,
+        80943,
+        8274,
+        3252,
+        26086,
+        2198,
+        4525,
+        22785,
+        3252,
+        73311,
+        2346,
+        2895,
+        644,
+        5047,
+        2198,
+        5445,
+        761,
+        3420,
+        788,
+        1866,
+        1335,
+        5445,
+        1288,
+        583,
+        788,
+        3849,
+        92,
+        151645
+      ],
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca",
+      "precision_audit": {
+        "base_parameters": {
+          "floating_tensors": 338,
+          "floating_elements": 1543714304,
+          "dtypes": {
+            "float32": 1543714304
+          },
+          "devices": {
+            "cuda:0": 1543714304
+          }
+        },
+        "adapter_parameters": {
+          "floating_tensors": 224,
+          "floating_elements": 4358144,
+          "dtypes": {
+            "float32": 4358144
+          },
+          "devices": {
+            "cuda:0": 4358144
+          }
+        },
+        "floating_buffers": {
+          "floating_tensors": 1,
+          "floating_elements": 64,
+          "dtypes": {
+            "float32": 64
+          },
+          "devices": {
+            "cuda:0": 64
+          }
+        },
+        "lora_target_modules": 112,
+        "lora_parameter_tensors": 224,
+        "adapter_parameters_finite": true,
+        "active_adapters": [
+          "default"
+        ],
+        "is_peft_model": true,
+        "input_output_embeddings_tied": true,
+        "attn_implementation": "sdpa",
+        "attention_class": "Qwen2Attention",
+        "output_attentions": false,
+        "hf_device_map": null,
+        "lora_dropout": {
+          "modules": 112,
+          "training_modules": 0
+        },
+        "generation": {
+          "score_dtypes": [
+            "float32"
+          ],
+          "all_scores_float32": true,
+          "raw_logit_dtypes": [
+            "float32"
+          ],
+          "all_raw_logits_float32": true,
+          "dtype_semantics": "transformers_generate_return_tensor_dtype",
+          "autocast_enabled": false,
+          "training": false
+        }
+      },
+      "generation_trace": {
+        "step_count": 48,
+        "vocabulary_size": 151936,
+        "cache_returned": true,
+        "scores": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:e878f06653e43ebf6946a00396fbed7797eecc02dcf25501f0738169a932fdde",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:47055d7f7614955154ce736de5fd79b8e1636aacb80e214377f7faa6e4767451"
+        },
+        "raw_logits": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:61a891ab427bce3002c3367e2faefd854a11ecb62929d5b187b974a9c3b7f357",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:14b7b48cfb9012388762d0d9925c0c19ea737b7459bcf637ea31f880e731654a"
+        }
+      },
+      "path_protocol_passed": true,
+      "peak_gpu_memory_bytes": 6285651968,
+      "memory_allocated_before_load_bytes": 0,
+      "memory_allocated_after_release_bytes": 8519680
+    },
+    {
+      "run_id": "fp32_attached-r2",
+      "path": "fp32_attached_adapter",
+      "repeat": 2,
+      "fresh_load": true,
+      "generated_token_ids": [
+        4913,
+        16370,
+        22317,
+        19895,
+        4136,
+        3252,
+        81251,
+        4907,
+        10334,
+        58640,
+        7325,
+        5287,
+        3252,
+        265,
+        7606,
+        2198,
+        41375,
+        95613,
+        788,
+        3849,
+        1335,
+        80943,
+        8274,
+        3252,
+        26086,
+        2198,
+        4525,
+        22785,
+        3252,
+        73311,
+        2346,
+        2895,
+        644,
+        5047,
+        2198,
+        5445,
+        761,
+        3420,
+        788,
+        1866,
+        1335,
+        5445,
+        1288,
+        583,
+        788,
+        3849,
+        92,
+        151645
+      ],
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca",
+      "precision_audit": {
+        "base_parameters": {
+          "floating_tensors": 338,
+          "floating_elements": 1543714304,
+          "dtypes": {
+            "float32": 1543714304
+          },
+          "devices": {
+            "cuda:0": 1543714304
+          }
+        },
+        "adapter_parameters": {
+          "floating_tensors": 224,
+          "floating_elements": 4358144,
+          "dtypes": {
+            "float32": 4358144
+          },
+          "devices": {
+            "cuda:0": 4358144
+          }
+        },
+        "floating_buffers": {
+          "floating_tensors": 1,
+          "floating_elements": 64,
+          "dtypes": {
+            "float32": 64
+          },
+          "devices": {
+            "cuda:0": 64
+          }
+        },
+        "lora_target_modules": 112,
+        "lora_parameter_tensors": 224,
+        "adapter_parameters_finite": true,
+        "active_adapters": [
+          "default"
+        ],
+        "is_peft_model": true,
+        "input_output_embeddings_tied": true,
+        "attn_implementation": "sdpa",
+        "attention_class": "Qwen2Attention",
+        "output_attentions": false,
+        "hf_device_map": null,
+        "lora_dropout": {
+          "modules": 112,
+          "training_modules": 0
+        },
+        "generation": {
+          "score_dtypes": [
+            "float32"
+          ],
+          "all_scores_float32": true,
+          "raw_logit_dtypes": [
+            "float32"
+          ],
+          "all_raw_logits_float32": true,
+          "dtype_semantics": "transformers_generate_return_tensor_dtype",
+          "autocast_enabled": false,
+          "training": false
+        }
+      },
+      "generation_trace": {
+        "step_count": 48,
+        "vocabulary_size": 151936,
+        "cache_returned": true,
+        "scores": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:e878f06653e43ebf6946a00396fbed7797eecc02dcf25501f0738169a932fdde",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:47055d7f7614955154ce736de5fd79b8e1636aacb80e214377f7faa6e4767451"
+        },
+        "raw_logits": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:61a891ab427bce3002c3367e2faefd854a11ecb62929d5b187b974a9c3b7f357",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:14b7b48cfb9012388762d0d9925c0c19ea737b7459bcf637ea31f880e731654a"
+        }
+      },
+      "path_protocol_passed": true,
+      "peak_gpu_memory_bytes": 6285127680,
+      "memory_allocated_before_load_bytes": 8519680,
+      "memory_allocated_after_release_bytes": 8519680
+    },
+    {
+      "run_id": "fp32_safe_merged-r1",
+      "path": "fp32_safe_merged",
+      "repeat": 1,
+      "fresh_load": true,
+      "generated_token_ids": [
+        4913,
+        16370,
+        22317,
+        19895,
+        4136,
+        3252,
+        81251,
+        4907,
+        10334,
+        58640,
+        7325,
+        5287,
+        3252,
+        265,
+        7606,
+        2198,
+        41375,
+        95613,
+        788,
+        3849,
+        1335,
+        80943,
+        8274,
+        3252,
+        26086,
+        2198,
+        4525,
+        22785,
+        3252,
+        73311,
+        2346,
+        2895,
+        644,
+        5047,
+        2198,
+        5445,
+        761,
+        3420,
+        788,
+        1866,
+        1335,
+        5445,
+        1288,
+        583,
+        788,
+        3849,
+        92,
+        151645
+      ],
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "output_sha256": "sha256:b37939d2e8014afcc92b094d9c63715aa28d91f02504bf8b56186dd2dd5cc7ca",
+      "precision_audit": {
+        "pre_merge": {
+          "base_parameters": {
+            "floating_tensors": 338,
+            "floating_elements": 1543714304,
+            "dtypes": {
+              "float32": 1543714304
+            },
+            "devices": {
+              "cuda:0": 1543714304
+            }
+          },
+          "adapter_parameters": {
+            "floating_tensors": 224,
+            "floating_elements": 4358144,
+            "dtypes": {
+              "float32": 4358144
+            },
+            "devices": {
+              "cuda:0": 4358144
+            }
+          },
+          "floating_buffers": {
+            "floating_tensors": 1,
+            "floating_elements": 64,
+            "dtypes": {
+              "float32": 64
+            },
+            "devices": {
+              "cuda:0": 64
+            }
+          },
+          "lora_target_modules": 112,
+          "lora_parameter_tensors": 224,
+          "adapter_parameters_finite": true,
+          "active_adapters": [
+            "default"
+          ],
+          "is_peft_model": true,
+          "input_output_embeddings_tied": true,
+          "attn_implementation": "sdpa",
+          "attention_class": "Qwen2Attention",
+          "output_attentions": false,
+          "hf_device_map": null
+        },
+        "post_merge": {
+          "parameters": {
+            "floating_tensors": 338,
+            "floating_elements": 1543714304,
+            "dtypes": {
+              "float32": 1543714304
+            },
+            "devices": {
+              "cuda:0": 1543714304
+            }
+          },
+          "floating_buffers": {
+            "floating_tensors": 1,
+            "floating_elements": 64,
+            "dtypes": {
+              "float32": 64
+            },
+            "devices": {
+              "cuda:0": 64
+            }
+          },
+          "lora_target_modules": 0,
+          "lora_parameter_tensors": 0,
+          "is_peft_model": false,
+          "input_output_embeddings_tied": true,
+          "attn_implementation": "sdpa",
+          "attention_class": "Qwen2Attention",
+          "output_attentions": false,
+          "hf_device_map": null
+        },
+        "lora_dropout": {
+          "modules": 0,
+          "training_modules": 0
+        },
+        "generation": {
+          "score_dtypes": [
+            "float32"
+          ],
+          "all_scores_float32": true,
+          "raw_logit_dtypes": [
+            "float32"
+          ],
+          "all_raw_logits_float32": true,
+          "dtype_semantics": "transformers_generate_return_tensor_dtype",
+          "autocast_enabled": false,
+          "training": false
+        }
+      },
+      "generation_trace": {
+        "step_count": 48,
+        "vocabulary_size": 151936,
+        "cache_returned": true,
+        "scores": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:1b7b93ba7cba872cfb8dd4d50e452df8fb76b76e4ddda5c513ec9697e67e1fe9",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:c645fd357a4d34fc94dab70978e90143886051e898edfc0049ad67a370a14d8b"
+        },
+        "raw_logits": {
+          "native_dtypes": [
+            "float32"
+          ],
+          "shape_per_step": [
+            1,
+            151936
+          ],
+          "comparison_dtype": "float32",
+          "all_finite": true,
+          "trace_sha256": "sha256:a0a03e4bf73123db942a0e44122b3d312d3885aa195a49782d0dd92a9d4a65ee",
+          "comparison_step_index": 45,
+          "comparison_step_vector_sha256": "sha256:87d3bee7986814bb3a9bb22b249247235cc52e8444ba96b22b82b409ed1e0c93"
+        }
+      },
+      "path_protocol_passed": true,
+      "peak_gpu_memory_bytes": 6268076032,
+      "memory_allocated_before_load_bytes": 8519680,
+      "memory_allocated_after_release_bytes": 8519680
+    }
+  ],
+  "attached_repeat_stability": {
+    "token_identity": true,
+    "output_identity": true,
+    "score_trace_identity": true,
+    "raw_logit_trace_identity": true,
+    "precision_audit_identity": true,
+    "passed": true,
+    "comparison_score_vector_identity": true,
+    "comparison_raw_logit_vector_identity": true
+  },
+  "merged_candidate_reproduction": {
+    "token_identity": true,
+    "output_identity": true,
+    "score_trace_identity": true,
+    "raw_logit_trace_identity": true,
+    "comparison_score_vector_identity": true,
+    "comparison_raw_logit_vector_identity": true,
+    "passed": true
+  },
+  "same_dtype_token_analysis": {
+    "attached_token_count": 48,
+    "merged_token_count": 48,
+    "cross_path_identical": true,
+    "common_prefix_generated_tokens": 48,
+    "first_divergent_token_index": null,
+    "attached_token_id": null,
+    "merged_token_id": null,
+    "classification": "same_dtype_token_identity",
+    "attached_token_text": null,
+    "merged_token_text": null
+  },
+  "comparison_step": {
+    "step_index": 45,
+    "basis": "frozen_bf16_token_boundary_context",
+    "common_prefix_generated_tokens": 48
+  },
+  "selection_score_evidence": {
+    "step_index": 45,
+    "comparison_basis": "frozen_bf16_token_boundary_context",
+    "shared_generated_prefix_tokens_before_step": 45,
+    "source": "generated.scores",
+    "semantics": "processed_prediction_scores_after_logits_processors",
+    "comparison_dtype": "float32",
+    "top_k": 5,
+    "paths": {
+      "fp32_attached_adapter": {
+        "top_token_ids": [
+          3849,
+          1866,
+          830,
+          895,
+          2641
+        ],
+        "top_token_texts": [
+          "false",
+          "true",
+          " true",
+          " false",
+          "bool"
+        ],
+        "top_scores": [
+          35.61114501953125,
+          33.16929626464844,
+          24.496919631958008,
+          23.684675216674805,
+          21.257125854492188
+        ],
+        "top_margin": 2.4418487548828125,
+        "emitted_token_id": 3849,
+        "emitted_token_text": "false",
+        "emitted_token_score": 35.61114501953125,
+        "compared_tokens": [
+          {
+            "token_id": 3849,
+            "token_text": "false",
+            "score": 35.61114501953125,
+            "rank": 1
+          },
+          {
+            "token_id": 1866,
+            "token_text": "true",
+            "score": 33.16929626464844,
+            "rank": 2
+          }
+        ],
+        "comparison_vector_sha256": "sha256:47055d7f7614955154ce736de5fd79b8e1636aacb80e214377f7faa6e4767451"
+      },
+      "fp32_safe_merged": {
+        "top_token_ids": [
+          3849,
+          1866,
+          830,
+          895,
+          2641
+        ],
+        "top_token_texts": [
+          "false",
+          "true",
+          " true",
+          " false",
+          "bool"
+        ],
+        "top_scores": [
+          35.61100387573242,
+          33.169429779052734,
+          24.49706268310547,
+          23.684528350830078,
+          21.257160186767578
+        ],
+        "top_margin": 2.4415740966796875,
+        "emitted_token_id": 3849,
+        "emitted_token_text": "false",
+        "emitted_token_score": 35.61100387573242,
+        "compared_tokens": [
+          {
+            "token_id": 3849,
+            "token_text": "false",
+            "score": 35.61100387573242,
+            "rank": 1
+          },
+          {
+            "token_id": 1866,
+            "token_text": "true",
+            "score": 33.169429779052734,
+            "rank": 2
+          }
+        ],
+        "comparison_vector_sha256": "sha256:c645fd357a4d34fc94dab70978e90143886051e898edfc0049ad67a370a14d8b"
+      }
+    },
+    "delta": {
+      "vocabulary_elements": 151936,
+      "nonzero_elements": 150968,
+      "max_abs_delta": 0.0001735687255859375,
+      "mean_abs_delta": 2.052841409749817e-05,
+      "root_mean_square_delta": 2.6467831048648804e-05
+    }
+  },
+  "raw_logit_evidence": {
+    "step_index": 45,
+    "comparison_basis": "frozen_bf16_token_boundary_context",
+    "shared_generated_prefix_tokens_before_step": 45,
+    "source": "generated.logits",
+    "semantics": "unprocessed_lm_head_prediction_scores",
+    "comparison_dtype": "float32",
+    "top_k": 5,
+    "paths": {
+      "fp32_attached_adapter": {
+        "top_token_ids": [
+          3849,
+          1866,
+          895,
+          830,
+          2641
+        ],
+        "top_token_texts": [
+          "false",
+          "true",
+          " false",
+          " true",
+          "bool"
+        ],
+        "top_raw_logits": [
+          39.17226028442383,
+          36.48622512817383,
+          26.053144454956055,
+          24.496919631958008,
+          21.257125854492188
+        ],
+        "top_margin": 2.68603515625,
+        "emitted_token_id": 3849,
+        "emitted_token_text": "false",
+        "emitted_token_raw_logit": 39.17226028442383,
+        "compared_tokens": [
+          {
+            "token_id": 3849,
+            "token_text": "false",
+            "raw_logit": 39.17226028442383,
+            "rank": 1
+          },
+          {
+            "token_id": 1866,
+            "token_text": "true",
+            "raw_logit": 36.48622512817383,
+            "rank": 2
+          }
+        ],
+        "comparison_vector_sha256": "sha256:14b7b48cfb9012388762d0d9925c0c19ea737b7459bcf637ea31f880e731654a"
+      },
+      "fp32_safe_merged": {
+        "top_token_ids": [
+          3849,
+          1866,
+          895,
+          830,
+          2641
+        ],
+        "top_token_texts": [
+          "false",
+          "true",
+          " false",
+          " true",
+          "bool"
+        ],
+        "top_raw_logits": [
+          39.17210388183594,
+          36.48637390136719,
+          26.052982330322266,
+          24.49706268310547,
+          21.257160186767578
+        ],
+        "top_margin": 2.68572998046875,
+        "emitted_token_id": 3849,
+        "emitted_token_text": "false",
+        "emitted_token_raw_logit": 39.17210388183594,
+        "compared_tokens": [
+          {
+            "token_id": 3849,
+            "token_text": "false",
+            "raw_logit": 39.17210388183594,
+            "rank": 1
+          },
+          {
+            "token_id": 1866,
+            "token_text": "true",
+            "raw_logit": 36.48637390136719,
+            "rank": 2
+          }
+        ],
+        "comparison_vector_sha256": "sha256:87d3bee7986814bb3a9bb22b249247235cc52e8444ba96b22b82b409ed1e0c93"
+      }
+    },
+    "delta": {
+      "vocabulary_elements": 151936,
+      "nonzero_elements": 150968,
+      "max_abs_delta": 0.0001735687255859375,
+      "mean_abs_delta": 2.052839772659354e-05,
+      "root_mean_square_delta": 2.6469620934221894e-05
+    }
+  },
+  "same_dtype_trace_identity": {
+    "token_identity": true,
+    "score_trace_identity": false,
+    "raw_logit_trace_identity": false,
+    "comparison_score_vector_identity": false,
+    "comparison_raw_logit_vector_identity": false
+  },
+  "classification": "deterministic_fp32_attached_vs_merged_numerical_drift_without_token_drift",
+  "causal_scope": {
+    "isolated_variable": "attached_adapter_vs_materialized_safe_merge_execution",
+    "controlled": [
+      "base_checkpoint_values",
+      "base_and_adapter_runtime_dtype_float32",
+      "adapter_weights",
+      "eval_001_rendered_input",
+      "greedy_decoding",
+      "high_level_transformers_sdpa_dispatch",
+      "fresh_model_load_lifecycle"
+    ],
+    "supports": "classification of the observed same-dtype FP32 execution-form effect",
+    "does_not_support": [
+      "peft_merge_implementation_bug_claim",
+      "low_level_cuda_kernel_identity_or_root_cause",
+      "full_eval_generalization",
+      "merged_artifact_promotion",
+      "runtime_eligibility"
+    ]
+  },
+  "isolation_gate": {
+    "attached_fp32_repeat_stable": true,
+    "fp32_merged_candidate_reproduced": true,
+    "same_dtype_exact_cached_step_compared": true,
+    "processed_score_argmax_matches_generated_token": true,
+    "raw_logits_captured": true,
+    "same_dtype_effect_classified": true,
+    "passed": true
+  },
+  "remediation_gate": {
+    "source_gate_passed": false,
+    "new_remediation_tested": false,
+    "passed": false
+  },
+  "acceptance": {
+    "upstream_evidence_locked": true,
+    "frozen_input_reproduced": true,
+    "attached_fp32_repeat_stable": true,
+    "fp32_candidate_reproduced": true,
+    "same_dtype_exact_step_compared": true,
+    "same_dtype_attached_vs_merged_effect_classified": true,
+    "generation_score_alignment_verified": true,
+    "path_protocols_executed": true,
+    "source_storage_dtypes_locked": true,
+    "fresh_load_memory_isolated": true,
+    "source_adapter_unchanged": true,
+    "source_model_unchanged": true,
+    "eval_digest_unchanged": true,
+    "prompt_digest_unchanged": true,
+    "frozen_bf16_context_only": true
+  },
+  "elapsed_seconds": 29.405898299999535,
+  "peak_gpu_memory_bytes": 6285651968,
+  "merged_artifact_saved": false,
+  "merged_artifact_allowed": false,
+  "constraints": {
+    "failed_candidate_change": false,
+    "frozen_bf16_path_rerun": false,
+    "locked_path_dtype_change": false,
+    "locked_path_backend_change": false,
+    "locked_path_decoding_change": false,
+    "new_data": false,
+    "training": false,
+    "eval_answer_tuning": false,
+    "runtime_integration": false,
+    "full_eval_run": false,
+    "merged_artifact_promotion": false
+  },
+  "locked_next_action": {
+    "gate_id": "FC-MVP-001-fp32-attached-merge-numerics-v1",
+    "action": "at frozen comparison step index 45, locate the first module numerical divergence between repeat-stable FP32 attached LoRA execution and the unchanged materialized safe-merged execution, without claiming a same-dtype token boundary",
+    "acceptance": {
+      "fp32_paths_reproduced": true,
+      "comparison_step_reproduced": true,
+      "first_divergent_module_located": true,
+      "operation_order_boundary_quantified": true,
+      "source_inputs_unchanged": true
+    },
+    "constraints": {
+      "failed_candidate_change": false,
+      "frozen_bf16_path_rerun": false,
+      "locked_path_dtype_change": false,
+      "locked_path_backend_change": false,
+      "locked_path_decoding_change": false,
+      "new_data": false,
+      "training": false,
+      "eval_answer_tuning": false,
+      "runtime_integration": false,
+      "full_eval_run": false,
+      "merged_artifact_promotion": false
+    }
+  },
+  "runtime_eligible": false,
+  "runtime_eligibility_reason": "deterministic_fp32_attached_vs_merged_numerical_drift_without_token_drift",
+  "offline": true
+}
