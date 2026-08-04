@@ -165,7 +165,8 @@ The frozen v2 evidence assigns the three conflicting decisions and the
 count-aligned false refusals to decision-contract consistency. The one-field
 load/merge drift is a separate BF16 adapter-merge stability failure. The
 frozen artifacts do not justify a data-coverage diagnosis. One offline-only
-decision-compilation gate is locked next; no v3 data or training has started.
+decision-compilation gate was locked from this evidence and is now complete;
+no v3 data or training has started.
 See [failure classification](docs/FC-MVP-001-v2-failure-classification.md).
 
 ### Decision compilation v1
@@ -182,9 +183,10 @@ are unchanged and the merged adapter remains prohibited. See
 Two fresh independent Adapter loads and two fresh safe-merged BF16 loads are
 each token-identical within their own path on frozen `eval-001`. The paths
 diverge deterministically at generated token index 45: the independent path
-selects `true`, while the merged path selects `false`. Logits captured from the
-exact cached generation step confirm an argmax boundary flip. The merged form
-remains prohibited and Runtime eligibility remains false. See
+selects `true`, while the merged path selects `false`. Processed generation
+scores captured from the exact cached generation step confirm an argmax
+boundary flip. The merged form remains prohibited and Runtime eligibility
+remains false. See
 [BF16 merge stability](docs/FC-MVP-001-bf16-merge-stability-v1.md).
 
 ### BF16 merge numerics v1
@@ -196,6 +198,31 @@ matches the reproduced algorithm exactly, but BF16 materialization rounds
 30,640,994 nonzero Adapter updates back to their base values. The merged model
 remains prohibited and Runtime eligibility remains false. See
 [BF16 merge numerics](docs/FC-MVP-001-bf16-merge-numerics-v1.md).
+
+### FP32 merge remediation v1
+
+The pre-registered candidate materializes the pinned BF16 checkpoint values in
+FP32, loads and safe-merges the FP32 Adapter, and retains FP32 for greedy SDPA
+generation. Two fresh candidate loads are token-identical to each other on
+frozen `eval-001`, but they do not match the independent BF16 Adapter reference.
+Their token digest instead matches the prior safe-merged BF16 control. This is
+classified as `deterministic_fp32_merge_output_drift`; full eval, merged-weight
+promotion, and Runtime eligibility remain prohibited. See
+[FP32 merge remediation](docs/FC-MVP-001-bf16-merge-remediation-v1.md).
+
+### FP32 merge drift analysis v1
+
+One fresh independent BF16 attached-Adapter path and one fresh locked FP32
+safe-merged path each reproduce their frozen token and output digests on
+`eval-001`. They first diverge at generated token index 45 (`true` versus
+`false`). The same cached `generate(use_cache=True)` call captures both
+processed generation scores and raw LM-head logits; both contain the argmax
+flip. The classification is
+`deterministic_bf16_attached_vs_fp32_merged_raw_logit_boundary_flip`.
+Because this comparison changes dtype and attached/merged execution together,
+it does not isolate a root cause. The analysis gate passes, the remediation
+gate remains failed, and Runtime eligibility remains false. See
+[FP32 merge drift analysis](docs/FC-MVP-001-fp32-merge-drift-analysis-v1.md).
 
 ### Scale boundary of the current model evidence
 
@@ -220,9 +247,11 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-bf16-merge-remediation-v1`. Load the pinned
-base and Adapter in FP32, safe-merge in FP32, retain FP32 for greedy SDPA
-inference on frozen `eval-001`, and require two fresh candidate runs to match
-the frozen independent BF16 Adapter output exactly. No new data, training,
-eval-answer tuning, Runtime integration, full-eval run before identity, or
+The current work is `FC-MVP-001-fp32-attached-merge-isolation-v1`. Add only a
+fresh independent FP32 attached-Adapter control on the same frozen `eval-001`,
+establish its two-run stability, reproduce the unchanged FP32 safe-merged
+candidate, and compare the two same-dtype paths at the exact cached generation
+step. The failed candidate, existing BF16 controls, prompt, seed, SDPA dispatch,
+generation semantics, Adapter, and eval digest must not change. No new data,
+training, eval-answer tuning, Runtime integration, full-eval run, or
 merged-artifact promotion is allowed.
