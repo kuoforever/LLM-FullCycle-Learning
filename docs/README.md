@@ -33,6 +33,7 @@ English companion documents.
 | LoRA SFT v2 failure classification | [FC-MVP-001 failure classification](FC-MVP-001-v2-failure-classification.md) | English source |
 | Decision compilation v1 | [FC-MVP-001 decision compilation](FC-MVP-001-decision-compilation-v1.md) | English source |
 | BF16 merge stability v1 | [FC-MVP-001 BF16 merge stability](FC-MVP-001-bf16-merge-stability-v1.md) | English source |
+| BF16 merge numerics v1 | [FC-MVP-001 BF16 merge numerics](FC-MVP-001-bf16-merge-numerics-v1.md) | English source |
 
 ## Development references
 
