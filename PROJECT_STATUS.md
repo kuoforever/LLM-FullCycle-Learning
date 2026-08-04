@@ -14,28 +14,45 @@ baseline, two reproducible local LoRA SFT adapters, and a passed v2
 safety-repair data gate. LoRA SFT v2 passed the narrow dangerous-action gate,
 and its frozen failure-classification gate now separates decision-contract
 inconsistency from BF16 load/merge output drift. Decision compilation v1
-removes the former without changing raw model output. Merge stability v1 now
+removes the former without changing raw model output. Merge stability v1
 proves the latter is a deterministic BF16 logit-boundary flip rather than
-within-path nondeterminism. The Adapter remains Runtime ineligible while the
-underlying merge numerics are unresolved.
+within-path nondeterminism, and merge numerics v1 traces it to BF16
+materialization of LoRA updates at the first projection. The Adapter remains
+Runtime ineligible while the pre-registered FP32 remediation is untested.
 
 ## Single active objective
 
-Complete `FC-MVP-001-bf16-merge-numerics-v1`:
+Complete `FC-MVP-001-bf16-merge-remediation-v1`:
 
 ```text
-frozen eval-001 common prefix at token index 45
-        -> capture paired module outputs
-        -> locate earliest module-level divergence
-        -> quantify adapter-update versus merged-weight rounding
+pinned base + Adapter loaded in FP32
+        -> safe merge in FP32
+        -> retain FP32 for greedy SDPA generation
+        -> repeat twice and compare with independent BF16 reference
 ```
 
-Use the pinned model, Adapter, prompt, seed, dtype, exact `eval-001` input, and
-the already frozen 45-token common generated prefix. Locate the earliest
-module whose output differs and measure how BF16 safe-merge rounding changes
-the effective LoRA update. Do not add data, train, tune against eval answers,
-run the full eval, connect Runtime/Provider/MCP/Desktop, or promote a merged
-artifact.
+Use the pinned model, Adapter, prompt, seed, and exact `eval-001` input. The
+only candidate is FP32 base plus FP32 Adapter, safe-merged and retained in FP32
+for greedy SDPA inference. Require two fresh candidate loads to be token
+identical and to match the frozen independent BF16 Adapter output exactly.
+Do not add data, train, tune against eval answers, run the full eval before
+identity, connect Runtime/Provider/MCP/Desktop, or promote a merged artifact.
+
+The `FC-MVP-001-bf16-merge-numerics-v1` gate completed locally on 2026-08-04.
+At the exact cached generation step for token index `45`, the embedding and
+layer 0 input normalization are element-identical across paths. The first
+difference is layer 0 `q_proj`: `569/1536` output elements differ, with maximum
+absolute delta `0.0625`. Across all `112` Q/K/V/O LoRA targets and
+`154,140,672` weights, the reproduced PEFT safe-merge algorithm has zero
+weight mismatches with the actual merged model. However, `30,640,994` nonzero
+ideal updates round back to their base BF16 values, or
+`0.19878591161195924` of all nonzero updates. The classification is
+`bf16_safe_merge_weight_rounding`. The gate record SHA-256 is
+`eb39674127ac93fea2ce6415b3a2fea0d20f6da916b76f1532392533db3e805f`.
+No merged artifact was saved or permitted, and Runtime eligibility remains
+false. The unified offline gate passes 81 tests; Ruff passes the repository
+and mypy reports no issues in 31 source/script files.
+[Evidence](docs/FC-MVP-001-bf16-merge-numerics-v1.md).
 
 The `FC-MVP-001-bf16-merge-stability-v1` gate completed locally on 2026-08-04.
 Two fresh independent Adapter loads are token-identical to each other, and two
@@ -207,7 +224,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; BF16 merge boundary flip frozen, merge numerics next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; BF16 rounding root cause frozen, FP32 merge remediation next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

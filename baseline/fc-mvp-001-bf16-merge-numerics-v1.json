@@ -1,0 +1,305 @@
+
+{
+  "merge_numerics_version": 1,
+  "experiment_id": "fc-mvp-001-bf16-merge-numerics-v1",
+  "source_experiment_id": "fc-mvp-001-lora-sft-v2",
+  "stability_evidence_sha256": "sha256:82bc73310625855770d6cc90aab6b5ed0e78fc1cd3c7684fd007ac8379c67abc",
+  "config_sha256": "sha256:5a038ea786526f188c796a6e5eea4c4d3aa47fc66977dc4f6ff16f52999236d8",
+  "adapter_files": [
+    {
+      "path": "adapter_config.json",
+      "bytes": 793,
+      "sha256": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+    },
+    {
+      "path": "adapter_model.safetensors",
+      "bytes": 17462432,
+      "sha256": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+    },
+    {
+      "path": "README.md",
+      "bytes": 5107,
+      "sha256": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+    }
+  ],
+  "eval_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+  "example_id": "eval-001",
+  "target_generated_token_index": 45,
+  "capture_source": "exact_generate_step_with_use_cache_true",
+  "environment": {
+    "python": "3.12.12",
+    "torch": "2.6.0+cu124",
+    "transformers": "4.49.0",
+    "peft": "0.14.0",
+    "accelerate": "1.3.0",
+    "huggingface_hub": "0.29.3",
+    "safetensors": "0.5.3",
+    "tokenizers": "0.21.4",
+    "device": "cuda",
+    "gpu": "NVIDIA GeForce RTX 4090 Laptop GPU",
+    "gpu_vram_bytes": 17170956288,
+    "compute_capability": "8.9",
+    "torch_dtype": "bfloat16",
+    "attn_implementation": "sdpa",
+    "do_sample": false,
+    "tf32": false
+  },
+  "generation_reproduction": {
+    "independent": {
+      "token_count": 48,
+      "token_ids_sha256": "sha256:e23b3f5ed71ec57f44ccacfadf8d79abfb21be622f13cae83cf14274cc54e173",
+      "target_top_token_ids": [
+        1866,
+        3849
+      ],
+      "target_top_scores": [
+        34.54545211791992,
+        34.09090805053711
+      ]
+    },
+    "merged": {
+      "token_count": 48,
+      "token_ids_sha256": "sha256:9dfd817e59df5c0278fdd9da20feb3664fade5d354040bbd5b3b4c650ca43dca",
+      "target_top_token_ids": [
+        3849,
+        1866
+      ],
+      "target_top_scores": [
+        36.59090805053711,
+        32.5
+      ]
+    }
+  },
+  "module_comparisons": [
+    {
+      "name": "model.embed_tokens",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": true,
+      "different_elements": 0,
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0
+    },
+    {
+      "name": "model.layers.0.input_layernorm",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": true,
+      "different_elements": 0,
+      "max_abs_delta": 0.0,
+      "mean_abs_delta": 0.0
+    },
+    {
+      "name": "model.layers.0.self_attn.q_proj",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 569,
+      "max_abs_delta": 0.0625,
+      "mean_abs_delta": 0.0014352798461914062
+    },
+    {
+      "name": "model.layers.0.self_attn.k_proj",
+      "shape": [
+        1,
+        1,
+        256
+      ],
+      "equal": false,
+      "different_elements": 83,
+      "max_abs_delta": 0.5,
+      "mean_abs_delta": 0.003960371017456055
+    },
+    {
+      "name": "model.layers.0.self_attn.v_proj",
+      "shape": [
+        1,
+        1,
+        256
+      ],
+      "equal": false,
+      "different_elements": 134,
+      "max_abs_delta": 0.00390625,
+      "mean_abs_delta": 0.0005255043506622314
+    },
+    {
+      "name": "model.layers.0.self_attn.o_proj",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 1191,
+      "max_abs_delta": 0.0078125,
+      "mean_abs_delta": 0.0008657884900458157
+    },
+    {
+      "name": "model.layers.0.post_attention_layernorm",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 1082,
+      "max_abs_delta": 0.01171875,
+      "mean_abs_delta": 0.0013264702865853906
+    },
+    {
+      "name": "model.layers.0.mlp.gate_proj",
+      "shape": [
+        1,
+        1,
+        8960
+      ],
+      "equal": false,
+      "different_elements": 6176,
+      "max_abs_delta": 0.015625,
+      "mean_abs_delta": 0.0020790337584912777
+    },
+    {
+      "name": "model.layers.0.mlp.up_proj",
+      "shape": [
+        1,
+        1,
+        8960
+      ],
+      "equal": false,
+      "different_elements": 6768,
+      "max_abs_delta": 0.01171875,
+      "mean_abs_delta": 0.0016308296471834183
+    },
+    {
+      "name": "model.layers.0.mlp.down_proj",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 1255,
+      "max_abs_delta": 0.0087890625,
+      "mean_abs_delta": 0.0017501091351732612
+    },
+    {
+      "name": "model.layers.0",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 1187,
+      "max_abs_delta": 0.0087890625,
+      "mean_abs_delta": 0.0019128049025312066
+    },
+    {
+      "name": "model.norm",
+      "shape": [
+        1,
+        1,
+        1536
+      ],
+      "equal": false,
+      "different_elements": 1515,
+      "max_abs_delta": 1.71875,
+      "mean_abs_delta": 0.33523377776145935
+    },
+    {
+      "name": "lm_head",
+      "shape": [
+        1,
+        1,
+        151936
+      ],
+      "equal": false,
+      "different_elements": 148563,
+      "max_abs_delta": 3.0,
+      "mean_abs_delta": 0.33409374952316284
+    }
+  ],
+  "module_analysis": {
+    "first_divergent_module_index": 2,
+    "first_divergent_module": "model.layers.0.self_attn.q_proj",
+    "preceding_modules_identical": true,
+    "classification": "deterministic_module_output_divergence"
+  },
+  "merge_rounding": {
+    "target_modules": 112,
+    "total_target_weights": 154140672,
+    "ideal_nonzero_updates": 154140672,
+    "effective_changed_weights": 123499678,
+    "ideal_nonzero_updates_rounded_to_base": 30640994,
+    "actual_merged_mismatched_weights": 0,
+    "absolute_rounding_error_sum": 4546.676884104153,
+    "absolute_ideal_update_sum": 29788.189287301255,
+    "max_abs_rounding_error": 0.0011988399783149362,
+    "mean_abs_rounding_error": 2.9496931764409027e-05,
+    "rounded_to_base_fraction_of_nonzero_updates": 0.19878591161195924,
+    "first_divergent_target": {
+      "name": "model.layers.0.self_attn.q_proj",
+      "shape": [
+        1536,
+        1536
+      ],
+      "ideal_nonzero_updates": 2359296,
+      "effective_changed_weights": 1642092,
+      "ideal_nonzero_updates_rounded_to_base": 717204,
+      "actual_merged_mismatched_weights": 0,
+      "max_abs_rounding_error": 0.0011988399783149362,
+      "mean_abs_rounding_error": 4.362241816124879e-05
+    }
+  },
+  "classification": "bf16_safe_merge_weight_rounding",
+  "acceptance": {
+    "stability_evidence_reproduced": true,
+    "earliest_module_divergence_located": true,
+    "preceding_modules_identical": true,
+    "safe_merge_weights_match_peft_algorithm": true,
+    "merge_rounding_quantified": true,
+    "source_adapter_unchanged": true,
+    "eval_digest_unchanged": true
+  },
+  "elapsed_seconds": 15.59904619998997,
+  "peak_gpu_memory_bytes": 9360067072,
+  "merged_artifact_saved": false,
+  "merged_artifact_allowed": false,
+  "constraints": {
+    "new_data": false,
+    "training": false,
+    "eval_answer_tuning": false,
+    "runtime_integration": false,
+    "full_eval_run": false
+  },
+  "locked_next_action": {
+    "gate_id": "FC-MVP-001-bf16-merge-remediation-v1",
+    "action": "load the pinned base and Adapter in FP32, safe-merge in FP32, retain FP32 for greedy SDPA inference on frozen eval-001, and require repeat identity against the independent BF16 Adapter before any full-eval run or artifact promotion",
+    "acceptance": {
+      "candidate_repeats_identical": true,
+      "independent_output_identity": true,
+      "source_adapter_unchanged": true,
+      "eval_digest_unchanged": true
+    },
+    "constraints": {
+      "new_data": false,
+      "training": false,
+      "eval_answer_tuning": false,
+      "runtime_integration": false,
+      "full_eval_before_identity": false,
+      "merged_artifact_promotion": false
+    }
+  },
+  "runtime_eligible": false,
+  "runtime_eligibility_reason": "bf16_safe_merge_weight_rounding",
+  "offline": true
+}

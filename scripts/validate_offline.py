@@ -45,6 +45,9 @@ TOOL_ROUTER_COMPILED_REPORT_PATH = (
 TOOL_ROUTER_MERGE_STABILITY_PATH = (
     ROOT / "baseline" / "fc-mvp-001-bf16-merge-stability-v1.json"
 )
+TOOL_ROUTER_MERGE_NUMERICS_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-bf16-merge-numerics-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -91,6 +94,7 @@ def main() -> int:
         decision_compilation,
     ) = _validate_fixed_outputs()
     merge_stability = _validate_merge_stability()
+    merge_numerics = _validate_merge_numerics(merge_stability)
     tests_run = _run_tests()
 
     result = {
@@ -165,7 +169,16 @@ def main() -> int:
         "tool_router_merge_first_divergent_token_index": merge_stability[
             "token_analysis"
         ]["first_divergent_token_index"],
-        "tool_router_next_gate": merge_stability["locked_next_action"][
+        "tool_router_merge_stability_next_gate": merge_stability[
+            "locked_next_action"
+        ]["gate_id"],
+        "tool_router_merge_numerics_classification": merge_numerics[
+            "classification"
+        ],
+        "tool_router_merge_numerics_first_module": merge_numerics[
+            "module_analysis"
+        ]["first_divergent_module"],
+        "tool_router_next_gate": merge_numerics["locked_next_action"][
             "gate_id"
         ],
     }
@@ -627,6 +640,56 @@ def _validate_merge_stability() -> dict[str, Any]:
         != "FC-MVP-001-bf16-merge-numerics-v1"
     ):
         raise GateError("Tool Router merge-stability acceptance drift")
+    return gate
+
+
+def _validate_merge_numerics(stability: dict[str, Any]) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    gate = _load_json(TOOL_ROUTER_MERGE_NUMERICS_PATH)
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    if (
+        gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != directory_artifact_manifest(adapter)
+        or gate.get("stability_evidence_sha256")
+        != file_sha256(TOOL_ROUTER_MERGE_STABILITY_PATH)
+        or gate.get("eval_digest") != stability.get("eval_digest")
+    ):
+        raise GateError("Tool Router merge-numerics source drift")
+    acceptance = gate.get("acceptance")
+    analysis = gate.get("module_analysis")
+    rounding = gate.get("merge_rounding")
+    next_action = gate.get("locked_next_action")
+    if (
+        not isinstance(acceptance, dict)
+        or not acceptance
+        or not all(value is True for value in acceptance.values())
+        or not isinstance(analysis, dict)
+        or analysis.get("first_divergent_module")
+        != "model.layers.0.self_attn.q_proj"
+        or analysis.get("first_divergent_module_index") != 2
+        or analysis.get("preceding_modules_identical") is not True
+        or not isinstance(rounding, dict)
+        or rounding.get("target_modules") != 112
+        or rounding.get("actual_merged_mismatched_weights") != 0
+        or not isinstance(
+            rounding.get("ideal_nonzero_updates_rounded_to_base"), int
+        )
+        or rounding["ideal_nonzero_updates_rounded_to_base"] <= 0
+        or gate.get("classification") != "bf16_safe_merge_weight_rounding"
+        or gate.get("merged_artifact_allowed") is not False
+        or gate.get("merged_artifact_saved") is not False
+        or gate.get("runtime_eligible") is not False
+        or not isinstance(next_action, dict)
+        or next_action.get("gate_id")
+        != "FC-MVP-001-bf16-merge-remediation-v1"
+    ):
+        raise GateError("Tool Router merge-numerics acceptance drift")
     return gate
 
 

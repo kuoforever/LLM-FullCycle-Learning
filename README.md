@@ -187,6 +187,16 @@ exact cached generation step confirm an argmax boundary flip. The merged form
 remains prohibited and Runtime eligibility remains false. See
 [BF16 merge stability](docs/FC-MVP-001-bf16-merge-stability-v1.md).
 
+### BF16 merge numerics v1
+
+Paired hooks on the exact divergent cached generation step locate the first
+module difference at layer 0 `q_proj`, after identical embedding and input
+normalization outputs. Across all 112 LoRA target modules, PEFT safe merge
+matches the reproduced algorithm exactly, but BF16 materialization rounds
+30,640,994 nonzero Adapter updates back to their base values. The merged model
+remains prohibited and Runtime eligibility remains false. See
+[BF16 merge numerics](docs/FC-MVP-001-bf16-merge-numerics-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -210,8 +220,9 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-bf16-merge-numerics-v1`. On the frozen
-`eval-001` common prefix, locate the earliest module-level divergence between
-independent and merged BF16 execution and quantify Adapter-update versus
-safe-merged-weight rounding. No new data, training, eval-answer tuning, Runtime
-integration, full-eval run, or merged-artifact promotion is allowed.
+The current work is `FC-MVP-001-bf16-merge-remediation-v1`. Load the pinned
+base and Adapter in FP32, safe-merge in FP32, retain FP32 for greedy SDPA
+inference on frozen `eval-001`, and require two fresh candidate runs to match
+the frozen independent BF16 Adapter output exactly. No new data, training,
+eval-answer tuning, Runtime integration, full-eval run before identity, or
+merged-artifact promotion is allowed.
