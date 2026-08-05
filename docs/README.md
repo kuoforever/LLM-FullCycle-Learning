@@ -42,6 +42,7 @@ English companion documents.
 | Attached BF16/FP32 dtype numerics v1 | [FC-MVP-001 attached dtype numerics](FC-MVP-001-attached-dtype-numerics-v1.md) | English source |
 | Attached BF16/FP32 dtype boundary control v1 | [FC-MVP-001 attached dtype boundary control](FC-MVP-001-attached-dtype-boundary-control-v1.md) | English source |
 | FP32 attached remediation eval v1 | [FC-MVP-001 FP32 attached remediation eval](FC-MVP-001-fp32-attached-remediation-eval-v1.md) | English source |
+| FP32 attached artifact eligibility review v1 | [FC-MVP-001 FP32 attached artifact eligibility review](FC-MVP-001-fp32-attached-artifact-eligibility-review-v1.md) | English source |
 
 ## Development references
 
