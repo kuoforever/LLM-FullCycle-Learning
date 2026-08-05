@@ -275,6 +275,26 @@ path, not a pristine-FP32 checkpoint comparison, unique operation/CUDA root
 cause, full-eval improvement, or Runtime eligibility. See
 [attached dtype isolation](docs/FC-MVP-001-attached-dtype-isolation-v1.md).
 
+### Attached BF16/FP32 dtype numerics v1
+
+Four fresh ABBA-ordered attached runs reproduce both frozen 48-token paths and
+the exact cached forward that predicts generated token index 45. An
+outcome-neutral 40-output plan covers the embedding, a detailed layer-0 spine,
+all 28 decoder-layer outputs, final norm, and LM head. The embedding output is
+canonically identical after conversion to FP32; the first unequal registered
+output is layer 0 `input_layernorm`, where all 1,536 elements differ and the
+RMS delta is `0.0009270972900508952`. All 38 later registered outputs remain
+unequal. At the linked LM head, all 151,936 values differ and the RMS delta is
+`0.29328314971734404`; both capture digests match the prior frozen raw-logit
+vectors.
+
+The JSON-only gate locks 160 repeat-exact capture summaries and all comparison
+manifests without saving module tensors. It establishes a descriptive
+registered total-dtype delta profile, not independent causal propagation from
+RMSNorm, the first unregistered operation, a unique CUDA root cause, or
+Runtime eligibility. See
+[attached dtype numerics](docs/FC-MVP-001-attached-dtype-numerics-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -300,13 +320,13 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-attached-dtype-numerics-v1`. Reproduce the
-fresh repeat-stable BF16 and FP32 attached paths on the frozen `eval-001`
-cached forward, capture a bounded pre-registered common module sequence,
-locate the first unequal output in that plan, and quantify registered
-propagation to the LM head. The attached execution form, checkpoint and FP32
-Adapter source/runtime values, prompt, seed, SDPA dispatch, generation
-semantics, eval digest, and target step must not change. No new data, training,
-eval-answer tuning, Runtime integration, full-eval run, merged artifact, or
-module tensor sidecar is allowed; registered evidence must not be promoted to
-a unique low-level root-cause claim.
+The current work is `FC-MVP-001-attached-dtype-boundary-control-v1`.
+Reproduce the fresh attached BF16/FP32 paths and the observed layer-0
+`input_layernorm` boundary, then run one pre-registered same-values RMSNorm
+control that separates current-forward module arithmetic from prior cached
+state. The attached execution form, checkpoint and FP32 Adapter source/runtime
+values, prompt, seed, SDPA dispatch, generation semantics, eval digest, and
+target step must not change. No new data, training, eval-answer tuning,
+Runtime integration, full-eval run, merged artifact, module tensor sidecar, or
+second intervention is allowed; the result must not be promoted to a unique
+CUDA/floating-point root-cause or full-history causality claim.

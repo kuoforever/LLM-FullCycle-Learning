@@ -37,33 +37,78 @@ fresh ABBA-ordered attached runs reproduce both frozen paths, and the raw
 LM-head argmax flips from `true` to `false` at the locked token boundary when
 only the base/inference dtype changes while the Adapter remains FP32. This
 isolates a repeat-stable total dtype effect on the one frozen example, not its
-first module boundary or a unique low-level root cause. The Adapter remains
-Runtime ineligible; the next gate must locate the first registered attached
-module-output difference and quantify its propagation.
+first module boundary or a unique low-level root cause. Attached dtype
+numerics v1 now executes an outcome-neutral 40-output plan on the same cached
+forward. The embedding output is canonically identical; the first registered
+unequal output is layer 0 `input_layernorm`, and every later registered output
+through the linked LM head remains unequal. This is a descriptive total-dtype
+delta trajectory, not independent causal propagation from RMSNorm or a claim
+about the first unregistered operation. The Adapter remains Runtime
+ineligible; the next gate must run one pre-registered control at the observed
+boundary.
 
 ## Single active objective
 
-Complete `FC-MVP-001-attached-dtype-numerics-v1`:
+Complete `FC-MVP-001-attached-dtype-boundary-control-v1`:
 
 ```text
 fresh repeat-stable BF16 and FP32 attached paths + frozen target forward
-        -> capture the same pre-registered module-output sequence
-paired BF16-versus-FP32 comparisons in execution order
-        -> locate the first registered unequal module output
-registered downstream comparisons on the same cached forward
-        -> quantify propagation without claiming a unique low-level root cause
+        -> reproduce the layer-0 input_layernorm boundary and capture its input
+one pre-registered same-values RMSNorm control under the two locked dtypes
+        -> separate current-forward module arithmetic from prior cached state
+actual-versus-control output linkage and exact summary comparison
+        -> test the registered boundary without claiming a unique kernel cause
 ```
 
 Keep both frozen attached paths and the exact `eval-001` cached forward that
-predicts generated token index `45`. Pre-register a bounded common module
-capture plan, reproduce both 48-token paths in fresh ABBA lifecycles, locate
-the first unequal output inside that plan, and quantify registered propagation
-to the LM head. Keep the BF16 checkpoint source values, FP32 Adapter values,
-prompt, eval digest, high-level SDPA backend, greedy decoding, and target step
-unchanged. Do not add data; train; tune against eval answers; run the full
-eval; connect Runtime/Provider/MCP/Desktop; change execution form; save or
-promote merged weights; add a module tensor sidecar; or claim the first
-unregistered operation, a unique CUDA/floating-point root cause, or a PEFT bug.
+predicts generated token index `45`. Pre-register exactly one bounded control:
+capture the observed layer-0 `input_layernorm` input and weight identities,
+then replay the registered RMSNorm calculation from the same source values
+under the two locked dtypes and link both replay outputs to the actual module
+outputs. Preserve the BF16 checkpoint source values, FP32 Adapter values,
+prompt, eval digest, high-level SDPA backend, greedy decoding, target step, and
+attached execution form. Do not add data; train; tune against eval answers;
+run the full eval; connect Runtime/Provider/MCP/Desktop; save or promote merged
+weights; add a module tensor sidecar; introduce a second intervention; or
+claim a unique CUDA/floating-point root cause, a PEFT bug, or full-history
+causality.
+
+The `FC-MVP-001-attached-dtype-numerics-v1` gate completed locally on
+2026-08-05. Four fresh attached runs execute in ABBA order and reproduce both
+frozen 48-token paths, every processed-score/raw-logit manifest, the exact
+cached call `45`, input token `788`, cache/position `383`, and all precision
+controls. The outcome-neutral plan registers 40 outputs: embedding, a detailed
+layer-0 spine, all 28 decoder-layer outputs, final norm, and LM head. Its
+canonical SHA-256 is
+`945dc2b468edf361b73189e7adf1f4ef61599da4fd942942591fdc13c073b38a`.
+All 40 native and canonical capture records are exact across the two repeats
+of each dtype. The embedding's `1,536` canonical FP32 values are identical;
+the first unequal registered output is index `1`,
+`model.layers.0.input_layernorm`, where `1,536/1,536` elements differ with
+maximum/mean/RMS absolute deltas `0.012537479400634766`/
+`0.0005440729593146898`/`0.0009270972900508952`. Every one of the 38 later
+registered outputs remains unequal. At the linked LM head, all `151,936`
+elements differ, with maximum/mean/RMS deltas `1.943955421447754`/
+`0.22759762689943575`/`0.29328314971734404`; both LM-head vector digests match
+the prior frozen raw-logit vectors exactly. The LM-head-to-first-stage RMS
+ratio is `316.34560133515606`, but it is only a descriptive cross-stage ratio,
+not an amplification or independent causal-propagation estimate. The
+classification is
+`deterministic_attached_bf16_vs_fp32_registered_module_output_drift_reaching_lm_head`.
+`numerics_gate.passed=true`, `remediation_gate.passed=false`, and
+`runtime_eligible=false`. The JSON record contains 160 summary-only capture
+records, is `393,662` bytes, and has SHA-256
+`de5b048a5d254f61ab3bef1ff23f1484b07808c86a1679bc0de4ee58e8c8d7c5`;
+no module tensor payload or sidecar exists. The stdlib validator closes source,
+ABBA, trace, target, capture, repeat, comparison, LM-head, gate, and policy
+links, but without raw module tensors it cannot independently recompute
+intermediate full-vector counts or moments. The probe took
+`35.3808942000032` seconds, peaked at `6,286,024,192` allocated GPU bytes,
+and each released lifecycle retained `8,519,680` bytes. The unified offline
+gate passes 181 tests on Python 3.11.15, 3.12.12, and 3.13.7. Ruff passes the
+repository, py_compile passes the new source/script/test files, and mypy 2.3.0
+reports no issues in all 46 source/script files.
+[Evidence](docs/FC-MVP-001-attached-dtype-numerics-v1.md).
 
 The `FC-MVP-001-attached-dtype-isolation-v1` gate completed locally on
 2026-08-05. Four fresh runs execute in ABBA order: BF16 attached, FP32
@@ -392,7 +437,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; FP32 execution-form drift frozen at layer 0 `q_proj`, attached BF16/FP32 dtype isolation next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; attached dtype numerics first differs at layer 0 `input_layernorm`, one bounded boundary control next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
