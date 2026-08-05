@@ -313,6 +313,24 @@ remediation evaluation. The boundary-control gate passes; remediation and
 Runtime eligibility remain false. See
 [attached dtype boundary control](docs/FC-MVP-001-attached-dtype-boundary-control-v1.md).
 
+### FP32 attached remediation eval v1
+
+The registered formal execution uses the one pre-registered FP32
+attached-Adapter candidate and records one ordered pass over the unchanged
+20-case eval with no retry. After the fixed decision compiler, argument exact
+match improves from `0.20` to `0.25` and
+argument field F1 improves from `0.2608695652173913` to
+`0.29787234042553196`; tool accuracy remains `0.95`, every safety gate passes,
+and no per-example correctness dimension regresses. The run takes
+`71.6701673999778` seconds and peaks at `6,267,895,296` allocated GPU bytes,
+within the pre-registered 2x BF16 ceilings.
+
+Raw decision semantic validity falls from `0.85` to `0.80`, so the favorable
+compiled result does not show that FP32 removes decision inconsistency. The
+unchanged compiler remains necessary. Runtime eligibility and artifact
+promotion remain false. See
+[FP32 attached remediation eval](docs/FC-MVP-001-fp32-attached-remediation-eval-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -326,6 +344,13 @@ only frozen `eval-001`, not the complete 20-case eval. These results are not a
 claim about large-scale pretraining, post-training, or serving infrastructure,
 none of which is implemented.
 
+The FP32 attached full eval operationally consumes its one pre-registered run.
+Its metrics are reproducible from the frozen outputs, but the repository has
+no external execution ledger or cryptographic execution-count attestation.
+It therefore does not independently prove that no alternate output path was
+ever executed; full-eval repeatability and variance are also intentionally not
+estimated by this gate.
+
 ## Reproducible offline gate
 
 ```powershell
@@ -338,12 +363,10 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-fp32-attached-remediation-eval-v1`.
-Pre-register one resource-bounded full frozen evaluation of the FP32 attached
-Adapter with decision compilation fixed, then compare it against the frozen
-BF16 attached v2 metrics. The matched boundary-control evidence, attached
-execution form, checkpoint and FP32 Adapter source/runtime values, unchanged
-20-case eval, compiler, prompt, SDPA dispatch, and generation semantics must
-remain fixed. No new data, training, eval-answer tuning, merge, model-artifact
-promotion, or Runtime integration is allowed; those decisions remain
-prohibited until the safety, regression, and resource gates pass.
+The current work is
+`FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`. Review the frozen
+favorable full-eval evidence, its fixed-compiler dependency, the isolated
+`eval-016` argument improvement, and the nearly 2x peak-memory cost. The review
+may decide offline artifact eligibility only; it must not rerun the registered
+evaluation, add data, train, tune against eval answers, merge or save model
+weights, promote an artifact, or integrate Runtime/Provider/MCP/Desktop.

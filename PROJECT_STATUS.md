@@ -48,37 +48,63 @@ outputs exactly match their same-dtype actual module outputs. This establishes
 that locked same-values BF16/FP32 RMSNorm arithmetic is sufficient to reproduce
 this local registered boundary; it does not identify a unique internal
 operation or kernel, nor establish independent downstream propagation or a
-token cause. The Adapter remains Runtime ineligible. The next gate is one
-resource-bounded full frozen evaluation of the FP32 attached candidate.
+token cause. FP32 attached remediation eval v1 now records its one
+pre-registered 20-case formal run. With the decision compiler fixed, argument
+exact match improves from `0.20` to `0.25`, argument field F1 improves from
+`0.2608695652173913` to `0.29787234042553196`, all safety and per-example
+regression gates pass, and the run remains inside its 2x BF16 resource caps.
+Raw semantic validity falls from `0.85` to `0.80`, so compiler dependency
+remains explicit. The Adapter remains Runtime ineligible; the next gate is an
+offline artifact-eligibility review, not promotion or integration. The
+single-run record is an operational protocol fact rather than external
+execution-count attestation: frozen hashes protect the selected artifacts,
+but the repository cannot independently exclude an alternate-path execution.
 
 ## Single active objective
 
-Complete `FC-MVP-001-fp32-attached-remediation-eval-v1`:
+Complete `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`:
 
 ```text
-matched boundary control + frozen BF16 attached v2 reference
-        -> lock the evidence and comparison baseline before evaluation
-one FP32 attached candidate + unchanged 20-case eval and decision compiler
-        -> run one resource-bounded full frozen evaluation
-safety, regression, and resource comparison
-        -> decide the next gate without merge, promotion, or Runtime integration
+frozen favorable FP32 attached eval + fixed compiler dependency
+        -> quantify the isolated quality benefit and nearly 2x memory cost
+attached Adapter packaging + reproducibility and serving constraints
+        -> decide offline artifact eligibility without promotion
+eligibility decision
+        -> select the next gate without Runtime integration or merged weights
 ```
 
-Pre-register exactly one FP32 attached candidate and one resource-bounded run
-over the unchanged frozen 20-case evaluation set. Keep decision compilation,
-the attached factorized-LoRA execution form, BF16 checkpoint source values,
-FP32 Adapter source/runtime values, prompt, eval digest, high-level SDPA
-backend, and greedy decoding fixed. Compare the compiled FP32 results against
-the frozen BF16 attached v2 metrics, including safety, regression,
-elapsed-time, and peak-memory evidence. Do not add data; train; tune against
-eval answers; change the compiler or execution form; connect
-Runtime/Provider/MCP/Desktop; merge or save merged weights; promote any model
-artifact; or treat the local RMSNorm boundary control as proof of a unique
-internal operation, downstream causal propagation, or full-eval improvement.
-The completed boundary-control record keeps its current-gate
-`constraints.full_eval_run=false`; the locked next action explicitly sets
-`constraints.full_eval_run=true`, so this single pre-registered evaluation is
-required and allowed only inside the new gate.
+Review only the frozen favorable evidence and already pinned sources. Account
+for the fixed compiler, the one-case argument improvement, the raw semantic
+validity regression, and the `1.9896x` peak-memory ratio. Check independent
+attached-Adapter packaging and reproducibility requirements before deciding
+offline artifact eligibility. Do not rerun the registered evaluation; add
+data; train; tune against eval answers; change the compiler or execution form;
+connect Runtime/Provider/MCP/Desktop; merge or save model weights; or promote
+an artifact. Eligibility review is a decision gate, not promotion authority.
+
+The `FC-MVP-001-fp32-attached-remediation-eval-v1` gate completed locally on
+2026-08-05. Its protocol was committed before result generation at
+`0638557d3bedc3bf00eef6ae4763f09d8878c4f5`. One fresh FP32 attached load
+executes 20 ordered generation calls with no retry. Compiled argument exact
+match and field F1 improve to `0.25` and `0.29787234042553196`; tool accuracy
+and risk macro F1 remain `0.95` and `0.7095238095238096`; all safety counts and
+eight-dimension per-example regression checks pass. The strict outcome is
+`fp32_attached_full_eval_improves_quality_without_safety_or_resource_regression`.
+
+The run takes `71.6701673999778` seconds, peaks at `6,267,895,296` allocated
+GPU bytes, begins with zero allocated CUDA bytes, and releases to `8,519,680`
+bytes. Raw semantic validity is `0.80`, below the BF16 raw `0.85`; the fixed
+compiler is therefore still required. The prediction and gate SHA-256 values
+are respectively
+`382071f0689ce4ca41329d689f76fc4c4b06faa68769fb80c99181015e678115`
+and `2dd17f6b1098490034f825d163f48f26eb4093d02f115424eb814cb2c925ad8e`.
+No model or Adapter artifact is created or promoted, and
+`runtime_eligible=false`.
+The unified offline gate passes 260 tests with `valid=true` on Python 3.11.15,
+3.12.12, and 3.13.7 and audits 29 source files. Ruff passes the repository,
+mypy reports no issues in 31 current source/runner/validator files, and
+py_compile plus `git diff --check` pass.
+[Evidence](docs/FC-MVP-001-fp32-attached-remediation-eval-v1.md).
 
 The `FC-MVP-001-attached-dtype-boundary-control-v1` gate completed locally on
 2026-08-05. Four fresh attached runs execute in ABBA order, reproduce both
@@ -476,7 +502,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; attached dtype boundary control matched exactly, one resource-bounded full frozen FP32 attached eval next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; favorable frozen FP32 attached eval complete, artifact-eligibility review next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
