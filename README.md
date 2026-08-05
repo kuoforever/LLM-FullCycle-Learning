@@ -238,6 +238,25 @@ numerical effect without proving a PEFT bug or a token-level remediation.
 The isolation gate passes; remediation and Runtime eligibility remain false.
 See [FP32 attached/merge isolation](docs/FC-MVP-001-fp32-attached-merge-isolation-v1.md).
 
+### FP32 attached/merge numerics v1
+
+Four fresh ABBA-ordered FP32 runs reproduce the attached and safe-merged
+paths and are bitwise repeat-stable within each path. A pre-registered
+13-stage paired capture plan first differs at layer 0 `q_proj`, after
+bitwise-identical inputs. Its attached and merged outputs differ in 1,261 of
+1,536 elements with maximum absolute delta `3.814697265625e-06`. Probe-captured
+linear replays match both actual outputs; the stdlib gate recomputes their
+comparisons and scalar/add identities. The evidence shows two counterfactual
+differences that remain nonzero at the `q_proj` output boundary: factorized
+LoRA versus a delta-weight linear, and split base-plus-delta versus a
+materialized-weight linear. Their independent propagation beyond `q_proj` is
+not isolated. The Git LFS sidecar binds 138 raw records,
+including representative full weights and biases. This classifies a
+deterministic FP32 execution-form drift, not a CUDA root cause, PEFT bug, or
+same-dtype token boundary. The numerics gate passes; remediation and Runtime
+eligibility remain false. See
+[FP32 attached/merge numerics](docs/FC-MVP-001-fp32-attached-merge-numerics-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -246,8 +265,10 @@ base model, LoRA rank 16 over Q/K/V/O projections, a 100-step v1 run or
 cases each. These
 results are reproducible and were produced under frozen data and evaluation
 contracts, but at this sample size they indicate direction only and do not
-establish generalization. They are not a claim about large-scale pretraining,
-post-training, or serving infrastructure, none of which is implemented.
+establish generalization. The recent merge and numerics diagnostic gates run
+only frozen `eval-001`, not the complete 20-case eval. These results are not a
+claim about large-scale pretraining, post-training, or serving infrastructure,
+none of which is implemented.
 
 ## Reproducible offline gate
 
@@ -261,11 +282,11 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-fp32-attached-merge-numerics-v1`. Reproduce
-the repeat-stable FP32 attached path and unchanged FP32 safe-merged path at the
-frozen comparison step index `45`, then locate the first module-level
-numerical divergence in execution order and quantify its operation boundary.
-There is no same-dtype token boundary to claim. The failed candidate, BF16
-context, prompt, seed, SDPA dispatch, generation semantics, Adapter, and eval
-digest must not change. No new data, training, eval-answer tuning, Runtime
-integration, full-eval run, or merged-artifact promotion is allowed.
+The current work is `FC-MVP-001-attached-dtype-isolation-v1`. Hold the
+Adapter-attached execution form fixed, reproduce fresh repeat-stable BF16 and
+FP32 paths on the frozen `eval-001` comparison step index `45`, and classify
+the remaining token-level dtype effect without changing merge form. The
+pinned checkpoint and Adapter source values, prompt, seed, SDPA dispatch,
+generation semantics, and eval digest must not change. No new data, training,
+eval-answer tuning, Runtime integration, full-eval run, or merged-artifact
+promotion is allowed.

@@ -58,6 +58,14 @@ TOOL_ROUTER_FP32_MERGE_DRIFT_PATH = (
 TOOL_ROUTER_FP32_ATTACHED_MERGE_ISOLATION_PATH = (
     ROOT / "baseline" / "fc-mvp-001-fp32-attached-merge-isolation-v1.json"
 )
+TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-fp32-attached-merge-numerics-v1.json"
+)
+TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_TENSORS_PATH = (
+    ROOT
+    / "baseline"
+    / "fc-mvp-001-fp32-attached-merge-numerics-v1-tensors.bin"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -112,6 +120,9 @@ def main() -> int:
     fp32_merge_drift = _validate_fp32_merge_drift(merge_remediation)
     fp32_attached_merge_isolation = _validate_fp32_attached_merge_isolation(
         fp32_merge_drift
+    )
+    fp32_attached_merge_numerics = _validate_fp32_attached_merge_numerics(
+        fp32_attached_merge_isolation
     )
     tests_run = _run_tests()
 
@@ -240,7 +251,21 @@ def main() -> int:
         "tool_router_fp32_attached_merge_remediation_passed": (
             fp32_attached_merge_isolation["remediation_gate"]["passed"]
         ),
-        "tool_router_next_gate": fp32_attached_merge_isolation[
+        "tool_router_fp32_attached_merge_numerics_classification": (
+            fp32_attached_merge_numerics["classification"]
+        ),
+        "tool_router_fp32_attached_merge_numerics_first_module": (
+            fp32_attached_merge_numerics["module_analysis"][
+                "first_divergent_module"
+            ]
+        ),
+        "tool_router_fp32_attached_merge_numerics_passed": (
+            fp32_attached_merge_numerics["numerics_gate"]["passed"]
+        ),
+        "tool_router_fp32_attached_merge_numerics_records": (
+            fp32_attached_merge_numerics["tensor_archive"]["record_count"]
+        ),
+        "tool_router_next_gate": fp32_attached_merge_numerics[
             "locked_next_action"
         ]["gate_id"],
     }
@@ -2223,6 +2248,134 @@ def _validate_fp32_attached_merge_isolation(
         or gate.get("offline") is not True
     ):
         raise GateError("Tool Router FP32 attached/merge acceptance drift")
+    return gate
+
+
+def _validate_fp32_attached_merge_numerics(
+    isolation: dict[str, Any],
+) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_fp32_attached_merge_numerics_archive import (
+        validate_frozen_numerics_evidence,
+    )
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    gate = _load_json(TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_PATH)
+    _validate_finite_json(gate, "$")
+    if (
+        not TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_TENSORS_PATH.is_file()
+        or TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_TENSORS_PATH.is_symlink()
+    ):
+        raise GateError("Tool Router FP32 numerics tensor archive is unsafe")
+    payload = TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_TENSORS_PATH.read_bytes()
+    raw_validation = validate_frozen_numerics_evidence(gate, payload)
+    if (
+        raw_validation.get("frozen_gate_valid") is not True
+        or raw_validation.get("record_count") != 138
+        or raw_validation.get("comparisons_recomputed") != 35
+        or raw_validation.get("weight_elements_recomputed") != 2_359_296
+        or raw_validation.get("bias_elements_recomputed") != 1_536
+    ):
+        raise GateError("Tool Router FP32 numerics raw validation drift")
+
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    training = _load_json(
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    )
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    expected_lineage = {
+        "isolation_evidence_sha256": file_sha256(
+            TOOL_ROUTER_FP32_ATTACHED_MERGE_ISOLATION_PATH
+        ),
+        "drift_evidence_sha256": file_sha256(
+            TOOL_ROUTER_FP32_MERGE_DRIFT_PATH
+        ),
+        "remediation_evidence_sha256": file_sha256(
+            TOOL_ROUTER_MERGE_REMEDIATION_PATH
+        ),
+        "stability_evidence_sha256": file_sha256(
+            TOOL_ROUTER_MERGE_STABILITY_PATH
+        ),
+        "bf16_numerics_context_sha256": file_sha256(
+            TOOL_ROUTER_MERGE_NUMERICS_PATH
+        ),
+    }
+    if (
+        file_sha256(TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_PATH)
+        != "sha256:cb1c2b4255ebc5c38aa2ff66436804cca55dc088e39ca8fe8959654488e41a91"
+        or gate.get("source_lineage") != expected_lineage
+        or gate.get("source_experiment_id") != isolation.get("experiment_id")
+        or gate.get("training_lock_sha256")
+        != file_sha256(ROOT / "requirements" / "training.lock")
+        or gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != directory_artifact_manifest(adapter)
+        or gate.get("adapter_files") != training["final_adapter"]["files"]
+        or gate.get("model_weight_sha256")
+        != f"sha256:{config['model']['weight_sha256']}"
+        or gate.get("prompt_sha256")
+        != file_sha256(ROOT / config["prompt"]["path"])
+        or gate.get("eval_digest") != fixture_digest(evaluation)
+        or gate.get("eval_digest") != isolation.get("eval_digest")
+        or gate.get("input_token_count") != isolation.get("input_token_count")
+        or gate.get("input_token_ids_sha256")
+        != isolation.get("input_token_ids_sha256")
+        or gate.get("storage_audit") != isolation.get("storage_audit")
+        or gate.get("frozen_bf16_context")
+        != isolation.get("frozen_bf16_context")
+        or isolation.get("locked_next_action", {}).get("gate_id")
+        != "FC-MVP-001-fp32-attached-merge-numerics-v1"
+    ):
+        raise GateError("Tool Router FP32 numerics source lineage drift")
+    expected_environment = {
+        **config["environment"],
+        "base_and_adapter_runtime_dtype": "float32",
+        "autocast": False,
+        "tf32": False,
+    }
+    if gate.get("environment") != expected_environment:
+        raise GateError("Tool Router FP32 numerics environment drift")
+
+    expected_references: dict[str, Any] = {}
+    for path in ("fp32_attached_adapter", "fp32_safe_merged"):
+        matches = [run for run in isolation["runs"] if run.get("path") == path]
+        if not matches:
+            raise GateError("Tool Router FP32 numerics source run missing")
+        run = matches[0]
+        expected_references[path] = {
+            "token_count": run["token_count"],
+            "token_ids_sha256": run["token_ids_sha256"],
+            "output_sha256": run["output_sha256"],
+            "score_trace_sha256": run["generation_trace"]["scores"][
+                "trace_sha256"
+            ],
+            "raw_logit_trace_sha256": run["generation_trace"]["raw_logits"][
+                "trace_sha256"
+            ],
+            "comparison_step_index": 45,
+            "comparison_score_vector_sha256": run["generation_trace"][
+                "scores"
+            ]["comparison_step_vector_sha256"],
+            "comparison_raw_logit_vector_sha256": run["generation_trace"][
+                "raw_logits"
+            ]["comparison_step_vector_sha256"],
+        }
+    if gate.get("frozen_path_references") != expected_references:
+        raise GateError("Tool Router FP32 numerics frozen reference drift")
+    runs = gate["runs"]
+    if (
+        gate.get("peak_gpu_memory_bytes")
+        != max(run["peak_gpu_memory_bytes"] for run in runs)
+        or not isinstance(gate.get("elapsed_seconds"), (int, float))
+        or isinstance(gate.get("elapsed_seconds"), bool)
+        or not math.isfinite(gate["elapsed_seconds"])
+        or gate["elapsed_seconds"] <= 0
+    ):
+        raise GateError("Tool Router FP32 numerics resource evidence drift")
     return gate
 
 

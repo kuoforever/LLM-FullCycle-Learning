@@ -1,6 +1,6 @@
 # Project status
 
-> Updated: 2026-08-04.
+> Updated: 2026-08-05.
 > This is the operational entry point for a new Reliable Agent Model Lifecycle
 > session.
 
@@ -27,32 +27,75 @@ compute dtype with attached-versus-merged execution, FP32 attached/merge
 isolation adds the missing same-dtype control. Two fresh attached runs are
 exactly repeat-stable, the unchanged merged path reproduces, and both forms
 emit identical tokens and output while retaining small deterministic numerical
-trace drift. The Adapter remains Runtime ineligible; the next gate must locate
-the first module-level FP32 execution-form divergence without inventing a
-same-dtype token boundary.
+trace drift. FP32 attached/merge numerics v1 now locates the first unequal
+paired captured output at layer 0 `q_proj` and replays the factorized LoRA and
+materialized-linear forms from a raw tensor sidecar. Both registered
+counterfactual differences remain nonzero at the `q_proj` output boundary,
+but their independent propagation beyond `q_proj` is not isolated, and there
+is still no same-dtype token boundary or low-level root-cause claim. The
+Adapter remains Runtime ineligible; the next
+gate must hold the attached execution form fixed and isolate the BF16-versus-
+FP32 dtype effect at the frozen token boundary.
 
 ## Single active objective
 
-Complete `FC-MVP-001-fp32-attached-merge-numerics-v1`:
+Complete `FC-MVP-001-attached-dtype-isolation-v1`:
 
 ```text
-repeat-stable FP32 attached Adapter + frozen eval-001/index 45
-        -> reproduce locked path -> capture execution-order module outputs
-unchanged FP32 safe-merged candidate + same frozen input/index 45
-        -> reproduce locked path -> capture paired module outputs
-first unequal paired module
-        -> quantify operation-order boundary -> freeze narrow numerics evidence
+fresh repeat-stable BF16 attached Adapter + frozen eval-001/index 45
+        -> reproduce locked true-token path and target forward
+fresh repeat-stable FP32 attached Adapter + same frozen input/index 45
+        -> reproduce locked false-token path and target forward
+same attached execution form, dtype as the isolated factor
+        -> classify the frozen token-level precision effect
 ```
 
-Reproduce the locked FP32 attached and FP32 safe-merged paths at exact
-`eval-001` comparison step index `45`. Capture comparable module outputs in
-execution order, locate the first numerical divergence, and quantify the
-operation-order boundary while preserving both full-path token/output and
-comparison-step evidence. The gate must not claim a same-dtype token boundary,
-because the frozen paths have token identity. Keep BF16 evidence as context
-only. Do not alter either FP32 path, change backend/decoding, add data, train,
-tune against eval answers, run the full eval, connect
-Runtime/Provider/MCP/Desktop, or save/promote a merged artifact.
+Hold the Adapter-attached execution form fixed and compare fresh repeat-stable
+BF16 and FP32 paths at exact `eval-001` comparison step index `45`. Reproduce
+the frozen attached BF16 `true` path and attached FP32 `false` path, preserve
+their full-token/output and exact cached-forward evidence, and classify the
+remaining dtype effect without changing merge form. Do not change the source
+model values, Adapter, prompt, eval digest, backend, decoding, or target step;
+add data; train; tune against eval answers; run the full eval; connect
+Runtime/Provider/MCP/Desktop; or save/promote a merged artifact.
+
+The `FC-MVP-001-fp32-attached-merge-numerics-v1` gate completed locally on
+2026-08-05. Four fresh runs execute in ABBA order: attached, merged, merged,
+attached. Every run reproduces its frozen 48-token, decoded-output,
+processed-score, raw-logit, and target-forward references, and all captured
+tensors are bitwise repeat-stable within each path. The 13-stage paired output
+comparison first differs at index `2`,
+`model.layers.0.self_attn.q_proj`, after bitwise-identical embedding, layer 0
+input normalization, and `q_proj` input tensors. Its output differs in
+`1,261/1,536` elements, with maximum/mean/RMS absolute deltas
+`3.814697265625e-06`/`1.6505699325837972e-07`/
+`2.990363292409807e-07`. Probe-captured linear replays match both actual
+outputs, while the stdlib gate independently recomputes their comparisons and
+the scalar/add identities.
+The factorized LoRA term versus delta-weight linear comparison differs in
+`1,355` elements with maximum delta `3.259629011154175e-09`, and that axis
+survives base addition in 53 elements. Split base-plus-delta versus the
+materialized-weight linear differs in `1,260` elements with maximum delta
+`3.814697265625e-06`. The representative `q_proj` audit recomputes all
+`2,359,296` merged weights with zero mismatches; 21 nonzero archived FP32 delta
+updates round back to the base value. The classification is
+`deterministic_fp32_factorized_lora_and_materialized_linear_execution_form_drift`.
+The Git LFS tensor sidecar contains 138 bound records and `46,069,904` bytes,
+with SHA-256
+`550175dfcfe14b0739aabf17573825a124180a6e21826e25d4b5ff733fb298a9`;
+the JSON record SHA-256 is
+`cb1c2b4255ebc5c38aa2ff66436804cca55dc088e39ca8fe8959654488e41a91`.
+`numerics_gate.passed=true`, `remediation_gate.passed=false`, and
+`runtime_eligible=false`. The probe took `29.912574299960397` seconds and
+peaked at `6,286,505,472` allocated GPU bytes. It does not claim the earliest
+temporal or unregistered functional divergence, independent propagation of
+either counterfactual beyond `q_proj`, a unique floating-point or CUDA root
+cause, a PEFT bug, full-eval generalization, merged-artifact promotion, or
+Runtime eligibility. The unified offline gate passes 124 tests on Python
+3.11.15, 3.12.12, and 3.13.7; Ruff passes the repository, py_compile passes the
+new source/test files, and mypy 2.3.0 reports no issues in all 40 source/script
+files.
+[Evidence](docs/FC-MVP-001-fp32-attached-merge-numerics-v1.md).
 
 The `FC-MVP-001-fp32-attached-merge-isolation-v1` gate completed locally on
 2026-08-04. Two fresh independent FP32 attached-Adapter loads are exactly
@@ -311,7 +354,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; same-dtype FP32 token identity and numerical drift frozen, first module divergence next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; FP32 execution-form drift frozen at layer 0 `q_proj`, attached BF16/FP32 dtype isolation next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in
