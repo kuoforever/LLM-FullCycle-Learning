@@ -31,33 +31,71 @@ trace drift. FP32 attached/merge numerics v1 now locates the first unequal
 paired captured output at layer 0 `q_proj` and replays the factorized LoRA and
 materialized-linear forms from a raw tensor sidecar. Both registered
 counterfactual differences remain nonzero at the `q_proj` output boundary,
-but their independent propagation beyond `q_proj` is not isolated, and there
-is still no same-dtype token boundary or low-level root-cause claim. The
-Adapter remains Runtime ineligible; the next
-gate must hold the attached execution form fixed and isolate the BF16-versus-
-FP32 dtype effect at the frozen token boundary.
+but their independent propagation beyond `q_proj` is not isolated. Attached
+dtype isolation v1 now adds the missing fixed-form BF16/FP32 control: four
+fresh ABBA-ordered attached runs reproduce both frozen paths, and the raw
+LM-head argmax flips from `true` to `false` at the locked token boundary when
+only the base/inference dtype changes while the Adapter remains FP32. This
+isolates a repeat-stable total dtype effect on the one frozen example, not its
+first module boundary or a unique low-level root cause. The Adapter remains
+Runtime ineligible; the next gate must locate the first registered attached
+module-output difference and quantify its propagation.
 
 ## Single active objective
 
-Complete `FC-MVP-001-attached-dtype-isolation-v1`:
+Complete `FC-MVP-001-attached-dtype-numerics-v1`:
 
 ```text
-fresh repeat-stable BF16 attached Adapter + frozen eval-001/index 45
-        -> reproduce locked true-token path and target forward
-fresh repeat-stable FP32 attached Adapter + same frozen input/index 45
-        -> reproduce locked false-token path and target forward
-same attached execution form, dtype as the isolated factor
-        -> classify the frozen token-level precision effect
+fresh repeat-stable BF16 and FP32 attached paths + frozen target forward
+        -> capture the same pre-registered module-output sequence
+paired BF16-versus-FP32 comparisons in execution order
+        -> locate the first registered unequal module output
+registered downstream comparisons on the same cached forward
+        -> quantify propagation without claiming a unique low-level root cause
 ```
 
-Hold the Adapter-attached execution form fixed and compare fresh repeat-stable
-BF16 and FP32 paths at exact `eval-001` comparison step index `45`. Reproduce
-the frozen attached BF16 `true` path and attached FP32 `false` path, preserve
-their full-token/output and exact cached-forward evidence, and classify the
-remaining dtype effect without changing merge form. Do not change the source
-model values, Adapter, prompt, eval digest, backend, decoding, or target step;
-add data; train; tune against eval answers; run the full eval; connect
-Runtime/Provider/MCP/Desktop; or save/promote a merged artifact.
+Keep both frozen attached paths and the exact `eval-001` cached forward that
+predicts generated token index `45`. Pre-register a bounded common module
+capture plan, reproduce both 48-token paths in fresh ABBA lifecycles, locate
+the first unequal output inside that plan, and quantify registered propagation
+to the LM head. Keep the BF16 checkpoint source values, FP32 Adapter values,
+prompt, eval digest, high-level SDPA backend, greedy decoding, and target step
+unchanged. Do not add data; train; tune against eval answers; run the full
+eval; connect Runtime/Provider/MCP/Desktop; change execution form; save or
+promote merged weights; add a module tensor sidecar; or claim the first
+unregistered operation, a unique CUDA/floating-point root cause, or a PEFT bug.
+
+The `FC-MVP-001-attached-dtype-isolation-v1` gate completed locally on
+2026-08-05. Four fresh runs execute in ABBA order: BF16 attached, FP32
+attached, FP32 attached, BF16 attached. Each dtype is exactly repeat-stable
+and reproduces its frozen 48-token, decoded-output, processed-score,
+raw-logit, and target-forward references. Both paths keep the same attached
+factorized LoRA form and FP32 Adapter runtime values; PEFT
+`autocast_adapter_dtype=true` is a locked load-time policy that would upcast
+FP16/BF16 Adapter weights, while these stored FP32 values remain FP32.
+Generation autocast remains disabled. The paths share generated indices
+`0`–`44`; at index `45`, BF16 emits token `1866` (`true`) and FP32 emits token
+`3849` (`false`). Processed-score margins are `0.4545440673828125` and
+`2.4418487548828125`; raw-logit margins are `0.5` and `2.68603515625`.
+All `151,936` vocabulary elements differ in both comparison vectors, with
+maximum absolute delta `1.943955421447754`. The classification is
+`deterministic_bf16_attached_vs_fp32_attached_raw_logit_boundary_flip`.
+`dtype_isolation_gate.passed=true`, `remediation_gate.passed=false`, and
+`runtime_eligible=false`. The probe took `37.87893820001045` seconds and
+peaked at `6,285,127,680` allocated GPU bytes; every released lifecycle stays
+at `8,519,680` bytes, below the 16 MiB ceiling. The JSON-only validator closes
+the source chain, ABBA protocol, 48-step manifests, target/LM-head linkage,
+top-k algebra, classification, gates, and policy. Without raw vector payloads,
+its full-vector delta checks are limited to probe-derived summary algebra and
+do not independently recompute maximum/mean/RMS statistics. The evidence does
+not support a pristine-FP32 checkpoint claim, first module or unique CUDA root
+cause, PEFT bug, full-eval generalization, artifact promotion, or Runtime
+eligibility. The canonical record SHA-256 is
+`7eaedee1d6f7ea27b2fc083f82bc8df620612e84095f4a66a2ba7dfec791ce31`.
+The unified offline gate passes 144 tests on Python 3.11.15, 3.12.12, and
+3.13.7. Ruff passes the repository, py_compile passes the new source/script/
+test files, and mypy 2.3.0 reports no issues in all 43 source/script files.
+[Evidence](docs/FC-MVP-001-attached-dtype-isolation-v1.md).
 
 The `FC-MVP-001-fp32-attached-merge-numerics-v1` gate completed locally on
 2026-08-05. Four fresh runs execute in ABBA order: attached, merged, merged,

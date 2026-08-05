@@ -257,6 +257,24 @@ same-dtype token boundary. The numerics gate passes; remediation and Runtime
 eligibility remain false. See
 [FP32 attached/merge numerics](docs/FC-MVP-001-fp32-attached-merge-numerics-v1.md).
 
+### Attached BF16/FP32 dtype isolation v1
+
+Four fresh ABBA-ordered attached-Adapter runs hold the factorized LoRA
+execution form fixed while changing the base/inference dtype from BF16 to
+FP32. Both paths keep the source Adapter at FP32 runtime precision. PEFT
+`autocast_adapter_dtype=true` is locked as a load-time policy: it would upcast
+FP16/BF16 Adapter weights, while these stored FP32 values remain FP32. Model
+generation autocast remains disabled.
+
+Each dtype is bitwise repeat-stable and reproduces its frozen 48-token path.
+The paths share 45 generated tokens, then BF16 emits token `1866` (`true`)
+while FP32 emits token `3849` (`false`) at index `45`. The raw LM-head argmax
+also flips, and all `151,936` elements of the compared raw-logit vector differ.
+This classifies a deterministic total dtype effect on one frozen attached
+path, not a pristine-FP32 checkpoint comparison, unique operation/CUDA root
+cause, full-eval improvement, or Runtime eligibility. See
+[attached dtype isolation](docs/FC-MVP-001-attached-dtype-isolation-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -282,11 +300,13 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-attached-dtype-isolation-v1`. Hold the
-Adapter-attached execution form fixed, reproduce fresh repeat-stable BF16 and
-FP32 paths on the frozen `eval-001` comparison step index `45`, and classify
-the remaining token-level dtype effect without changing merge form. The
-pinned checkpoint and Adapter source values, prompt, seed, SDPA dispatch,
-generation semantics, and eval digest must not change. No new data, training,
-eval-answer tuning, Runtime integration, full-eval run, or merged-artifact
-promotion is allowed.
+The current work is `FC-MVP-001-attached-dtype-numerics-v1`. Reproduce the
+fresh repeat-stable BF16 and FP32 attached paths on the frozen `eval-001`
+cached forward, capture a bounded pre-registered common module sequence,
+locate the first unequal output in that plan, and quantify registered
+propagation to the LM head. The attached execution form, checkpoint and FP32
+Adapter source/runtime values, prompt, seed, SDPA dispatch, generation
+semantics, eval digest, and target step must not change. No new data, training,
+eval-answer tuning, Runtime integration, full-eval run, merged artifact, or
+module tensor sidecar is allowed; registered evidence must not be promoted to
+a unique low-level root-cause claim.

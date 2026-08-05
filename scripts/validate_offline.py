@@ -66,6 +66,9 @@ TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_TENSORS_PATH = (
     / "baseline"
     / "fc-mvp-001-fp32-attached-merge-numerics-v1-tensors.bin"
 )
+TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-attached-dtype-isolation-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -123,6 +126,9 @@ def main() -> int:
     )
     fp32_attached_merge_numerics = _validate_fp32_attached_merge_numerics(
         fp32_attached_merge_isolation
+    )
+    attached_dtype_isolation = _validate_attached_dtype_isolation(
+        fp32_attached_merge_numerics
     )
     tests_run = _run_tests()
 
@@ -265,7 +271,26 @@ def main() -> int:
         "tool_router_fp32_attached_merge_numerics_records": (
             fp32_attached_merge_numerics["tensor_archive"]["record_count"]
         ),
-        "tool_router_next_gate": fp32_attached_merge_numerics[
+        "tool_router_attached_dtype_isolation_classification": (
+            attached_dtype_isolation["classification"]
+        ),
+        "tool_router_attached_dtype_isolation_comparison_step": (
+            attached_dtype_isolation["comparison_step"]["step_index"]
+        ),
+        "tool_router_attached_dtype_isolation_bf16_token_id": (
+            attached_dtype_isolation["cross_dtype_token_analysis"][
+                "bf16_token_id"
+            ]
+        ),
+        "tool_router_attached_dtype_isolation_fp32_token_id": (
+            attached_dtype_isolation["cross_dtype_token_analysis"][
+                "fp32_token_id"
+            ]
+        ),
+        "tool_router_attached_dtype_isolation_passed": (
+            attached_dtype_isolation["dtype_isolation_gate"]["passed"]
+        ),
+        "tool_router_next_gate": attached_dtype_isolation[
             "locked_next_action"
         ]["gate_id"],
     }
@@ -2376,6 +2401,95 @@ def _validate_fp32_attached_merge_numerics(
         or gate["elapsed_seconds"] <= 0
     ):
         raise GateError("Tool Router FP32 numerics resource evidence drift")
+    return gate
+
+
+def _validate_attached_dtype_isolation(
+    fp32_numerics: dict[str, Any],
+) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_attached_dtype_isolation_evidence import (
+        validate_attached_dtype_isolation_evidence,
+    )
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    if (
+        not TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH.is_file()
+        or TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH.is_symlink()
+    ):
+        raise GateError("Tool Router attached dtype isolation evidence is unsafe")
+    gate = _load_json(TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH)
+    _validate_finite_json(gate, "$")
+
+    config = _load_json(ROOT / "configs" / "tool_router_lora_sft_v2.json")
+    training_path = (
+        ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    )
+    training = _load_json(training_path)
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    expected_lineage = {
+        "stability_evidence_sha256": file_sha256(
+            TOOL_ROUTER_MERGE_STABILITY_PATH
+        ),
+        "drift_evidence_sha256": file_sha256(TOOL_ROUTER_FP32_MERGE_DRIFT_PATH),
+        "isolation_evidence_sha256": file_sha256(
+            TOOL_ROUTER_FP32_ATTACHED_MERGE_ISOLATION_PATH
+        ),
+        "fp32_numerics_evidence_sha256": file_sha256(
+            TOOL_ROUTER_FP32_ATTACHED_MERGE_NUMERICS_PATH
+        ),
+        "training_evidence_sha256": file_sha256(training_path),
+    }
+    adapter_files = directory_artifact_manifest(adapter)
+    validation = validate_attached_dtype_isolation_evidence(
+        gate,
+        expected_source_lineage=expected_lineage,
+        expected_adapter_files=adapter_files,
+        expected_environment=config["environment"],
+    )
+    expected_validation = {
+        "frozen_gate_valid": True,
+        "runs_validated": 4,
+        "token_digests_recomputed": 6,
+        "comparison_step_manifests_validated": 8,
+        "classification": (
+            "deterministic_bf16_attached_vs_fp32_attached_"
+            "raw_logit_boundary_flip"
+        ),
+        "delta_statistics_scope": "probe_derived_summary_algebra_only",
+    }
+    if validation != expected_validation:
+        raise GateError("Tool Router attached dtype raw validation drift")
+
+    if (
+        file_sha256(TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH)
+        != "sha256:7eaedee1d6f7ea27b2fc083f82bc8df620612e84095f4a66a2ba7dfec791ce31"
+        or gate.get("source_lineage") != expected_lineage
+        or gate.get("source_experiment_id") != training.get("experiment_id")
+        or gate.get("training_lock_sha256")
+        != file_sha256(ROOT / "requirements" / "training.lock")
+        or gate.get("config_sha256") != canonical_config_sha256(config)
+        or gate.get("adapter_files") != adapter_files
+        or gate.get("adapter_files") != training["final_adapter"]["files"]
+        or gate.get("model_weight_sha256")
+        != f"sha256:{config['model']['weight_sha256']}"
+        or gate.get("prompt_sha256")
+        != file_sha256(ROOT / config["prompt"]["path"])
+        or gate.get("eval_digest") != fixture_digest(evaluation)
+        or gate.get("eval_digest") != fp32_numerics.get("eval_digest")
+        or gate.get("input_token_count") != fp32_numerics.get("input_token_count")
+        or gate.get("input_token_ids_sha256")
+        != fp32_numerics.get("input_token_ids_sha256")
+        or gate.get("storage_audit") != fp32_numerics.get("storage_audit")
+        or fp32_numerics.get("locked_next_action", {}).get("gate_id")
+        != "FC-MVP-001-attached-dtype-isolation-v1"
+    ):
+        raise GateError("Tool Router attached dtype source lineage drift")
     return gate
 
 
