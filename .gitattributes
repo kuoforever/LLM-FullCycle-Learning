@@ -9,3 +9,4 @@ requirements/*.lock text eol=lf
 baseline/**/*.json text eol=lf
 baseline/adapters/** binary
 baseline/adapters/**/*.safetensors filter=lfs diff=lfs merge=lfs -text
+baseline/**/*-tensors.bin filter=lfs diff=lfs merge=lfs -text
