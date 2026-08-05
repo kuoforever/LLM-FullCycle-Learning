@@ -577,18 +577,28 @@ agent-model-factory/
 
 **当前进展（2026-08-05）**
 
-- `FC-MVP-001-attached-dtype-boundary-control-v1` 已在本地完成并通过离线门禁：
-  四次 actual attached ABBA 与四次 standalone `Qwen2RMSNorm` ABBA 精确复现
-  同一 layer-0 `input_layernorm` registered boundary；结论仅限相同 checkpoint
-  values 在锁定 BF16/FP32 RMSNorm arithmetic 下足以复现该局部边界，不支持
-  唯一内部算子/kernel、独立下游传播或 token 因果结论。
-- 唯一 active objective 是 `FC-MVP-001-fp32-attached-remediation-eval-v1`：
-  预注册一次 resource-bounded 的 FP32 attached Adapter 完整冻结 20-case eval，
-  固定 decision compilation，并与冻结 BF16 attached v2 指标做 safety、
-  regression 和 resource 对比。
-- 当前 control gate 未运行 full eval；下一 gate 的单次完整冻结 eval 是 required
-  and allowed。检查通过前继续禁止 merge、artifact promotion 和 Runtime
-  integration；不得新增数据、训练或针对 eval answer 调参。
+- `FC-MVP-001-fp32-attached-remediation-eval-v1` 已在结果产生前锁定 runner、
+  compiler、comparison contract、唯一 FP32 attached candidate、唯一 run、
+  unchanged 20-case eval 与 2x BF16 resource caps；随后只运行一次 fresh load、
+  20 次 ordered generation、零 retry。
+- fixed compiler 后 argument exact match 从 `0.20` 提升到 `0.25`，argument
+  field F1 从 `0.2608695652173913` 提升到 `0.29787234042553196`；tool accuracy
+  保持 `0.95`，所有 safety gate 与八维逐例 regression gate 通过。运行耗时
+  `71.6701673999778s`，峰值显存 `6,267,895,296 bytes`，低于预注册上限。
+- raw semantic validity 从 BF16 的 `0.85` 降到 FP32 的 `0.80`，因此 favorable
+  结论只属于 fixed-compiler compiled result，不支持 FP32 独立修复 decision
+  inconsistency；仍不支持 generalization、artifact promotion 或 Runtime eligibility。
+- 单次执行是已遵守并记录的 operational protocol：冻结 hash 保护所选 artifacts，
+  但仓库没有外部 execution ledger 或 cryptographic execution-count attestation，
+  因而不能独立排除另一路径执行，也不估计 full-eval repeat variance。
+- unified offline gate 在 Python 3.11.15、3.12.12、3.13.7 上均通过 260 tests，
+  Ruff、mypy、py_compile 与 diff-check 通过。
+- 唯一 active objective 是
+  `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`：仅审查冻结收益、
+  compiler dependency、接近 2x 的 peak-memory cost、attached Adapter packaging
+  与 reproducibility，再决定 offline artifact eligibility。禁止重跑本次 eval、
+  新增数据、训练、针对 eval answer 调参、merge/save weights、promotion 或
+  Runtime/Provider/MCP/Desktop integration。
 
 ## TOOL-007：输出/序列蒸馏
 

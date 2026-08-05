@@ -208,6 +208,18 @@ class FP32AttachedRemediationEvalEvidenceTests(unittest.TestCase):
 
     def test_neutral_candidate_passes_full_recomputation(self) -> None:
         predictions, evidence, digest, lineage = self._bundle()
+        self.assertEqual(
+            lineage["base_config_canonical_sha256"],
+            self.preregistration["source_lineage"]["base_config"][
+                "canonical_sha256"
+            ],
+        )
+        self.assertEqual(
+            lineage["decision_compiler_source_symbol_source_sha256"],
+            self.preregistration["source_lineage"]["decision_compiler_source"][
+                "symbol_source_sha256"
+            ],
+        )
         result = self._validate(predictions, evidence, digest, lineage)
         self.assertTrue(result["frozen_gate_valid"])
         self.assertTrue(result["remediation_passed"])

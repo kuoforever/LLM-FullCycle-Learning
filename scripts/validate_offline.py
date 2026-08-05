@@ -75,6 +75,15 @@ TOOL_ROUTER_ATTACHED_DTYPE_NUMERICS_PATH = (
 TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH = (
     ROOT / "baseline" / "fc-mvp-001-attached-dtype-boundary-control-v1.json"
 )
+TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_PREREGISTRATION_PATH = (
+    ROOT / "configs" / "tool_router_fp32_attached_remediation_eval_v1.json"
+)
+TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_PREDICTIONS_PATH = (
+    ROOT / "baseline" / "tool-router-fp32-attached-remediation-v1-predictions.json"
+)
+TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_EVAL_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-fp32-attached-remediation-eval-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -141,6 +150,9 @@ def main() -> int:
     )
     attached_dtype_boundary_control = _validate_attached_dtype_boundary_control(
         attached_dtype_numerics
+    )
+    fp32_attached_remediation_eval = _validate_fp32_attached_remediation_eval(
+        attached_dtype_boundary_control
     )
     tests_run = _run_tests()
 
@@ -340,7 +352,40 @@ def main() -> int:
                 "current_forward_boundary_sufficiency_observed"
             ]
         ),
-        "tool_router_next_gate": attached_dtype_boundary_control[
+        "tool_router_fp32_attached_remediation_eval_classification": (
+            fp32_attached_remediation_eval["assessment"]["classification"]
+        ),
+        "tool_router_fp32_attached_remediation_eval_passed": (
+            fp32_attached_remediation_eval["assessment"][
+                "evaluation_gate_passed"
+            ]
+        ),
+        "tool_router_fp32_attached_remediation_raw_semantic_validity": (
+            fp32_attached_remediation_eval["raw_metrics"][
+                "decision_semantic_validity"
+            ]
+        ),
+        "tool_router_fp32_attached_remediation_argument_exact_match": (
+            fp32_attached_remediation_eval["compiled_metrics"][
+                "argument_exact_match"
+            ]
+        ),
+        "tool_router_fp32_attached_remediation_argument_field_f1": (
+            fp32_attached_remediation_eval["compiled_metrics"][
+                "argument_field_f1"
+            ]
+        ),
+        "tool_router_fp32_attached_remediation_elapsed_seconds": (
+            fp32_attached_remediation_eval["resources"]["performance"][
+                "elapsed_seconds"
+            ]
+        ),
+        "tool_router_fp32_attached_remediation_peak_gpu_memory_bytes": (
+            fp32_attached_remediation_eval["resources"]["performance"][
+                "peak_gpu_memory_bytes"
+            ]
+        ),
+        "tool_router_next_gate": fp32_attached_remediation_eval[
             "locked_next_action"
         ]["gate_id"],
     }
@@ -2711,6 +2756,147 @@ def _validate_attached_dtype_boundary_control(
         != "FC-MVP-001-attached-dtype-boundary-control-v1"
     ):
         raise GateError("Tool Router attached dtype boundary-control source lineage drift")
+    return gate
+
+
+def _validate_fp32_attached_remediation_eval(
+    attached_dtype_boundary_control: dict[str, Any],
+) -> dict[str, Any]:
+    import inspect
+
+    from fullcycle_bridge.tool_router import fixture_digest, load_fixture
+    from fullcycle_bridge.tool_router_decision_compilation import compile_decision
+    from fullcycle_bridge.tool_router_fp32_attached_remediation_eval_evidence import (
+        validate_fp32_attached_remediation_eval_evidence,
+    )
+    from fullcycle_bridge.tool_router_sft import (
+        canonical_config_sha256,
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    paths = (
+        TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_PREREGISTRATION_PATH,
+        TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_PREDICTIONS_PATH,
+        TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_EVAL_PATH,
+    )
+    if any(not path.is_file() or path.is_symlink() for path in paths):
+        raise GateError("Tool Router FP32 attached remediation evidence is unsafe")
+
+    preregistration = _load_json(paths[0])
+    predictions = _load_json(paths[1])
+    gate = _load_json(paths[2])
+    for name, value in (
+        ("preregistration", preregistration),
+        ("predictions", predictions),
+        ("gate", gate),
+    ):
+        _validate_finite_json(value, f"$.{name}")
+
+    config_path = ROOT / "configs" / "tool_router_lora_sft_v2.json"
+    config = _load_json(config_path)
+    training_lock_path = ROOT / "requirements" / "training.lock"
+    training_path = ROOT / "baseline" / "fc-mvp-001-lora-sft-v2-training.json"
+    lifecycle_path = TOOL_ROUTER_SFT_V2_BASELINE_PATH
+    compiler_path = ROOT / "src" / "fullcycle_bridge" / "tool_router_decision_compilation.py"
+    scorer_path = ROOT / "src" / "fullcycle_bridge" / "tool_router_model_eval.py"
+    contract_path = (
+        ROOT
+        / "src"
+        / "fullcycle_bridge"
+        / "tool_router_fp32_attached_remediation_eval.py"
+    )
+    runner_path = ROOT / "scripts" / "probe_tool_router_fp32_attached_remediation_eval.py"
+    raw_predictions_path = (
+        ROOT
+        / "baseline"
+        / "tool-router-qwen2.5-1.5b-lora-sft-v2-predictions.json"
+    )
+    raw_report_path = (
+        ROOT / "baseline" / "tool-router-qwen2.5-1.5b-lora-sft-v2-report.json"
+    )
+    preregistration_sha256 = file_sha256(paths[0])
+    prediction_sha256 = file_sha256(paths[1])
+    compiler_symbol_sha256 = "sha256:" + hashlib.sha256(
+        inspect.getsource(compile_decision).encode("utf-8")
+    ).hexdigest()
+    expected_source_lineage = {
+        "base_config_canonical_sha256": canonical_config_sha256(config),
+        "base_config_sha256": file_sha256(config_path),
+        "bf16_compiled_predictions_sha256": file_sha256(
+            TOOL_ROUTER_COMPILED_PREDICTIONS_PATH
+        ),
+        "bf16_compiled_report_sha256": file_sha256(
+            TOOL_ROUTER_COMPILED_REPORT_PATH
+        ),
+        "bf16_raw_predictions_sha256": file_sha256(raw_predictions_path),
+        "bf16_raw_report_sha256": file_sha256(raw_report_path),
+        "boundary_control_evidence_sha256": file_sha256(
+            TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH
+        ),
+        "comparison_contract_source_sha256": file_sha256(contract_path),
+        "decision_compilation_gate_sha256": file_sha256(
+            TOOL_ROUTER_DECISION_COMPILATION_PATH
+        ),
+        "decision_compiler_source_sha256": file_sha256(compiler_path),
+        "decision_compiler_source_symbol_source_sha256": (
+            compiler_symbol_sha256
+        ),
+        "lifecycle_evidence_sha256": file_sha256(lifecycle_path),
+        "preregistration_sha256": preregistration_sha256,
+        "runner_source_sha256": file_sha256(runner_path),
+        "scorer_source_sha256": file_sha256(scorer_path),
+        "training_evidence_sha256": file_sha256(training_path),
+        "training_lock_sha256": file_sha256(training_lock_path),
+    }
+    evaluation = load_fixture(ROOT / config["data"]["eval_path"])
+    if fixture_digest(evaluation) != config["data"]["eval_digest"]:
+        raise GateError("Tool Router FP32 attached remediation eval drift")
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    validation = validate_fp32_attached_remediation_eval_evidence(
+        preregistration,
+        predictions,
+        gate,
+        evaluation=evaluation,
+        reference_compiled_report=_load_json(TOOL_ROUTER_COMPILED_REPORT_PATH),
+        source_boundary_control=attached_dtype_boundary_control,
+        expected_source_lineage=expected_source_lineage,
+        expected_model=config["model"],
+        expected_tokenizer=config["tokenizer"],
+        expected_environment=config["environment"],
+        expected_adapter_files=directory_artifact_manifest(adapter),
+        expected_preregistration_sha256=preregistration_sha256,
+        expected_prediction_artifact_sha256=prediction_sha256,
+    )
+    expected_validation = {
+        "frozen_gate_valid": True,
+        "candidate_count": 1,
+        "run_count": 1,
+        "evaluation_records": 20,
+        "raw_outputs_validated": 20,
+        "compiled_outputs_validated": 20,
+        "classification": (
+            "fp32_attached_full_eval_improves_quality_without_safety_or_"
+            "resource_regression"
+        ),
+        "remediation_passed": True,
+        "runtime_eligible": False,
+    }
+    if validation != expected_validation:
+        raise GateError("Tool Router FP32 attached remediation validation drift")
+    if (
+        preregistration_sha256
+        != "sha256:5e7b0665f97f5cee760637236f80039c4e621ae0f24915c0ac749d885a683c8b"
+        or prediction_sha256
+        != "sha256:382071f0689ce4ca41329d689f76fc4c4b06faa68769fb80c99181015e678115"
+        or file_sha256(paths[2])
+        != "sha256:2dd17f6b1098490034f825d163f48f26eb4093d02f115424eb814cb2c925ad8e"
+        or attached_dtype_boundary_control.get("locked_next_action", {}).get(
+            "gate_id"
+        )
+        != "FC-MVP-001-fp32-attached-remediation-eval-v1"
+    ):
+        raise GateError("Tool Router FP32 attached remediation lineage drift")
     return gate
 
 

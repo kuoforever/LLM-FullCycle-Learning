@@ -959,6 +959,14 @@ def _artifact_source_lineage(
     result = {"preregistration_sha256": preregistration_sha256}
     for name, reference in preregistration["source_lineage"].items():
         result[f"{name}_sha256"] = reference["sha256"]
+        if "canonical_sha256" in reference:
+            result[f"{name}_canonical_sha256"] = reference[
+                "canonical_sha256"
+            ]
+        if "symbol_source_sha256" in reference:
+            result[f"{name}_symbol_source_sha256"] = reference[
+                "symbol_source_sha256"
+            ]
     return dict(sorted(result.items()))
 
 
