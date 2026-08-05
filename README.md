@@ -331,18 +331,34 @@ unchanged compiler remains necessary. Runtime eligibility and artifact
 promotion remain false. See
 [FP32 attached remediation eval](docs/FC-MVP-001-fp32-attached-remediation-eval-v1.md).
 
+### FP32 attached artifact eligibility review v1
+
+The offline review preserves the favorable fixed-compiler result while
+separately rejecting the current package. Repository-local evidence remains
+usable, but `offline_artifact_eligible=false`: the package lacks an
+authoritative composite manifest, portable base/revision binding, a tokenizer
+file manifest, required compiler binding, and complete use/limitations
+documentation. The exact Adapter remains unchanged and structurally valid at
+`224` F32 tensors and `4,358,144` parameters.
+
+The classification is
+`fp32_attached_fixed_compiler_favorable_eval_but_offline_artifact_package_incomplete`.
+Preferred-candidate, serving-readiness, promotion, merged-artifact, and Runtime
+claims all remain false. See
+[FP32 attached artifact eligibility review](docs/FC-MVP-001-fp32-attached-artifact-eligibility-review-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
 base model, LoRA rank 16 over Q/K/V/O projections, a 100-step v1 run or
 66-step v2 run, and a 20-case evaluation set built as ten categories with two
-cases each. These
-results are reproducible and were produced under frozen data and evaluation
-contracts, but at this sample size they indicate direction only and do not
-establish generalization. The recent merge and numerics diagnostic gates run
-only frozen `eval-001`, not the complete 20-case eval. These results are not a
-claim about large-scale pretraining, post-training, or serving infrastructure,
-none of which is implemented.
+cases each. The frozen records and derived metrics are reproducible under the
+locked data and evaluation contracts; model-execution repeatability applies
+only where a gate explicitly establishes it. At this sample size the results
+indicate direction only and do not establish generalization. The recent merge
+and numerics diagnostic gates run only frozen `eval-001`, not the complete
+20-case eval. These results are not a claim about large-scale pretraining,
+post-training, or serving infrastructure, none of which is implemented.
 
 The FP32 attached full eval operationally consumes its one pre-registered run.
 Its metrics are reproducible from the frozen outputs, but the repository has
@@ -364,9 +380,11 @@ details are in [environment.md](docs/environment.md).
 ## Current boundary
 
 The current work is
-`FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`. Review the frozen
-favorable full-eval evidence, its fixed-compiler dependency, the isolated
-`eval-016` argument improvement, and the nearly 2x peak-memory cost. The review
-may decide offline artifact eligibility only; it must not rerun the registered
-evaluation, add data, train, tune against eval answers, merge or save model
-weights, promote an artifact, or integrate Runtime/Provider/MCP/Desktop.
+`FC-MVP-001-fp32-attached-offline-package-manifest-v1`. Create and strictly
+validate one metadata-only composite manifest that binds the unchanged Adapter,
+pinned base and tokenizer file identities, required compiler, prompt,
+generation/precision policy, environment, and attached-only execution. This
+gate must not rerun the registered evaluation, add data, train, tune against
+eval answers, change the compiler or execution form, mutate/copy/merge model or
+Adapter weights, promote an artifact, deploy serving, or integrate
+Runtime/Provider/MCP/Desktop.

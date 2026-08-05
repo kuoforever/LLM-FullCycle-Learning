@@ -30,6 +30,12 @@ ADAPTER_WEIGHTS = (
     / "fc-mvp-001-lora-sft-v2"
     / "adapter_model.safetensors"
 )
+REVIEW = (
+    ROOT / "baseline" / "fc-mvp-001-fp32-attached-artifact-eligibility-review-v1.json"
+)
+EXPECTED_REVIEW_SHA256 = (
+    "sha256:81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8"
+)
 
 
 class FP32AttachedArtifactEligibilityTests(unittest.TestCase):
@@ -63,7 +69,26 @@ class FP32AttachedArtifactEligibilityTests(unittest.TestCase):
 
     def test_frozen_review_is_valid_negative_evidence(self) -> None:
         validation = self._validate()
+        frozen_payload = REVIEW.read_bytes()
+        frozen_review = json.loads(frozen_payload)
 
+        self.assertEqual(self.review, frozen_review)
+        self.assertEqual(
+            frozen_payload,
+            (
+                json.dumps(
+                    self.review,
+                    ensure_ascii=False,
+                    indent=2,
+                    allow_nan=False,
+                )
+                + "\n"
+            ).encode("utf-8"),
+        )
+        self.assertEqual(
+            "sha256:" + hashlib.sha256(frozen_payload).hexdigest(),
+            EXPECTED_REVIEW_SHA256,
+        )
         self.assertEqual(
             validation,
             {

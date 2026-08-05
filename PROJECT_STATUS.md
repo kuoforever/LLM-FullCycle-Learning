@@ -54,33 +54,66 @@ exact match improves from `0.20` to `0.25`, argument field F1 improves from
 `0.2608695652173913` to `0.29787234042553196`, all safety and per-example
 regression gates pass, and the run remains inside its 2x BF16 resource caps.
 Raw semantic validity falls from `0.85` to `0.80`, so compiler dependency
-remains explicit. The Adapter remains Runtime ineligible; the next gate is an
-offline artifact-eligibility review, not promotion or integration. The
-single-run record is an operational protocol fact rather than external
-execution-count attestation: frozen hashes protect the selected artifacts,
-but the repository cannot independently exclude an alternate-path execution.
+remains explicit. The single-run record is an operational protocol fact rather
+than external execution-count attestation: frozen hashes protect the selected
+artifacts, but the repository cannot independently exclude an alternate-path
+execution. FP32 attached artifact eligibility review v1 now preserves that
+favorable fixed-compiler quality result while rejecting the current package.
+Repository-local evidence remains usable, but six missing package bindings make
+offline and portable artifact eligibility false. Preferred-candidate, serving,
+promotion, merged-artifact, and Runtime claims remain false. The next gate is a
+metadata-only external composite manifest, not an Adapter mutation or
+integration step.
 
 ## Single active objective
 
-Complete `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`:
+Complete `FC-MVP-001-fp32-attached-offline-package-manifest-v1`:
 
 ```text
-frozen favorable FP32 attached eval + fixed compiler dependency
-        -> quantify the isolated quality benefit and nearly 2x memory cost
-attached Adapter packaging + reproducibility and serving constraints
-        -> decide offline artifact eligibility without promotion
-eligibility decision
-        -> select the next gate without Runtime integration or merged weights
+frozen negative package review + immutable three-file Adapter
+        -> create one external metadata-only composite manifest
+pinned base/tokenizer + compiler + prompt/generation/precision/environment
+        -> resolve local components by exact hashes and fail closed if absent
+validated attached-only package identity
+        -> select a later reproducibility gate without promotion or Runtime
 ```
 
-Review only the frozen favorable evidence and already pinned sources. Account
-for the fixed compiler, the one-case argument improvement, the raw semantic
-validity regression, and the `1.9896x` peak-memory ratio. Check independent
-attached-Adapter packaging and reproducibility requirements before deciding
-offline artifact eligibility. Do not rerun the registered evaluation; add
-data; train; tune against eval answers; change the compiler or execution form;
-connect Runtime/Provider/MCP/Desktop; merge or save model weights; or promote
-an artifact. Eligibility review is a decision gate, not promotion authority.
+Create and strictly validate one external metadata-only composite manifest.
+Bind the unchanged Adapter hashes; pinned base repo, revision, and weight hash;
+tokenizer revision and file manifest; required compiler file and symbol hashes;
+prompt, generation, precision, and environment contracts; and attached-only
+execution. Treat the Adapter's machine-relative base path as non-authoritative
+and fail closed when any local component is missing or mismatched. Do not rerun
+the registered full evaluation; add data; train; tune against eval answers;
+change the compiler, prompt, generation, or execution form; mutate or copy
+model/Adapter/tokenizer files; merge or save weights; promote an artifact;
+deploy serving; or integrate Runtime/Provider/MCP/Desktop. This gate establishes
+metadata completeness only, not behavioral reproducibility or Runtime readiness.
+
+The `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1` gate completed
+locally on 2026-08-05. Its contract and builder were frozen before artifact
+generation at `a36cc965531cef781cd66aff3c0ff4c481d56520`. The 15,278-byte review
+artifact has SHA-256
+`81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8`
+and internal report digest
+`285d5e5e25dfd16de5adc6cb760fe54588af68d8580308b54ccfaf612d51636b`.
+It classifies the current state as
+`fp32_attached_fixed_compiler_favorable_eval_but_offline_artifact_package_incomplete`.
+The fixed-compiler quality evidence and repository-local evidence remain usable,
+but six blockers remain: composite manifest; portable base identity; base
+revision; tokenizer file manifest; required compiler binding; and complete use
+and limitations documentation. Accordingly offline/portable eligibility,
+preferred-candidate status, serving readiness, promotion, merged artifacts, and
+Runtime eligibility are all false.
+
+The validator binds 25 direct sources through single-read raw payloads, then
+requires parsed JSON/text, Adapter manifest, safetensors audit, observed hashes,
+and the external review-file trust root to agree. The exact Adapter remains
+unchanged at three files, 224 F32 tensors, and 4,358,144 parameters. The unified
+offline gate passes 268 tests with `valid=true` on Python 3.11.15, 3.12.12, and
+3.13.7 and audits 30 source files. Ruff, scoped mypy 2.3.0, py_compile, builder
+`--check`, and `git diff --check` pass.
+[Evidence](docs/FC-MVP-001-fp32-attached-artifact-eligibility-review-v1.md).
 
 The `FC-MVP-001-fp32-attached-remediation-eval-v1` gate completed locally on
 2026-08-05. Its protocol was committed before result generation at

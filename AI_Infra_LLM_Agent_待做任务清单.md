@@ -593,12 +593,26 @@ agent-model-factory/
   因而不能独立排除另一路径执行，也不估计 full-eval repeat variance。
 - unified offline gate 在 Python 3.11.15、3.12.12、3.13.7 上均通过 260 tests，
   Ruff、mypy、py_compile 与 diff-check 通过。
-- 唯一 active objective 是
-  `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1`：仅审查冻结收益、
-  compiler dependency、接近 2x 的 peak-memory cost、attached Adapter packaging
-  与 reproducibility，再决定 offline artifact eligibility。禁止重跑本次 eval、
-  新增数据、训练、针对 eval answer 调参、merge/save weights、promotion 或
-  Runtime/Provider/MCP/Desktop integration。
+- `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1` 已完成：固定 compiler
+  后的 frozen quality evidence favorable、repository-local evidence usable，但当前
+  package 缺 composite manifest、portable base/revision binding、tokenizer file
+  manifest、required compiler binding 与完整 use/limitations documentation，共 6 个
+  blocker，因此 `offline_artifact_eligible=false`、preferred/serving/promotion/
+  merged/Runtime 全部 false。Adapter 三文件未改，safetensors audit 为 224 个 F32
+  tensors、4,358,144 parameters。
+- review contract 先冻结于 `a36cc965531cef781cd66aff3c0ff4c481d56520`；随后生成
+  15,278-byte review artifact，SHA-256 为
+  `81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8`。
+  25 个 direct source roots 使用 single-read payload 同时绑定 parsed content 与 hash，
+  unified offline gate 在 Python 3.11.15、3.12.12、3.13.7 上通过 268 tests，审计
+  30 个 source files。
+- 唯一 active objective 切换为
+  `FC-MVP-001-fp32-attached-offline-package-manifest-v1`：仅创建并严格验证一个
+  metadata-only composite manifest，绑定 unchanged Adapter、pinned base/tokenizer
+  file identity、required compiler、prompt/generation/precision/environment 与
+  attached-only execution。禁止重跑 full eval、新增数据、训练、针对 eval answer
+  调参、改变 compiler/execution form、复制/修改/merge/save weights、promotion、
+  serving 或 Runtime/Provider/MCP/Desktop integration。
 
 ## TOOL-007：输出/序列蒸馏
 
