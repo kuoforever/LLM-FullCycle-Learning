@@ -26,6 +26,7 @@ English (default): [README.md](README.md)
 | 本地 Base model baseline | [FC-MVP-001 base model](FC-MVP-001-base-model-v1.md) | Complete，未通过安全门禁 |
 | 首次本地 LoRA SFT | [FC-MVP-001 LoRA SFT v1](FC-MVP-001-lora-sft-v1.md) | Complete，未获 Runtime 准入 |
 | FP32 attached/merge numerics v1 | [FC-MVP-001 FP32 attached/merge numerics](FC-MVP-001-fp32-attached-merge-numerics-v1.md) | Complete locally；numerics gate passed，remediation / Runtime 未通过 |
+| BF16/FP32 attached dtype boundary control v1 | [FC-MVP-001 attached dtype boundary control](FC-MVP-001-attached-dtype-boundary-control-v1.md) | Complete locally；boundary control matched，remediation / Runtime 未通过 |
 
 ## 后续开发资料
 

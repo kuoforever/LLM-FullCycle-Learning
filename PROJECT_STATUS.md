@@ -41,37 +41,76 @@ first module boundary or a unique low-level root cause. Attached dtype
 numerics v1 now executes an outcome-neutral 40-output plan on the same cached
 forward. The embedding output is canonically identical; the first registered
 unequal output is layer 0 `input_layernorm`, and every later registered output
-through the linked LM head remains unequal. This is a descriptive total-dtype
-delta trajectory, not independent causal propagation from RMSNorm or a claim
-about the first unregistered operation. The Adapter remains Runtime
-ineligible; the next gate must run one pre-registered control at the observed
-boundary.
+through the linked LM head remains unequal. Attached dtype boundary control v1
+now replays the same checkpoint input and weight values through fresh
+standalone `Qwen2RMSNorm` modules under the two locked dtypes. Both standalone
+outputs exactly match their same-dtype actual module outputs. This establishes
+that locked same-values BF16/FP32 RMSNorm arithmetic is sufficient to reproduce
+this local registered boundary; it does not identify a unique internal
+operation or kernel, nor establish independent downstream propagation or a
+token cause. The Adapter remains Runtime ineligible. The next gate is one
+resource-bounded full frozen evaluation of the FP32 attached candidate.
 
 ## Single active objective
 
-Complete `FC-MVP-001-attached-dtype-boundary-control-v1`:
+Complete `FC-MVP-001-fp32-attached-remediation-eval-v1`:
 
 ```text
-fresh repeat-stable BF16 and FP32 attached paths + frozen target forward
-        -> reproduce the layer-0 input_layernorm boundary and capture its input
-one pre-registered same-values RMSNorm control under the two locked dtypes
-        -> separate current-forward module arithmetic from prior cached state
-actual-versus-control output linkage and exact summary comparison
-        -> test the registered boundary without claiming a unique kernel cause
+matched boundary control + frozen BF16 attached v2 reference
+        -> lock the evidence and comparison baseline before evaluation
+one FP32 attached candidate + unchanged 20-case eval and decision compiler
+        -> run one resource-bounded full frozen evaluation
+safety, regression, and resource comparison
+        -> decide the next gate without merge, promotion, or Runtime integration
 ```
 
-Keep both frozen attached paths and the exact `eval-001` cached forward that
-predicts generated token index `45`. Pre-register exactly one bounded control:
-capture the observed layer-0 `input_layernorm` input and weight identities,
-then replay the registered RMSNorm calculation from the same source values
-under the two locked dtypes and link both replay outputs to the actual module
-outputs. Preserve the BF16 checkpoint source values, FP32 Adapter values,
-prompt, eval digest, high-level SDPA backend, greedy decoding, target step, and
-attached execution form. Do not add data; train; tune against eval answers;
-run the full eval; connect Runtime/Provider/MCP/Desktop; save or promote merged
-weights; add a module tensor sidecar; introduce a second intervention; or
-claim a unique CUDA/floating-point root cause, a PEFT bug, or full-history
-causality.
+Pre-register exactly one FP32 attached candidate and one resource-bounded run
+over the unchanged frozen 20-case evaluation set. Keep decision compilation,
+the attached factorized-LoRA execution form, BF16 checkpoint source values,
+FP32 Adapter source/runtime values, prompt, eval digest, high-level SDPA
+backend, and greedy decoding fixed. Compare the compiled FP32 results against
+the frozen BF16 attached v2 metrics, including safety, regression,
+elapsed-time, and peak-memory evidence. Do not add data; train; tune against
+eval answers; change the compiler or execution form; connect
+Runtime/Provider/MCP/Desktop; merge or save merged weights; promote any model
+artifact; or treat the local RMSNorm boundary control as proof of a unique
+internal operation, downstream causal propagation, or full-eval improvement.
+The completed boundary-control record keeps its current-gate
+`constraints.full_eval_run=false`; the locked next action explicitly sets
+`constraints.full_eval_run=true`, so this single pre-registered evaluation is
+required and allowed only inside the new gate.
+
+The `FC-MVP-001-attached-dtype-boundary-control-v1` gate completed locally on
+2026-08-05. Four fresh attached runs execute in ABBA order, reproduce both
+frozen 48-token paths and the exact cached call/step `45`, and capture embedding
+output plus layer-0 `input_layernorm` input, weight, and output. After all
+attached models unload, four fresh standalone `Qwen2RMSNorm` executions run in
+ABBA order from the same checkpoint input and weight values. The actual and
+control input/weight comparisons are equal; both actual and control outputs
+differ in `1,536/1,536` elements with maximum/mean/RMS absolute deltas
+`0.012537479400634766`/`0.0005440729593146898`/
+`0.0009270972900508952`. Their BF16 and FP32 canonical output SHA-256 values
+are respectively
+`fcf241d93faf88fa991d10e987d879b33ce01ab94426e73dfab62048bfafa897`
+and `b37c6dc89813c2bc0977d130ef0a1befdfffeeb77474f7682be8b267d19cb499`;
+each control output exactly matches its same-dtype actual output. The
+classification is
+`deterministic_same_values_rmsnorm_dtype_replay_reproduces_actual_boundary_drift`.
+`boundary_control_gate.passed=true`, `remediation_gate.passed=false`, and
+`runtime_eligible=false`. The JSON record contains 28 execution capture
+summaries plus two checkpoint-source records, is `142,760` bytes, and has
+SHA-256
+`fdf4ab44b1b60853f0d5de9f231ce77557152b47c9ce52156c31c9bbca484bc7`;
+no module tensor payload or sidecar exists. The probe took
+`32.9616448999732` seconds, peaked at `6,285,152,256` allocated GPU bytes, and
+every released lifecycle stayed below 16 MiB. The unified offline gate passes
+249 tests with `valid=true` on Python 3.11.15, 3.12.12, and 3.13.7, with 27
+source files audited. Ruff, py_compile, and mypy 2.3.0 pass. This proves
+current-forward sufficiency only for the local
+registered RMSNorm boundary, not a unique internal operation/kernel root,
+independent downstream propagation or token cause, pristine-FP32 checkpoint,
+full-eval remediation, artifact promotion, or Runtime eligibility.
+[Evidence](docs/FC-MVP-001-attached-dtype-boundary-control-v1.md).
 
 The `FC-MVP-001-attached-dtype-numerics-v1` gate completed locally on
 2026-08-05. Four fresh attached runs execute in ABBA order and reproduce both
@@ -437,7 +476,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; attached dtype numerics first differs at layer 0 `input_layernorm`, one bounded boundary control next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; attached dtype boundary control matched exactly, one resource-bounded full frozen FP32 attached eval next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

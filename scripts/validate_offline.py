@@ -72,6 +72,9 @@ TOOL_ROUTER_ATTACHED_DTYPE_ISOLATION_PATH = (
 TOOL_ROUTER_ATTACHED_DTYPE_NUMERICS_PATH = (
     ROOT / "baseline" / "fc-mvp-001-attached-dtype-numerics-v1.json"
 )
+TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-attached-dtype-boundary-control-v1.json"
+)
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -135,6 +138,9 @@ def main() -> int:
     )
     attached_dtype_numerics = _validate_attached_dtype_numerics(
         attached_dtype_isolation
+    )
+    attached_dtype_boundary_control = _validate_attached_dtype_boundary_control(
+        attached_dtype_numerics
     )
     tests_run = _run_tests()
 
@@ -310,7 +316,31 @@ def main() -> int:
         "tool_router_attached_dtype_numerics_capture_records": sum(
             run["capture_record_count"] for run in attached_dtype_numerics["runs"]
         ),
-        "tool_router_next_gate": attached_dtype_numerics[
+        "tool_router_attached_dtype_boundary_control_classification": (
+            attached_dtype_boundary_control["classification"]
+        ),
+        "tool_router_attached_dtype_boundary_control_passed": (
+            attached_dtype_boundary_control["boundary_control_gate"]["passed"]
+        ),
+        "tool_router_attached_dtype_boundary_control_actual_runs": len(
+            attached_dtype_boundary_control["actual_runs"]
+        ),
+        "tool_router_attached_dtype_boundary_control_control_runs": len(
+            attached_dtype_boundary_control["control_runs"]
+        ),
+        "tool_router_attached_dtype_boundary_control_capture_records": sum(
+            run["capture_record_count"]
+            for run in [
+                *attached_dtype_boundary_control["actual_runs"],
+                *attached_dtype_boundary_control["control_runs"],
+            ]
+        ),
+        "tool_router_attached_dtype_boundary_control_current_forward_sufficient": (
+            attached_dtype_boundary_control["boundary_analysis"][
+                "current_forward_boundary_sufficiency_observed"
+            ]
+        ),
+        "tool_router_next_gate": attached_dtype_boundary_control[
             "locked_next_action"
         ]["gate_id"],
     }
@@ -2594,6 +2624,93 @@ def _validate_attached_dtype_numerics(
         != "FC-MVP-001-attached-dtype-numerics-v1"
     ):
         raise GateError("Tool Router attached dtype numerics source lineage drift")
+    return gate
+
+
+def _validate_attached_dtype_boundary_control(
+    attached_dtype_numerics: dict[str, Any],
+) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router_attached_dtype_boundary_control_evidence import (
+        validate_attached_dtype_boundary_control_evidence,
+    )
+    from fullcycle_bridge.tool_router_sft import (
+        directory_artifact_manifest,
+        file_sha256,
+    )
+
+    if (
+        not TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH.is_file()
+        or TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH.is_symlink()
+    ):
+        raise GateError("Tool Router attached dtype boundary-control evidence is unsafe")
+    gate = _load_json(TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH)
+    _validate_finite_json(gate, "$")
+
+    adapter = ROOT / "baseline" / "adapters" / "fc-mvp-001-lora-sft-v2"
+    adapter_files = directory_artifact_manifest(adapter)
+    source_numerics_sha256 = file_sha256(
+        TOOL_ROUTER_ATTACHED_DTYPE_NUMERICS_PATH
+    )
+    expected_lineage = dict(attached_dtype_numerics["source_lineage"])
+    expected_lineage["attached_dtype_numerics_evidence_sha256"] = (
+        source_numerics_sha256
+    )
+    validation = validate_attached_dtype_boundary_control_evidence(
+        gate,
+        source_numerics=attached_dtype_numerics,
+        expected_source_numerics_sha256=source_numerics_sha256,
+        expected_source_lineage=expected_lineage,
+        expected_adapter_files=adapter_files,
+        expected_environment=attached_dtype_numerics["environment"],
+    )
+    expected_validation = {
+        "frozen_gate_valid": True,
+        "actual_runs_validated": 4,
+        "control_runs_validated": 4,
+        "capture_records_validated": 28,
+        "actual_comparisons_validated": 4,
+        "control_comparisons_validated": 3,
+        "protocol_completed": True,
+        "current_forward_boundary_sufficiency_observed": True,
+        "classification": (
+            "deterministic_same_values_rmsnorm_dtype_replay_"
+            "reproduces_actual_boundary_drift"
+        ),
+    }
+    if validation != expected_validation:
+        raise GateError(
+            "Tool Router attached dtype boundary-control raw validation drift"
+        )
+    if (
+        file_sha256(TOOL_ROUTER_ATTACHED_DTYPE_BOUNDARY_CONTROL_PATH)
+        != "sha256:fdf4ab44b1b60853f0d5de9f231ce77557152b47c9ce52156c31c9bbca484bc7"
+        or gate.get("source_lineage") != expected_lineage
+        or gate.get("source_experiment_id")
+        != attached_dtype_numerics.get("source_experiment_id")
+        or gate.get("source_gate_experiment_id")
+        != attached_dtype_numerics.get("experiment_id")
+        or gate.get("training_lock_sha256")
+        != attached_dtype_numerics.get("training_lock_sha256")
+        or gate.get("config_sha256")
+        != attached_dtype_numerics.get("config_sha256")
+        or gate.get("adapter_files") != adapter_files
+        or gate.get("model_weight_sha256")
+        != attached_dtype_numerics.get("model_weight_sha256")
+        or gate.get("prompt_sha256")
+        != attached_dtype_numerics.get("prompt_sha256")
+        or gate.get("eval_digest")
+        != attached_dtype_numerics.get("eval_digest")
+        or gate.get("input_token_count")
+        != attached_dtype_numerics.get("input_token_count")
+        or gate.get("input_token_ids_sha256")
+        != attached_dtype_numerics.get("input_token_ids_sha256")
+        or gate.get("storage_audit")
+        != attached_dtype_numerics.get("storage_audit")
+        or gate.get("environment") != attached_dtype_numerics.get("environment")
+        or attached_dtype_numerics.get("locked_next_action", {}).get("gate_id")
+        != "FC-MVP-001-attached-dtype-boundary-control-v1"
+    ):
+        raise GateError("Tool Router attached dtype boundary-control source lineage drift")
     return gate
 
 
