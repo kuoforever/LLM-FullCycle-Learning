@@ -39,6 +39,7 @@ English companion documents.
 | FP32 attached/merge isolation v1 | [FC-MVP-001 FP32 attached/merge isolation](FC-MVP-001-fp32-attached-merge-isolation-v1.md) | English source |
 | FP32 attached/merge numerics v1 | [FC-MVP-001 FP32 attached/merge numerics](FC-MVP-001-fp32-attached-merge-numerics-v1.md) | English source |
 | Attached BF16/FP32 dtype isolation v1 | [FC-MVP-001 attached dtype isolation](FC-MVP-001-attached-dtype-isolation-v1.md) | English source |
+| Attached BF16/FP32 dtype numerics v1 | [FC-MVP-001 attached dtype numerics](FC-MVP-001-attached-dtype-numerics-v1.md) | English source |
 
 ## Development references
 
