@@ -295,6 +295,24 @@ RMSNorm, the first unregistered operation, a unique CUDA root cause, or
 Runtime eligibility. See
 [attached dtype numerics](docs/FC-MVP-001-attached-dtype-numerics-v1.md).
 
+### Attached BF16/FP32 dtype boundary control v1
+
+Four fresh attached runs reproduce the frozen BF16/FP32 paths and layer-0
+`input_layernorm` boundary at cached call/step 45. After all attached models
+are unloaded, four fresh standalone `Qwen2RMSNorm` executions replay the same
+checkpoint input and weight values under the two locked dtypes. The standalone
+BF16 and FP32 outputs exactly match their same-dtype actual outputs. Both
+actual and control comparisons retain the frozen `1,536/1,536` unequal values
+and RMS delta `0.0009270972900508952`.
+
+This shows that locked same-values BF16/FP32 RMSNorm arithmetic is sufficient
+to reproduce this local registered boundary. It does not identify a unique
+internal operation or CUDA kernel, prove independent downstream propagation or
+a token cause, establish pristine-FP32 checkpoint behavior, or pass a full
+remediation evaluation. The boundary-control gate passes; remediation and
+Runtime eligibility remain false. See
+[attached dtype boundary control](docs/FC-MVP-001-attached-dtype-boundary-control-v1.md).
+
 ### Scale boundary of the current model evidence
 
 Every model number above comes from a single RTX 4090 Laptop GPU, a 1.5B
@@ -320,13 +338,12 @@ details are in [environment.md](docs/environment.md).
 
 ## Current boundary
 
-The current work is `FC-MVP-001-attached-dtype-boundary-control-v1`.
-Reproduce the fresh attached BF16/FP32 paths and the observed layer-0
-`input_layernorm` boundary, then run one pre-registered same-values RMSNorm
-control that separates current-forward module arithmetic from prior cached
-state. The attached execution form, checkpoint and FP32 Adapter source/runtime
-values, prompt, seed, SDPA dispatch, generation semantics, eval digest, and
-target step must not change. No new data, training, eval-answer tuning,
-Runtime integration, full-eval run, merged artifact, module tensor sidecar, or
-second intervention is allowed; the result must not be promoted to a unique
-CUDA/floating-point root-cause or full-history causality claim.
+The current work is `FC-MVP-001-fp32-attached-remediation-eval-v1`.
+Pre-register one resource-bounded full frozen evaluation of the FP32 attached
+Adapter with decision compilation fixed, then compare it against the frozen
+BF16 attached v2 metrics. The matched boundary-control evidence, attached
+execution form, checkpoint and FP32 Adapter source/runtime values, unchanged
+20-case eval, compiler, prompt, SDPA dispatch, and generation semantics must
+remain fixed. No new data, training, eval-answer tuning, merge, model-artifact
+promotion, or Runtime integration is allowed; those decisions remain
+prohibited until the safety, regression, and resource gates pass.

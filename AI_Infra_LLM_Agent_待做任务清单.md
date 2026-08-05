@@ -575,6 +575,21 @@ agent-model-factory/
 - 记录峰值显存、训练时间、Adapter 大小和最终指标
 - Adapter 可独立加载与合并
 
+**当前进展（2026-08-05）**
+
+- `FC-MVP-001-attached-dtype-boundary-control-v1` 已在本地完成并通过离线门禁：
+  四次 actual attached ABBA 与四次 standalone `Qwen2RMSNorm` ABBA 精确复现
+  同一 layer-0 `input_layernorm` registered boundary；结论仅限相同 checkpoint
+  values 在锁定 BF16/FP32 RMSNorm arithmetic 下足以复现该局部边界，不支持
+  唯一内部算子/kernel、独立下游传播或 token 因果结论。
+- 唯一 active objective 是 `FC-MVP-001-fp32-attached-remediation-eval-v1`：
+  预注册一次 resource-bounded 的 FP32 attached Adapter 完整冻结 20-case eval，
+  固定 decision compilation，并与冻结 BF16 attached v2 指标做 safety、
+  regression 和 resource 对比。
+- 当前 control gate 未运行 full eval；下一 gate 的单次完整冻结 eval 是 required
+  and allowed。检查通过前继续禁止 merge、artifact promotion 和 Runtime
+  integration；不得新增数据、训练或针对 eval answer 调参。
+
 ## TOOL-007：输出/序列蒸馏
 
 对照：
