@@ -1,0 +1,366 @@
+{
+  "preregistration_version": 1,
+  "freeze_status": "frozen",
+  "gate_id": "FC-MVP-001-fp32-attached-offline-package-reproducibility-v1",
+  "experiment_id": "fc-mvp-001-fp32-attached-offline-package-reproducibility-v1",
+  "package_id": "fc-mvp-001-fp32-attached-factorized-lora-package-v1",
+  "candidate_id": "fp32-attached-factorized-lora",
+  "run_count": 1,
+  "source_lineage": {
+    "repository": {
+      "remote_url": "https://github.com/kuoforever/reliable-agent-model-lifecycle.git",
+      "freeze_commit_authority": "required_formal_cli_argument"
+    },
+    "manifest": {
+      "path": "baseline/fc-mvp-001-fp32-attached-offline-package-manifest-v1.json",
+      "sha256": "sha256:4125f2eef2a4b8f07015169ac7fb77b830514e053a4624aa703e5f5a64943eb0",
+      "source_hashes": {
+        "adapter_config": "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16",
+        "adapter_inspector_source": "sha256:3fa9dca9d5b309b9401be25dd3538ccbdf76df63d0eda67230a45152703c5452",
+        "adapter_readme": "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522",
+        "adapter_weights": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342",
+        "canonical_json_source": "sha256:05cfe603d4786fb536cc1f99952a55fd211cc0fea2c210b32b575fefda9537d3",
+        "decision_compiler_source": "sha256:16f162a84572c7f0782890aef5aafbaafa1862e14938fe08b0ea6e97efa05157",
+        "manifest_builder_source": "sha256:7834a35854e14863de4312319fcf109681a14f42bf2d7eee3a385a1376427284",
+        "manifest_contract_source": "sha256:8e7b09f914ab45bdbe4841ebf3c06eb75ce9eabf0d2ce9ba2cb8de3ca48d383d",
+        "model_downloader_source": "sha256:1d0d3321a55b185128de020f4b5a2a9c3ecc22f5abb0535c4712c4fd545d3a28",
+        "package_documentation": "sha256:a531b0e462aad15a1ec9eb001d05c8cf71b5a72bde66437a499d0c6efba9cb24",
+        "package_init_source": "sha256:45cabb5da1c0e7c2c93ef045904cf4555b0c755baf1ec2eaf47330a1aab6008e",
+        "prompt": "sha256:4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97",
+        "remediation_preregistration": "sha256:5e7b0665f97f5cee760637236f80039c4e621ae0f24915c0ac749d885a683c8b",
+        "sft_config": "sha256:110ada11d69f4e83c4b93da0304e62151059115487e90394d32835f6916365c8",
+        "sft_helpers_source": "sha256:db881e5e5955341acb735416d93062a40cf512b63ec50eb8c196ddb4371bd020",
+        "training_lock": "sha256:e6e23f51834b1815578368ce54c78034e72a7158395892e77fdf75594548931f",
+        "upstream_review": "sha256:81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8",
+        "validation_error_source": "sha256:bb3cda72585bc84bf0cf84c5736cafe29c8dfc8bca5a851d82ecfed35b1b883d"
+      }
+    },
+    "reference_predictions": {
+      "path": "baseline/tool-router-fp32-attached-remediation-v1-predictions.json",
+      "sha256": "sha256:382071f0689ce4ca41329d689f76fc4c4b06faa68769fb80c99181015e678115"
+    },
+    "reference_evidence": {
+      "path": "baseline/fc-mvp-001-fp32-attached-remediation-eval-v1.json",
+      "sha256": "sha256:2dd17f6b1098490034f825d163f48f26eb4093d02f115424eb814cb2c925ad8e"
+    },
+    "evaluation": {
+      "path": "fixtures/tool_router_v1/eval.json",
+      "file_sha256": "sha256:32ceee99ab1be5672313a8aead91a089238d007dcab1a31d9ca999f28cc24595",
+      "canonical_digest": "sha256:02221fedccb331466eb7b4a354c725a0ab31ac121f022298f42d3782b5e56a7a",
+      "records": 20,
+      "order": [
+        "eval-001",
+        "eval-002",
+        "eval-003",
+        "eval-004",
+        "eval-005",
+        "eval-006",
+        "eval-007",
+        "eval-008",
+        "eval-009",
+        "eval-010",
+        "eval-011",
+        "eval-012",
+        "eval-013",
+        "eval-014",
+        "eval-015",
+        "eval-016",
+        "eval-017",
+        "eval-018",
+        "eval-019",
+        "eval-020"
+      ]
+    },
+    "protocol_sources": {
+      "contract_source": {
+        "path": "src/fullcycle_bridge/tool_router_fp32_attached_offline_package_reproducibility.py",
+        "sha256": "sha256:372a2d16fdc8125298eb06f9394840bc189fbb2b8de2b2d0581bcbafb996aa67",
+        "version": 1,
+        "symbols": [
+          "load_and_validate_preregistration",
+          "load_manifest_source_bundle",
+          "authenticate_manifest_and_references",
+          "resolve_clean_roots",
+          "validate_materialization_receipt",
+          "compare_behavioral_replay",
+          "build_replay_artifact",
+          "build_reproducibility_evidence",
+          "classify_reproducibility_gates",
+          "validate_reproducibility_evidence"
+        ]
+      },
+      "materializer_source": {
+        "path": "scripts/materialize_tool_router_fp32_attached_offline_package_reproducibility.py",
+        "sha256": "sha256:833b4749fe8bed23dca68b4be028f29ac8ff419a4fafab0f0bbcaac21af632ce",
+        "symbol": "main"
+      },
+      "runner_source": {
+        "path": "scripts/probe_tool_router_fp32_attached_offline_package_reproducibility.py",
+        "sha256": "sha256:1a93c569dc15863806ef121cbbcde9887718a6f7f767ccce9a817912f1cddb65",
+        "symbol": "main"
+      }
+    },
+    "model_downloader": {
+      "path": "scripts/download_pinned_tool_router_model.py",
+      "sha256": "sha256:1d0d3321a55b185128de020f4b5a2a9c3ecc22f5abb0535c4712c4fd545d3a28",
+      "symbol": "main"
+    },
+    "adapter_lfs": {
+      "path": "baseline/adapters/fc-mvp-001-lora-sft-v2/adapter_model.safetensors",
+      "oid": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342",
+      "bytes": 17462432
+    }
+  },
+  "materialization_protocol": {
+    "formal_execution_authorized": true,
+    "phase_order": [
+      "fresh_repository_checkout",
+      "exact_adapter_lfs_checkout",
+      "pinned_base_snapshot_download",
+      "strict_manifest_resolution",
+      "offline_behavioral_execution"
+    ],
+    "destination_policy": {
+      "root_authority": "caller_supplied",
+      "must_not_exist_before_materialization": true,
+      "exclusive_create": true,
+      "parent_relative_to_repository": "work/clean-location",
+      "must_be_direct_child_of_parent": true,
+      "leaf_name_pattern": "[0-9a-f]{32}",
+      "children": {
+        "repository": "repository",
+        "base_model_and_tokenizer": "base_model_and_tokenizer"
+      },
+      "adapter_root_relative_to_repository": "baseline/adapters/fc-mvp-001-lora-sft-v2",
+      "absolute_paths_recorded_in_artifacts": false,
+      "symlinks_allowed": false,
+      "reparse_points_allowed": false,
+      "hardlinks_allowed": false,
+      "overwrite_allowed": false
+    },
+    "repository_transport": {
+      "method": "fresh_remote_git_checkout",
+      "remote_url": "https://github.com/kuoforever/reliable-agent-model-lifecycle.git",
+      "exact_cli_freeze_commit_required": true,
+      "git_fetch_required": true,
+      "git_lfs_checkout_required": true,
+      "submodules_allowed": false,
+      "alternate_remote_allowed": false
+    },
+    "base_transport": {
+      "method": "pinned_huggingface_snapshot_download",
+      "downloader_path": "scripts/download_pinned_tool_router_model.py",
+      "downloader_sha256": "sha256:1d0d3321a55b185128de020f4b5a2a9c3ecc22f5abb0535c4712c4fd545d3a28",
+      "destination_scoped_hf_home_required": true,
+      "destination_scoped_cache_required": true,
+      "alternate_revision_fallback_allowed": false
+    },
+    "adapter_transport": {
+      "method": "git_lfs_checkout_in_clean_repository",
+      "root_relative_to_repository": "baseline/adapters/fc-mvp-001-lora-sft-v2",
+      "weight_path": "baseline/adapters/fc-mvp-001-lora-sft-v2/adapter_model.safetensors",
+      "lfs_oid": "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342",
+      "bytes": 17462432,
+      "second_adapter_copy_allowed": false
+    },
+    "phase_authority": {
+      "network_allowed_during_materialization": true,
+      "download_allowed_during_materialization": true,
+      "git_fetch_allowed_during_materialization": true,
+      "network_allowed_during_execution": false,
+      "local_files_only_during_execution": true,
+      "historical_adapter_base_path_authoritative": false
+    },
+    "receipt_policy": {
+      "output_root_relative_to_repository": "work/test-fixtures",
+      "protocol_freeze_commit_required": true,
+      "source_code_hash_receipts_required": true,
+      "clean_resolution_digest_required": true,
+      "absolute_paths_prohibited": true,
+      "write_before_model_execution": true
+    }
+  },
+  "execution_protocol": {
+    "run_id": "fp32-attached-clean-location-full-eval-r1",
+    "fresh_model_loads": 1,
+    "full_eval_runs": 1,
+    "generate_calls": 20,
+    "retry_count": 0,
+    "fixed_order": true,
+    "attempt_consumption": {
+      "consumed_when": "fresh_model_load_started_or_any_generate_call_started",
+      "retry_allowed_before_consumption": true,
+      "retry_allowed_after_consumption": false
+    },
+    "root_authority": "materialization_receipt_clean_roots",
+    "historical_adapter_base_path_used": false,
+    "local_files_only": true,
+    "network_enabled": false,
+    "decision_compilation": "compile_decision_v1_after_raw_parse_before_terminal_consumption",
+    "generation": {
+      "attention_backend_claim_scope": "transformers_high_level_dispatch_only",
+      "attn_implementation": "sdpa",
+      "autocast": false,
+      "call_pad_token_source": "tokenizer.eos_token_id",
+      "device": "cuda:0",
+      "do_sample": false,
+      "low_level_cuda_kernel_identity_claimed": false,
+      "max_new_tokens": 256,
+      "model_eos_token_ids": [
+        151645,
+        151643
+      ],
+      "model_pad_token_id": 151643,
+      "repetition_penalty": 1.1,
+      "seed": 20260803,
+      "tf32": false,
+      "torch_dtype": "float32",
+      "use_cache": true
+    },
+    "candidate": {
+      "base_checkpoint_storage_dtype": "bfloat16",
+      "base_checkpoint_value_semantics": "unchanged_bf16_checkpoint_source_values_materialized_as_float32",
+      "base_load_dtype": "float32",
+      "adapter_storage_dtype": "float32",
+      "adapter_runtime_dtype": "float32",
+      "autocast_adapter_dtype": true,
+      "execution_form": "attached_factorized_lora",
+      "merge": false,
+      "save_model": false,
+      "save_tensors": false
+    },
+    "output_policy": {
+      "root_authority": "caller_supplied",
+      "exclusive_create": true,
+      "required_parent_relative_to_controller_repository": "baseline",
+      "machine_paths_recorded": false,
+      "replay_file": "tool-router-fp32-attached-offline-package-reproducibility-v1-predictions.json",
+      "evidence_file": "fc-mvp-001-fp32-attached-offline-package-reproducibility-v1.json",
+      "raw_outputs_required": true,
+      "summary_required": true,
+      "model_artifact_save": false,
+      "tensor_payload_save": false
+    }
+  },
+  "behavior_reference": {
+    "scope": "same_recorded_environment_exact_twenty_case_raw_and_compiled_output_reproduction",
+    "reference_predictions_sha256": "sha256:382071f0689ce4ca41329d689f76fc4c4b06faa68769fb80c99181015e678115",
+    "reference_evidence_sha256": "sha256:2dd17f6b1098490034f825d163f48f26eb4093d02f115424eb814cb2c925ad8e",
+    "records": 20,
+    "order": [
+      "eval-001",
+      "eval-002",
+      "eval-003",
+      "eval-004",
+      "eval-005",
+      "eval-006",
+      "eval-007",
+      "eval-008",
+      "eval-009",
+      "eval-010",
+      "eval-011",
+      "eval-012",
+      "eval-013",
+      "eval-014",
+      "eval-015",
+      "eval-016",
+      "eval-017",
+      "eval-018",
+      "eval-019",
+      "eval-020"
+    ],
+    "raw_output_comparison": "exact_utf8_bytes",
+    "raw_output_normalization_allowed": false,
+    "compiler_symbol": "compile_decision",
+    "compiler_version": 1,
+    "compiler_recomputed_for_reference_and_replay": true,
+    "compiled_output_comparison": "exact_canonical_json_bytes",
+    "metric_threshold_comparison_required": false
+  },
+  "resource_caps": {
+    "elapsed_seconds_max": 153.98083879996557,
+    "peak_gpu_memory_bytes_max": 6300631040,
+    "memory_allocated_before_load_bytes_max": 16777216,
+    "memory_allocated_after_release_bytes_max": 16777216
+  },
+  "acceptance_criteria": {
+    "required_gates": [
+      "metadata_validation",
+      "materialization",
+      "clean_location_resolution",
+      "environment",
+      "execution_contract",
+      "behavioral_replay",
+      "resources"
+    ],
+    "raw_outputs_exact": 20,
+    "compiled_outputs_exact": 20,
+    "remaining_blocking_findings_on_pass": [
+      "remote_revision_origin_unverified"
+    ]
+  },
+  "outcome_classifications": {
+    "passed": "fp32_attached_same_environment_clean_location_behavior_exactly_reproduced",
+    "trust_root_invalid": "fp32_attached_reproducibility_trust_root_invalid",
+    "materialization_failed": "fp32_attached_clean_location_materialization_failed",
+    "resolution_failed": "fp32_attached_clean_location_resolution_failed",
+    "environment_mismatch": "fp32_attached_clean_location_environment_mismatch",
+    "execution_contract_failed": "fp32_attached_clean_location_execution_contract_failed",
+    "behavioral_drift": "fp32_attached_clean_location_behavioral_drift",
+    "resource_exceeded": "fp32_attached_clean_location_resource_budget_exceeded",
+    "behavioral_and_resource_failed": "fp32_attached_clean_location_behavioral_and_resource_failure"
+  },
+  "outcome_next_actions": {
+    "passed": {
+      "gate_id": "FC-MVP-001-fp32-attached-remote-revision-origin-attestation-v1",
+      "action": "independently attest the pinned remote revision origin while keeping all promotion serving and Runtime claims false"
+    },
+    "adverse": {
+      "gate_id": "FC-MVP-001-fp32-attached-offline-package-reproducibility-failure-classification-v1",
+      "action": "classify the frozen clean-location failure before changing any package component or execution contract"
+    },
+    "pre_execution_invalid_or_incomplete": {
+      "gate_id": "FC-MVP-001-fp32-attached-offline-package-reproducibility-v1",
+      "action": "only when model_loads and generate_calls are both zero repair the harness or transport and repeat this unchanged protocol"
+    },
+    "post_load_invalid_or_incomplete": {
+      "gate_id": "FC-MVP-001-fp32-attached-offline-package-reproducibility-failure-classification-v1",
+      "action": "after any model load or generate call freeze the incomplete attempt and classify it without an automatic rerun"
+    }
+  },
+  "constraints": {
+    "new_data": false,
+    "training": false,
+    "eval_answer_tuning": false,
+    "decision_compiler_change": false,
+    "prompt_change": false,
+    "generation_change": false,
+    "precision_change": false,
+    "execution_form_change": false,
+    "base_or_tokenizer_substitution": false,
+    "adapter_or_weight_mutation": false,
+    "merged_weight_creation": false,
+    "artifact_promotion": false,
+    "serving_integration": false,
+    "runtime_integration": false,
+    "provider_integration": false,
+    "mcp_integration": false,
+    "desktop_integration": false
+  },
+  "claims": {
+    "metadata_validation_is_behavioral_reproducibility": false,
+    "materialization_transport_is_remote_origin_attestation": false,
+    "clean_location_is_cross_machine_reproducibility": false,
+    "transitive_dependency_hashes_pinned": false,
+    "full_eval_repeat_variance_established": false,
+    "external_execution_count_attested": false,
+    "offline_artifact_eligible": false,
+    "portable_package_eligible": false,
+    "preferred_offline_candidate": false,
+    "serving_readiness_established": false,
+    "artifact_promotion_allowed": false,
+    "merged_artifact_allowed": false,
+    "scope": "same_recorded_environment_clean_location_twenty_case_replay_only"
+  },
+  "runtime_eligible": false
+}
