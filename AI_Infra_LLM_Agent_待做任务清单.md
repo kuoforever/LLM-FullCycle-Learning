@@ -575,7 +575,7 @@ agent-model-factory/
 - 记录峰值显存、训练时间、Adapter 大小和最终指标
 - Adapter 可独立加载与合并
 
-**当前进展（2026-08-05）**
+**当前进展（2026-08-06）**
 
 - `FC-MVP-001-fp32-attached-remediation-eval-v1` 已在结果产生前锁定 runner、
   compiler、comparison contract、唯一 FP32 attached candidate、唯一 run、
@@ -594,25 +594,37 @@ agent-model-factory/
 - unified offline gate 在 Python 3.11.15、3.12.12、3.13.7 上均通过 260 tests，
   Ruff、mypy、py_compile 与 diff-check 通过。
 - `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1` 已完成：固定 compiler
-  后的 frozen quality evidence favorable、repository-local evidence usable，但当前
-  package 缺 composite manifest、portable base/revision binding、tokenizer file
-  manifest、required compiler binding 与完整 use/limitations documentation，共 6 个
-  blocker，因此 `offline_artifact_eligible=false`、preferred/serving/promotion/
-  merged/Runtime 全部 false。Adapter 三文件未改，safetensors audit 为 224 个 F32
-  tensors、4,358,144 parameters。
+  后的 frozen quality evidence favorable、repository-local evidence usable；该
+  review 当时确认 package 缺 composite manifest、portable base/revision binding、
+  tokenizer file manifest、required compiler binding 与完整 use/limitations
+  documentation，共 6 个 blocker，因此 `offline_artifact_eligible=false`、
+  preferred/serving/promotion/merged/Runtime 全部 false。Adapter 三文件未改，
+  safetensors audit 为 224 个 F32 tensors、4,358,144 parameters。
 - review contract 先冻结于 `a36cc965531cef781cd66aff3c0ff4c481d56520`；随后生成
   15,278-byte review artifact，SHA-256 为
   `81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8`。
   25 个 direct source roots 使用 single-read payload 同时绑定 parsed content 与 hash，
   unified offline gate 在 Python 3.11.15、3.12.12、3.13.7 上通过 268 tests，审计
   30 个 source files。
+- `FC-MVP-001-fp32-attached-offline-package-manifest-v1` 已完成：外部
+  metadata-only composite manifest 绑定 unchanged Adapter、pinned base/tokenizer
+  files、required compiler 及依赖、prompt/generation/precision/environment、
+  attached-only execution 与 use/limitations。外部 raw-file SHA-256 trust root
+  与严格重算导出
+  `fp32_attached_metadata_only_composite_manifest_complete`；
+  `metadata_complete=true`、`offline_package_identity_complete=true`，此前 6 个
+  package blocker 已解决。
+- 该结果仅完成 metadata/package identity。当前机器 exact-root resolution
+  通过不构成 clean-location attestation；`behavioral_reproducibility_unverified`、
+  `clean_location_resolution_unverified` 与
+  `remote_revision_origin_unverified` 仍是 3 个 blocker。
+  offline-artifact、portable-package、preferred、serving、promotion、
+  merged-artifact 与 Runtime 全部仍为 false。
 - 唯一 active objective 切换为
-  `FC-MVP-001-fp32-attached-offline-package-manifest-v1`：仅创建并严格验证一个
-  metadata-only composite manifest，绑定 unchanged Adapter、pinned base/tokenizer
-  file identity、required compiler、prompt/generation/precision/environment 与
-  attached-only execution。禁止重跑 full eval、新增数据、训练、针对 eval answer
-  调参、改变 compiler/execution form、复制/修改/merge/save weights、promotion、
-  serving 或 Runtime/Provider/MCP/Desktop integration。
+  `FC-MVP-001-fp32-attached-offline-package-reproducibility-v1`：先冻结
+  clean-location materialization、resolution 与 behavioral comparison protocol，
+  再执行注册范围；不得把 manifest validity 或当前机器 resolution 写成
+  reproducibility、promotion 或 Runtime evidence。
 
 ## TOOL-007：输出/序列蒸馏
 

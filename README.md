@@ -334,18 +334,36 @@ promotion remain false. See
 ### FP32 attached artifact eligibility review v1
 
 The offline review preserves the favorable fixed-compiler result while
-separately rejecting the current package. Repository-local evidence remains
-usable, but `offline_artifact_eligible=false`: the package lacks an
-authoritative composite manifest, portable base/revision binding, a tokenizer
-file manifest, required compiler binding, and complete use/limitations
-documentation. The exact Adapter remains unchanged and structurally valid at
+separately recording the package state at that gate. Repository-local evidence
+remains usable, but `offline_artifact_eligible=false`: at that review, the
+package lacked an authoritative composite manifest, portable base/revision
+binding, a tokenizer file manifest, required compiler binding, and complete
+use/limitations documentation. The exact Adapter remains unchanged and structurally valid at
 `224` F32 tensors and `4,358,144` parameters.
 
-The classification is
+At that gate, the classification was
 `fp32_attached_fixed_compiler_favorable_eval_but_offline_artifact_package_incomplete`.
 Preferred-candidate, serving-readiness, promotion, merged-artifact, and Runtime
-claims all remain false. See
+claims were all false. See
 [FP32 attached artifact eligibility review](docs/FC-MVP-001-fp32-attached-artifact-eligibility-review-v1.md).
+
+### FP32 attached offline package manifest v1
+
+The externally authenticated metadata-only composite manifest binds the exact
+unchanged attached package: pinned base and tokenizer files, the three-file
+FP32 Adapter, required compiler and dependencies, prompt, generation,
+precision, environment, and use/limitations contract. External raw-byte
+SHA-256 validation and strict recomputation derive
+`fp32_attached_metadata_only_composite_manifest_complete`; all six prior
+package blockers are resolved.
+
+This establishes metadata completeness and offline package identity only.
+Remote revision origin, clean-location resolution, and behavioral
+reproducibility remain unverified. Offline-artifact eligibility, portable
+package eligibility, preferred-candidate status, serving readiness, promotion,
+merged-artifact permission, and Runtime eligibility remain false. See the
+[manifest evidence](docs/FC-MVP-001-fp32-attached-offline-package-manifest-v1.md)
+and [use/limitations contract](docs/FC-MVP-001-fp32-attached-offline-package-use-v1.md).
 
 ### Scale boundary of the current model evidence
 
@@ -380,11 +398,12 @@ details are in [environment.md](docs/environment.md).
 ## Current boundary
 
 The current work is
-`FC-MVP-001-fp32-attached-offline-package-manifest-v1`. Create and strictly
-validate one metadata-only composite manifest that binds the unchanged Adapter,
-pinned base and tokenizer file identities, required compiler, prompt,
-generation/precision policy, environment, and attached-only execution. This
-gate must not rerun the registered evaluation, add data, train, tune against
-eval answers, change the compiler or execution form, mutate/copy/merge model or
-Adapter weights, promote an artifact, deploy serving, or integrate
-Runtime/Provider/MCP/Desktop.
+`FC-MVP-001-fp32-attached-offline-package-reproducibility-v1`. Use the external
+manifest SHA-256 as the trust root, freeze a clean-location materialization,
+resolution, execution, and comparison protocol, then test the exact unchanged
+attached package from caller-supplied clean roots. A valid manifest and current
+local resolution are entry evidence, not behavioral reproducibility. Remote
+revision origin also remains unverified unless separately attested. This gate
+must not add data, train, tune against eval answers, change the compiler,
+prompt, generation, precision, execution form, or weights, promote an artifact,
+deploy serving, or integrate Runtime/Provider/MCP/Desktop.

@@ -7,6 +7,7 @@ import hashlib
 import json
 import math
 import os
+import stat
 import sys
 import tomllib
 import unittest
@@ -79,6 +80,68 @@ TOOL_ROUTER_FP32_ATTACHED_REMEDIATION_EVAL_PATH = (
 TOOL_ROUTER_FP32_ATTACHED_ARTIFACT_ELIGIBILITY_REVIEW_PATH = (
     ROOT / "baseline" / "fc-mvp-001-fp32-attached-artifact-eligibility-review-v1.json"
 )
+TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_PATH = (
+    ROOT / "baseline" / "fc-mvp-001-fp32-attached-offline-package-manifest-v1.json"
+)
+TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_SHA256 = (
+    "sha256:4125f2eef2a4b8f07015169ac7fb77b830514e053a4624aa703e5f5a64943eb0"
+)
+TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_SOURCE_HASHES = {
+    "adapter_config": (
+        "sha256:8eb104c3af2f4deb3abe5e471b3d3a74cb306683c1fdadb95488de981ba14c16"
+    ),
+    "adapter_inspector_source": (
+        "sha256:3fa9dca9d5b309b9401be25dd3538ccbdf76df63d0eda67230a45152703c5452"
+    ),
+    "adapter_readme": (
+        "sha256:353053cad9659d849cbf1fdacc7d9b86b82fb72197e2d101785843a4109bc522"
+    ),
+    "adapter_weights": (
+        "sha256:efb62471e105b8ef25641200967d447b8cc2f3ff565937bc47193fbf79f4f342"
+    ),
+    "canonical_json_source": (
+        "sha256:05cfe603d4786fb536cc1f99952a55fd211cc0fea2c210b32b575fefda9537d3"
+    ),
+    "decision_compiler_source": (
+        "sha256:16f162a84572c7f0782890aef5aafbaafa1862e14938fe08b0ea6e97efa05157"
+    ),
+    "manifest_builder_source": (
+        "sha256:7834a35854e14863de4312319fcf109681a14f42bf2d7eee3a385a1376427284"
+    ),
+    "manifest_contract_source": (
+        "sha256:8e7b09f914ab45bdbe4841ebf3c06eb75ce9eabf0d2ce9ba2cb8de3ca48d383d"
+    ),
+    "model_downloader_source": (
+        "sha256:1d0d3321a55b185128de020f4b5a2a9c3ecc22f5abb0535c4712c4fd545d3a28"
+    ),
+    "package_documentation": (
+        "sha256:a531b0e462aad15a1ec9eb001d05c8cf71b5a72bde66437a499d0c6efba9cb24"
+    ),
+    "package_init_source": (
+        "sha256:45cabb5da1c0e7c2c93ef045904cf4555b0c755baf1ec2eaf47330a1aab6008e"
+    ),
+    "prompt": (
+        "sha256:4a7d15063b0b074ef999c2848d0fc073a6cc00ed4999ea81f770e2e42cfa6d97"
+    ),
+    "remediation_preregistration": (
+        "sha256:5e7b0665f97f5cee760637236f80039c4e621ae0f24915c0ac749d885a683c8b"
+    ),
+    "sft_config": (
+        "sha256:110ada11d69f4e83c4b93da0304e62151059115487e90394d32835f6916365c8"
+    ),
+    "sft_helpers_source": (
+        "sha256:db881e5e5955341acb735416d93062a40cf512b63ec50eb8c196ddb4371bd020"
+    ),
+    "training_lock": (
+        "sha256:e6e23f51834b1815578368ce54c78034e72a7158395892e77fdf75594548931f"
+    ),
+    "upstream_review": (
+        "sha256:81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8"
+    ),
+    "validation_error_source": (
+        "sha256:bb3cda72585bc84bf0cf84c5736cafe29c8dfc8bca5a851d82ecfed35b1b883d"
+    ),
+}
 SUPPORTED_MINORS = {(3, 11), (3, 12), (3, 13)}
 FORBIDDEN_IMPORT_ROOTS = frozenset(
     {
@@ -151,6 +214,9 @@ def main() -> int:
     )
     fp32_attached_artifact_eligibility = _validate_fp32_attached_artifact_eligibility(
         fp32_attached_remediation_eval
+    )
+    fp32_attached_offline_package = _validate_fp32_attached_offline_package_manifest(
+        fp32_attached_artifact_eligibility
     )
     tests_run = _run_tests()
 
@@ -389,9 +455,44 @@ def main() -> int:
         "tool_router_fp32_attached_artifact_eligibility_report_digest": (
             fp32_attached_artifact_eligibility["report_digest"]
         ),
-        "tool_router_next_gate": fp32_attached_artifact_eligibility[
-            "locked_next_action"
-        ]["gate_id"],
+        "tool_router_fp32_attached_offline_package_manifest_sha256": (
+            fp32_attached_offline_package["validation"]["manifest_file_sha256"]
+        ),
+        "tool_router_fp32_attached_offline_package_metadata_complete": (
+            fp32_attached_offline_package["validation"]["metadata_complete"]
+        ),
+        "tool_router_fp32_attached_offline_package_identity_complete": (
+            fp32_attached_offline_package["validation"][
+                "offline_package_identity_complete"
+            ]
+        ),
+        "tool_router_fp32_attached_offline_package_classification": (
+            fp32_attached_offline_package["validation"]["classification"]
+        ),
+        "tool_router_fp32_attached_offline_package_local_components_resolved": (
+            fp32_attached_offline_package["resolution"]["resolved"]
+        ),
+        "tool_router_fp32_attached_offline_package_reproducibility_test_eligible": (
+            fp32_attached_offline_package["resolution"][
+                "eligible_for_clean_location_reproducibility_test"
+            ]
+        ),
+        "tool_router_fp32_attached_offline_package_remote_origin_attested": (
+            fp32_attached_offline_package["validation"][
+                "remote_revision_origin_attested"
+            ]
+        ),
+        "tool_router_fp32_attached_offline_package_behavior_reproduced": (
+            fp32_attached_offline_package["validation"][
+                "behavioral_reproducibility_established"
+            ]
+        ),
+        "tool_router_fp32_attached_offline_package_remaining_blocking_findings": (
+            fp32_attached_offline_package["validation"]["remaining_blocking_findings"]
+        ),
+        "tool_router_next_gate": fp32_attached_offline_package["validation"][
+            "next_gate"
+        ],
     }
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
     return 0
@@ -2887,6 +2988,142 @@ def _validate_fp32_attached_artifact_eligibility(
     return review
 
 
+def _validate_fp32_attached_offline_package_manifest(
+    fp32_attached_artifact_eligibility: dict[str, Any],
+) -> dict[str, Any]:
+    from fullcycle_bridge.tool_router_fp32_attached_offline_package_manifest import (
+        validate_and_resolve_fp32_attached_offline_package,
+    )
+    from scripts.build_tool_router_fp32_attached_offline_package_manifest import (
+        DEFAULT_ADAPTER_DIR,
+        DEFAULT_BASE_MODEL_DIR,
+        load_repository_manifest_inputs,
+    )
+
+    manifest_path = TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_PATH
+    manifest_payload = _read_regular_file_once(
+        manifest_path, "Tool Router FP32 attached offline package manifest"
+    )
+    manifest_sha256 = "sha256:" + hashlib.sha256(manifest_payload).hexdigest()
+    if (
+        len(manifest_payload) != 17_487
+        or manifest_sha256 != TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_SHA256
+    ):
+        raise GateError("Tool Router FP32 attached offline package manifest drift")
+
+    inputs = load_repository_manifest_inputs()
+    if (
+        inputs["upstream_review"] != fp32_attached_artifact_eligibility
+        or fp32_attached_artifact_eligibility.get("locked_next_action", {}).get(
+            "gate_id"
+        )
+        != "FC-MVP-001-fp32-attached-offline-package-manifest-v1"
+    ):
+        raise GateError("Tool Router FP32 attached offline package upstream drift")
+
+    combined = validate_and_resolve_fp32_attached_offline_package(
+        manifest_payload,
+        TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_SHA256,
+        inputs["upstream_review"],
+        inputs["remediation_preregistration"],
+        inputs["sft_config"],
+        inputs["adapter_config"],
+        source_hashes=inputs["source_hashes"],
+        source_payloads=inputs["source_payloads"],
+        expected_source_hashes=(
+            TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_SOURCE_HASHES
+        ),
+        base_model_root=DEFAULT_BASE_MODEL_DIR,
+        adapter_root=DEFAULT_ADAPTER_DIR,
+        repository_root=ROOT,
+    )
+    expected_validation = {
+        "frozen_manifest_valid": True,
+        "manifest_file_sha256": (
+            TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_SHA256
+        ),
+        "metadata_complete": True,
+        "offline_package_identity_complete": True,
+        "attached_package_identity_bound": True,
+        "prior_package_blocker_count_resolved": 6,
+        "eligible_for_clean_location_reproducibility_test": True,
+        "remote_revision_origin_attested": False,
+        "behavioral_reproducibility_established": False,
+        "offline_artifact_eligible": False,
+        "portable_package_eligible": False,
+        "preferred_offline_candidate": False,
+        "serving_readiness_established": False,
+        "artifact_promotion_allowed": False,
+        "merged_artifact_allowed": False,
+        "classification": "fp32_attached_metadata_only_composite_manifest_complete",
+        "remaining_blocking_findings": [
+            "behavioral_reproducibility_unverified",
+            "clean_location_resolution_unverified",
+            "remote_revision_origin_unverified",
+        ],
+        "remaining_blocking_finding_count": 3,
+        "next_gate": ("FC-MVP-001-fp32-attached-offline-package-reproducibility-v1"),
+        "runtime_eligible": False,
+    }
+    if combined.get("validation") != expected_validation:
+        raise GateError("Tool Router FP32 attached offline package validation drift")
+
+    resolution = combined.get("resolution")
+    if not isinstance(resolution, dict):
+        raise GateError("Tool Router FP32 attached offline package resolution missing")
+    groups = resolution.get("groups")
+    if not isinstance(groups, list) or len(groups) != 3:
+        raise GateError("Tool Router FP32 attached offline package groups drift")
+    groups_by_role = {
+        group.get("root_role"): group for group in groups if isinstance(group, dict)
+    }
+    if set(groups_by_role) != {"base_model_and_tokenizer", "adapter", "repository"}:
+        raise GateError("Tool Router FP32 attached offline package group roles drift")
+    base_group = groups_by_role["base_model_and_tokenizer"]
+    adapter_group = groups_by_role["adapter"]
+    repository_group = groups_by_role["repository"]
+    if (
+        adapter_group.get("resolved") is not True
+        or adapter_group.get("expected_files") != 3
+        or adapter_group.get("matched_files") != 3
+        or adapter_group.get("issues") != []
+        or repository_group.get("resolved") is not True
+        or repository_group.get("expected_files") != 15
+        or repository_group.get("matched_files") != 15
+        or repository_group.get("issues") != []
+        or base_group.get("expected_files") != 9
+        or not isinstance(base_group.get("resolved"), bool)
+    ):
+        raise GateError(
+            "Tool Router FP32 attached offline package root resolution drift"
+        )
+    base_resolved = base_group["resolved"]
+    if base_resolved:
+        if base_group.get("matched_files") != 9 or base_group.get("issues") != []:
+            raise GateError("Tool Router FP32 attached local component match drift")
+    elif not base_group.get("issues"):
+        raise GateError("Tool Router FP32 attached unresolved root lacks evidence")
+    if (
+        resolution.get("resolution_version") != 1
+        or resolution.get("package_id")
+        != "fc-mvp-001-fp32-attached-factorized-lora-package-v1"
+        or resolution.get("manifest_file_sha256")
+        != TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_MANIFEST_SHA256
+        or resolution.get("caller_supplied_roots") is not True
+        or resolution.get("manifest_machine_paths_used") is not False
+        or resolution.get("adapter_local_base_path_used") is not False
+        or resolution.get("resolved") is not base_resolved
+        or resolution.get("eligible_for_clean_location_reproducibility_test")
+        is not base_resolved
+        or resolution.get("offline_artifact_eligible") is not False
+        or resolution.get("runtime_eligible") is not False
+        or resolution.get("failure_mode")
+        != (None if base_resolved else "component_resolution_failed_closed")
+    ):
+        raise GateError("Tool Router FP32 attached offline package decision drift")
+    return combined
+
+
 def _validate_fp32_isolation_precision(runs: list[dict[str, Any]]) -> None:
     expected_generation = {
         "score_dtypes": ["float32"],
@@ -3234,6 +3471,68 @@ def _run_tests() -> int:
 
 def _load_json(path: Path) -> dict[str, Any]:
     return _load_json_payload(path.read_bytes(), path)
+
+
+def _read_regular_file_once(path: Path, label: str) -> bytes:
+    """Read one trust-root file while binding its path and handle identity."""
+
+    try:
+        before = path.lstat()
+    except OSError as exc:
+        raise GateError(f"unsafe or missing {label}: {path}") from exc
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    if (
+        not stat.S_ISREG(before.st_mode)
+        or path.is_symlink()
+        or bool(getattr(before, "st_file_attributes", 0) & reparse_flag)
+    ):
+        raise GateError(f"unsafe or missing {label}: {path}")
+    try:
+        with path.open("rb") as handle:
+            opened = os.fstat(handle.fileno())
+            if _handle_identity_signature(before) != _handle_identity_signature(opened):
+                raise GateError(f"{label} identity changed before read")
+            payload = handle.read()
+            handle_after = os.fstat(handle.fileno())
+        after = path.lstat()
+    except OSError as exc:
+        raise GateError(f"failed to read stable {label}: {path}") from exc
+    if (
+        _handle_identity_signature(before) != _handle_identity_signature(handle_after)
+        or _handle_identity_signature(handle_after) != _handle_identity_signature(after)
+        or _stat_signature(before) != _stat_signature(after)
+        or len(payload) != after.st_size
+        or path.is_symlink()
+        or bool(getattr(after, "st_file_attributes", 0) & reparse_flag)
+    ):
+        raise GateError(f"{label} changed while reading")
+    return payload
+
+
+def _stat_signature(
+    value: os.stat_result,
+) -> tuple[int, int, int, int, int, int]:
+    return (
+        value.st_dev,
+        value.st_ino,
+        value.st_mode,
+        value.st_size,
+        value.st_mtime_ns,
+        value.st_ctime_ns,
+    )
+
+
+def _handle_identity_signature(
+    value: os.stat_result,
+) -> tuple[int, int, int, int, int]:
+    # Windows handle fstat and path stat can expose different ctime semantics.
+    return (
+        value.st_dev,
+        value.st_ino,
+        value.st_mode,
+        value.st_size,
+        value.st_mtime_ns,
+    )
 
 
 def _load_json_payload(payload: bytes, path: Path) -> dict[str, Any]:
