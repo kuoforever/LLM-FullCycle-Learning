@@ -1,6 +1,6 @@
 # Project status
 
-> Updated: 2026-08-05.
+> Updated: 2026-08-06.
 > This is the operational entry point for a new Reliable Agent Model Lifecycle
 > session.
 
@@ -57,38 +57,67 @@ Raw semantic validity falls from `0.85` to `0.80`, so compiler dependency
 remains explicit. The single-run record is an operational protocol fact rather
 than external execution-count attestation: frozen hashes protect the selected
 artifacts, but the repository cannot independently exclude an alternate-path
-execution. FP32 attached artifact eligibility review v1 now preserves that
-favorable fixed-compiler quality result while rejecting the current package.
-Repository-local evidence remains usable, but six missing package bindings make
-offline and portable artifact eligibility false. Preferred-candidate, serving,
-promotion, merged-artifact, and Runtime claims remain false. The next gate is a
-metadata-only external composite manifest, not an Adapter mutation or
-integration step.
+execution. FP32 attached offline package manifest v1 now binds the exact
+unchanged attached package through an externally trusted metadata-only
+composite manifest. Strict validation derives
+`fp32_attached_metadata_only_composite_manifest_complete`; all six prior
+package blockers are resolved, and the package identity is eligible to enter a
+clean-location reproducibility test. This establishes metadata completeness and
+offline package identity only. Remote revision origin, clean-location
+resolution, and behavioral reproducibility remain unverified. Offline-artifact,
+portable-package, preferred-candidate, serving, promotion, merged-artifact, and
+Runtime claims remain false. The next gate is clean-location package
+reproducibility, not an Adapter mutation, promotion, or Runtime integration.
 
 ## Single active objective
 
-Complete `FC-MVP-001-fp32-attached-offline-package-manifest-v1`:
+Complete `FC-MVP-001-fp32-attached-offline-package-reproducibility-v1`:
 
 ```text
-frozen negative package review + immutable three-file Adapter
-        -> create one external metadata-only composite manifest
-pinned base/tokenizer + compiler + prompt/generation/precision/environment
-        -> resolve local components by exact hashes and fail closed if absent
-validated attached-only package identity
-        -> select a later reproducibility gate without promotion or Runtime
+externally authenticated manifest + exact unchanged component identities
+        -> pre-register clean-location materialization and resolution
+resolved attached-only package + frozen execution/comparison contract
+        -> test behavioral reproducibility without promotion or Runtime
 ```
 
-Create and strictly validate one external metadata-only composite manifest.
-Bind the unchanged Adapter hashes; pinned base repo, revision, and weight hash;
-tokenizer revision and file manifest; required compiler file and symbol hashes;
-prompt, generation, precision, and environment contracts; and attached-only
-execution. Treat the Adapter's machine-relative base path as non-authoritative
-and fail closed when any local component is missing or mismatched. Do not rerun
-the registered full evaluation; add data; train; tune against eval answers;
-change the compiler, prompt, generation, or execution form; mutate or copy
-model/Adapter/tokenizer files; merge or save weights; promote an artifact;
-deploy serving; or integrate Runtime/Provider/MCP/Desktop. This gate establishes
-metadata completeness only, not behavioral reproducibility or Runtime readiness.
+Use the external manifest SHA-256 as the trust root and resolve the exact base,
+tokenizer, Adapter, prompt, compiler dependencies, environment, and execution
+contract from caller-supplied clean roots without relying on the Adapter's
+historical machine-relative path. Freeze the reconstruction and comparison
+protocol before model execution. Treat current-machine resolution only as entry
+eligibility, not clean-location or behavioral reproducibility. Remote revision
+origin remains unverified unless independently attested. Do not add data, train,
+tune against eval answers, alter the compiler, prompt, generation, precision,
+execution form, or weights, promote or publish an artifact, deploy serving, or
+integrate Runtime/Provider/MCP/Desktop.
+
+The `FC-MVP-001-fp32-attached-offline-package-manifest-v1` gate completed
+locally on 2026-08-06. Its contract and builder were frozen before artifact
+generation at `60d28be26436bc616e874692c4624d9d38a0d7a5`. The 17,487-byte
+external metadata-only manifest has SHA-256
+`4125f2eef2a4b8f07015169ac7fb77b830514e053a4624aa703e5f5a64943eb0`.
+It binds 12 component files totaling 3,116,440,260 bytes, 18 direct source
+roots, and 15 fixed repository paths. The exact Adapter remains unchanged at
+three files, 224 F32 tensors, and 4,358,144 parameters.
+
+External raw-file SHA validation and strict recomputation derive
+`metadata_complete=true`, `offline_package_identity_complete=true`, and
+`fp32_attached_metadata_only_composite_manifest_complete`; all six prior
+package blockers are resolved. The manifest itself contains no self-digest,
+passed/eligible/Runtime decision, or next-gate decision. Current-machine exact
+resolution succeeds at base plus tokenizer `9/9`, Adapter `3/3`, and repository
+sources `15/15`, but this is not clean-location attestation. The remaining
+blockers are exactly `behavioral_reproducibility_unverified`,
+`clean_location_resolution_unverified`, and
+`remote_revision_origin_unverified`. Offline-artifact, portable-package,
+preferred-candidate, serving, promotion, merged-artifact, and Runtime claims
+remain false.
+
+The unified offline gate passes 295 tests with `valid=true` on CPython 3.11.9,
+3.12.12, and 3.13.7 and audits 31 source files. The 27 focused manifest tests,
+Ruff, scoped mypy 2.3.0, py_compile, builder `--check`, and `git diff --check`
+pass. An independent read-only review found no remaining freeze blocker.
+[Evidence](docs/FC-MVP-001-fp32-attached-offline-package-manifest-v1.md).
 
 The `FC-MVP-001-fp32-attached-artifact-eligibility-review-v1` gate completed
 locally on 2026-08-05. Its contract and builder were frozen before artifact
@@ -97,14 +126,14 @@ artifact has SHA-256
 `81977f318c6bcfed8d3844575dc245d4b94c2636a2359165f9aa5553c9b006f8`
 and internal report digest
 `285d5e5e25dfd16de5adc6cb760fe54588af68d8580308b54ccfaf612d51636b`.
-It classifies the current state as
+It classified the reviewed state as
 `fp32_attached_fixed_compiler_favorable_eval_but_offline_artifact_package_incomplete`.
-The fixed-compiler quality evidence and repository-local evidence remain usable,
-but six blockers remain: composite manifest; portable base identity; base
-revision; tokenizer file manifest; required compiler binding; and complete use
-and limitations documentation. Accordingly offline/portable eligibility,
+The fixed-compiler quality evidence and repository-local evidence remain usable.
+At that review, six blockers remained: composite manifest; portable base
+identity; base revision; tokenizer file manifest; required compiler binding;
+and complete use and limitations documentation. Accordingly offline/portable eligibility,
 preferred-candidate status, serving readiness, promotion, merged artifacts, and
-Runtime eligibility are all false.
+Runtime eligibility were all false at that gate.
 
 The validator binds 25 direct sources through single-read raw payloads, then
 requires parsed JSON/text, Adapter manifest, safetensors audit, observed hashes,
@@ -535,7 +564,7 @@ audits, and two exact dataset records with zero runtime dependencies. Ruff
 | `FC-BRIDGE-003` | Pending review | Explicit-consent rich multimodal capture contract |
 | `FC-BRIDGE-004` | Complete locally | Runtime freeze pin, contract compatibility, and cross-repository handoff |
 | `FC-MVP-000` | Complete | Runtime consumer baseline, locked environment, local/remote Python matrix |
-| `FC-MVP-001` | In progress | Text Tool Router closed loop; favorable frozen FP32 attached eval complete, artifact-eligibility review next |
+| `FC-MVP-001` | In progress | Text Tool Router closed loop; metadata/package identity complete, clean-location reproducibility next |
 | `FC-MVP-002` | Pending | Multimodal GUI Action Model |
 
 Detailed technical tasks remain in

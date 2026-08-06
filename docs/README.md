@@ -43,6 +43,7 @@ English companion documents.
 | Attached BF16/FP32 dtype boundary control v1 | [FC-MVP-001 attached dtype boundary control](FC-MVP-001-attached-dtype-boundary-control-v1.md) | English source |
 | FP32 attached remediation eval v1 | [FC-MVP-001 FP32 attached remediation eval](FC-MVP-001-fp32-attached-remediation-eval-v1.md) | English source |
 | FP32 attached artifact eligibility review v1 | [FC-MVP-001 FP32 attached artifact eligibility review](FC-MVP-001-fp32-attached-artifact-eligibility-review-v1.md) | English source |
+| FP32 attached offline package manifest v1 | [FC-MVP-001 FP32 attached offline package manifest](FC-MVP-001-fp32-attached-offline-package-manifest-v1.md) | [Use and limitations](FC-MVP-001-fp32-attached-offline-package-use-v1.md) |
 
 ## Development references
 

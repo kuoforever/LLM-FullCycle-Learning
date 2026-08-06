@@ -3,7 +3,6 @@ from __future__ import annotations
 import copy
 import hashlib
 import json
-import shutil
 import tempfile
 import unittest
 from pathlib import Path
@@ -25,8 +24,10 @@ from fullcycle_bridge.tool_router_fp32_attached_offline_package_manifest import 
     validate_fp32_attached_offline_package_manifest,
 )
 from scripts import build_tool_router_fp32_attached_offline_package_manifest as builder
+from scripts import validate_offline as offline_gate
 from scripts.build_tool_router_fp32_attached_offline_package_manifest import (
     DEFAULT_ADAPTER_DIR,
+    OUTPUT,
     ROOT,
     load_repository_manifest_inputs,
 )
@@ -139,6 +140,22 @@ class OfflinePackageManifestTests(unittest.TestCase):
                 ),
                 "runtime_eligible": False,
             },
+        )
+
+    def test_frozen_manifest_matches_external_hash_and_rebuild(self) -> None:
+        payload = OUTPUT.read_bytes()
+        self.assertEqual(len(payload), 17_487)
+        self.assertEqual(
+            _sha256(payload),
+            "sha256:4125f2eef2a4b8f07015169ac7fb77b830514e053a4624aa703e5f5a64943eb0",
+        )
+        self.assertEqual(payload, self.manifest_payload)
+        self.assertEqual(
+            self._validate(
+                manifest_payload=payload,
+                expected_manifest_sha256=_sha256(payload),
+            )["classification"],
+            "fp32_attached_metadata_only_composite_manifest_complete",
         )
 
     def test_manifest_contains_facts_not_self_authorized_decisions(self) -> None:
@@ -588,8 +605,22 @@ class OfflinePackageManifestTests(unittest.TestCase):
             temporary_root = Path(temporary)
             adapter = temporary_root / "adapter"
             adapter.mkdir()
-            for name, _role, _bytes, _sha256_value in ADAPTER_FILE_SPECS:
-                shutil.copy2(DEFAULT_ADAPTER_DIR / name, adapter / name)
+            fixture_payloads = {
+                "README.md": b"synthetic adapter card\n",
+                "adapter_config.json": b'{"fixture":true}\n',
+                "adapter_model.safetensors": b"synthetic weights",
+            }
+            fixture_specs = tuple(
+                (
+                    name,
+                    f"synthetic_{name}",
+                    len(payload),
+                    _sha256(payload),
+                )
+                for name, payload in fixture_payloads.items()
+            )
+            for name, payload in fixture_payloads.items():
+                (adapter / name).write_bytes(payload)
 
             target = adapter / "adapter_config.json"
             replacement = temporary_root / "replacement.json"
@@ -607,10 +638,13 @@ class OfflinePackageManifestTests(unittest.TestCase):
                     replaced = True
                 return result
 
-            with mock.patch.object(
-                builder,
-                "_read_regular_file_receipt",
-                side_effect=replace_after_later_read,
+            with (
+                mock.patch.object(builder, "ADAPTER_FILE_SPECS", fixture_specs),
+                mock.patch.object(
+                    builder,
+                    "_read_regular_file_receipt",
+                    side_effect=replace_after_later_read,
+                ),
             ):
                 with self.assertRaisesRegex(RuntimeError, "changed after"):
                     builder.load_repository_manifest_inputs(adapter_dir=adapter)
@@ -699,6 +733,43 @@ class OfflinePackageManifestTests(unittest.TestCase):
         self.assertFalse(result["runtime_eligible"])
         self.assertEqual(result["failure_mode"], "component_resolution_failed_closed")
         self.assertEqual(result["groups"][0]["issues"][0]["code"], "MISSING_ROOT")
+
+    def test_unified_gate_keeps_missing_local_base_fail_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            missing = Path(temporary) / "missing-base"
+            with mock.patch.object(builder, "DEFAULT_BASE_MODEL_DIR", missing):
+                combined = (
+                    offline_gate._validate_fp32_attached_offline_package_manifest(
+                        self.inputs["upstream_review"]
+                    )
+                )
+        self.assertTrue(combined["validation"]["frozen_manifest_valid"])
+        self.assertFalse(combined["resolution"]["resolved"])
+        self.assertFalse(
+            combined["resolution"]["eligible_for_clean_location_reproducibility_test"]
+        )
+        self.assertFalse(combined["resolution"]["runtime_eligible"])
+
+    def test_unified_gate_uses_external_source_hash_roots(self) -> None:
+        expected_roots = dict(
+            offline_gate.TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_SOURCE_HASHES
+        )
+        expected_roots["prompt"] = "sha256:" + "0" * 64
+        with tempfile.TemporaryDirectory() as temporary:
+            missing = Path(temporary) / "missing-base"
+            with (
+                mock.patch.object(builder, "DEFAULT_BASE_MODEL_DIR", missing),
+                mock.patch.object(
+                    offline_gate,
+                    "TOOL_ROUTER_FP32_ATTACHED_OFFLINE_PACKAGE_SOURCE_HASHES",
+                    expected_roots,
+                ),
+                self.assertRaises(ToolRouterValidationError) as raised,
+            ):
+                offline_gate._validate_fp32_attached_offline_package_manifest(
+                    self.inputs["upstream_review"]
+                )
+        self.assertEqual(raised.exception.code, "SOURCE_HASH_ROOT_MISMATCH")
 
 
 if __name__ == "__main__":
