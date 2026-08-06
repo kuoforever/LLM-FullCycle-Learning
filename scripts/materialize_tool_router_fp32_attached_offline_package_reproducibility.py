@@ -420,6 +420,44 @@ def _hf_environment(destination: Path) -> dict[str, str]:
     return env
 
 
+def _downloader_local_dir_argument(
+    path: Path,
+    *,
+    platform_name: str | None = None,
+) -> str:
+    """Use one extended-length prefix only for the Windows downloader argument."""
+
+    value = str(path)
+    if (os.name if platform_name is None else platform_name) != "nt":
+        return value
+
+    extended_prefix = "\\\\?\\"
+    device_prefix = "\\\\.\\"
+    normalized = str(PureWindowsPath(value))
+    if normalized.startswith(device_prefix):
+        _fail("DOWNLOADER_LOCAL_DIR_UNSAFE_PREFIX")
+    if normalized.startswith(extended_prefix):
+        suffix = normalized[len(extended_prefix) :]
+        if suffix.startswith((extended_prefix, "\\?\\")):
+            _fail("DOWNLOADER_LOCAL_DIR_DUPLICATE_PREFIX")
+        if suffix.upper().startswith("UNC\\"):
+            unprefixed = PureWindowsPath("\\\\" + suffix[4:])
+        else:
+            unprefixed = PureWindowsPath(suffix)
+        if not unprefixed.is_absolute() or ".." in unprefixed.parts:
+            _fail("DOWNLOADER_LOCAL_DIR_NOT_ABSOLUTE")
+        return normalized
+
+    windows_path = PureWindowsPath(normalized)
+    if not windows_path.is_absolute() or ".." in windows_path.parts:
+        _fail("DOWNLOADER_LOCAL_DIR_NOT_ABSOLUTE")
+    if normalized.startswith("\\\\"):
+        return f"{extended_prefix}UNC\\{normalized[2:]}"
+    if len(windows_path.drive) != 2 or not windows_path.drive.endswith(":"):
+        _fail("DOWNLOADER_LOCAL_DIR_UNSUPPORTED_ROOT")
+    return extended_prefix + normalized
+
+
 def _clean_git_command() -> list[str]:
     return ["git", "-c", "credential.helper=", "-c", "core.hooksPath=NUL"]
 
@@ -782,7 +820,7 @@ def _materialize_base(
             "-I",
             str(downloader),
             "--local-dir",
-            str(layout.base_model_and_tokenizer),
+            _downloader_local_dir_argument(layout.base_model_and_tokenizer),
         ],
         cwd=layout.destination,
         env=hf_env,

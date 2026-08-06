@@ -240,6 +240,65 @@ class MaterializerTests(unittest.TestCase):
             materializer._is_within(Path(observed["HF_HOME"]), self.destination)
         )
 
+    def test_downloader_local_dir_argument_is_platform_bounded_and_idempotent(
+        self,
+    ) -> None:
+        normal = self.destination / "base_model_and_tokenizer"
+        windows_argument = "\\\\?\\" + str(normal)
+        self.assertEqual(
+            materializer._downloader_local_dir_argument(
+                normal,
+                platform_name="nt",
+            ),
+            windows_argument,
+        )
+        self.assertEqual(
+            materializer._downloader_local_dir_argument(
+                Path(windows_argument),
+                platform_name="nt",
+            ),
+            windows_argument,
+        )
+        self.assertEqual(
+            materializer._downloader_local_dir_argument(
+                normal,
+                platform_name="posix",
+            ),
+            str(normal),
+        )
+        self.assertEqual(
+            materializer._downloader_local_dir_argument(
+                Path(r"\\server\share\model"),
+                platform_name="nt",
+            ),
+            r"\\?\UNC\server\share\model",
+        )
+
+        with self.assertRaises(materializer.MaterializationError) as caught:
+            materializer._downloader_local_dir_argument(
+                Path("relative-model"),
+                platform_name="nt",
+            )
+        self.assertEqual(caught.exception.code, "DOWNLOADER_LOCAL_DIR_NOT_ABSOLUTE")
+
+        duplicate = Path("\\\\?\\" + windows_argument)
+        with self.assertRaises(materializer.MaterializationError) as caught:
+            materializer._downloader_local_dir_argument(
+                duplicate,
+                platform_name="nt",
+            )
+        self.assertEqual(
+            caught.exception.code,
+            "DOWNLOADER_LOCAL_DIR_DUPLICATE_PREFIX",
+        )
+
+        with self.assertRaises(materializer.MaterializationError) as caught:
+            materializer._downloader_local_dir_argument(
+                Path(r"\\.\C:\unsafe-device-path"),
+                platform_name="nt",
+            )
+        self.assertEqual(caught.exception.code, "DOWNLOADER_LOCAL_DIR_UNSAFE_PREFIX")
+
     def test_git_environment_disables_smudge_and_external_config(self) -> None:
         with patch.dict(
             os.environ,
@@ -585,6 +644,12 @@ class MaterializerTests(unittest.TestCase):
             runner=runner,
         )
         self.assertEqual(observed["command"][2], str(downloader))
+        local_dir_index = observed["command"].index("--local-dir") + 1
+        expected_local_dir = str(layout.base_model_and_tokenizer)
+        if os.name == "nt":
+            expected_local_dir = "\\\\?\\" + expected_local_dir
+        self.assertEqual(observed["command"][local_dir_index], expected_local_dir)
+        self.assertFalse(str(layout.base_model_and_tokenizer).startswith("\\\\?\\"))
         self.assertEqual(observed["env"]["HF_HUB_DISABLE_IMPLICIT_TOKEN"], "1")
         self.assertTrue(result["isolated_hf_home"])
         self.assertNotIn("C:\\redacted", json.dumps(result))
