@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import stat
 import subprocess
 import sys
 import tempfile
@@ -31,6 +32,23 @@ def _sha(payload: bytes) -> str:
 
 def _completed(stdout: bytes = b"") -> subprocess.CompletedProcess[bytes]:
     return subprocess.CompletedProcess([], 0, stdout=stdout, stderr=b"")
+
+
+_EXPECTED_LOCAL_LFS_GIT_PREFIX = [
+    "git",
+    "-c",
+    "credential.helper=",
+    "-c",
+    "core.hooksPath=NUL",
+    "-c",
+    "filter.lfs.process=git-lfs filter-process --skip",
+    "-c",
+    "filter.lfs.required=true",
+    "-c",
+    "filter.lfs.clean=git-lfs clean -- %f",
+    "-c",
+    "filter.lfs.smudge=git-lfs smudge --skip -- %f",
+]
 
 
 class MaterializerTests(unittest.TestCase):
@@ -275,6 +293,11 @@ class MaterializerTests(unittest.TestCase):
             for name, payload in source_payloads.items()
         }
         adapter_payload = b"adapter weights"
+        pointer_payload = (
+            "version https://git-lfs.github.com/spec/v1\n"
+            f"oid {_sha(adapter_payload)}\n"
+            f"size {len(adapter_payload)}\n"
+        ).encode("ascii")
         contract = self._contract(
             preregistration_payload=preregistration_payload,
             protocol_sources=protocol_sources,
@@ -291,7 +314,7 @@ class MaterializerTests(unittest.TestCase):
             commands.append((argv, dict(env)))
             if "init" in argv:
                 (layout.repository / ".git").mkdir(parents=True)
-            elif "checkout" in argv:
+            elif "checkout" in argv and "lfs" not in argv:
                 for name, source in protocol_sources.items():
                     path = layout.repository / str(source["path"])
                     path.parent.mkdir(parents=True, exist_ok=True)
@@ -301,10 +324,10 @@ class MaterializerTests(unittest.TestCase):
                 )
                 preregistration.parent.mkdir(parents=True, exist_ok=True)
                 preregistration.write_bytes(preregistration_payload)
-            elif "pull" in argv:
                 weight = layout.repository / contract.adapter_lfs_relative_path
                 weight.parent.mkdir(parents=True, exist_ok=True)
-                weight.write_bytes(adapter_payload)
+                weight.write_bytes(pointer_payload)
+            elif "pull" in argv:
                 lfs_object = (
                     layout.repository
                     / ".git"
@@ -316,18 +339,16 @@ class MaterializerTests(unittest.TestCase):
                 )
                 lfs_object.parent.mkdir(parents=True, exist_ok=True)
                 lfs_object.write_bytes(adapter_payload)
+            elif "checkout" in argv and "lfs" in argv:
+                weight = layout.repository / contract.adapter_lfs_relative_path
+                self.assertEqual(weight.read_bytes(), pointer_payload)
+                weight.write_bytes(adapter_payload)
             if "get-url" in argv:
                 return _completed(contract.repository_remote_url.encode())
             if "rev-parse" in argv:
                 return _completed(freeze_commit.encode())
             if "show" in argv:
-                return _completed(
-                    (
-                        "version https://git-lfs.github.com/spec/v1\n"
-                        f"oid {contract.adapter_lfs_oid}\n"
-                        f"size {contract.adapter_lfs_bytes}\n"
-                    ).encode("ascii")
-                )
+                return _completed(pointer_payload)
             if "--version" in argv:
                 return _completed(b"git version test")
             if "version" in argv and "lfs" in argv:
@@ -342,12 +363,164 @@ class MaterializerTests(unittest.TestCase):
         )
         fetch = next(item for item in commands if "fetch" in item[0])
         pull = [item for item in commands if "pull" in item[0]]
+        checkout = [
+            item for item in commands if "lfs" in item[0] and "checkout" in item[0]
+        ]
         self.assertIn(freeze_commit, fetch[0])
         self.assertEqual(fetch[1]["GIT_LFS_SKIP_SMUDGE"], "1")
         self.assertEqual(len(pull), 1)
+        self.assertEqual(len(checkout), 1)
+        self.assertLess(commands.index(pull[0]), commands.index(checkout[0]))
         self.assertIn(f"--include={materializer.ADAPTER_LFS_RELATIVE_PATH}", pull[0][0])
+        self.assertEqual(
+            checkout[0][0][-3:],
+            ["lfs", "checkout", materializer.ADAPTER_LFS_RELATIVE_PATH],
+        )
+        self.assertEqual(
+            checkout[0][0][: len(_EXPECTED_LOCAL_LFS_GIT_PREFIX)],
+            _EXPECTED_LOCAL_LFS_GIT_PREFIX,
+        )
         self.assertNotIn("GIT_LFS_SKIP_SMUDGE", pull[0][1])
+        self.assertNotIn("GIT_LFS_SKIP_SMUDGE", checkout[0][1])
         self.assertEqual(receipt["lfs_objects_requested"], 1)
+
+    def test_local_lfs_checkout_targets_only_frozen_adapter_path(self) -> None:
+        self.destination.mkdir(parents=True)
+        layout = materializer._build_layout(self.destination)
+        contract = self._contract()
+        observed: dict[str, object] = {}
+        environment = materializer._git_environment()
+        environment.pop("GIT_LFS_SKIP_SMUDGE", None)
+
+        def runner(
+            command: object, *, cwd: Path, env: dict[str, str]
+        ) -> subprocess.CompletedProcess[bytes]:
+            observed.update(command=list(command), cwd=cwd, env=dict(env))
+            return _completed()
+
+        materializer._checkout_adapter_from_local_lfs(
+            layout,
+            contract,
+            environment=environment,
+            runner=runner,
+        )
+        self.assertEqual(
+            observed["command"][-3:],
+            ["lfs", "checkout", contract.adapter_lfs_relative_path],
+        )
+        self.assertEqual(
+            observed["command"][: len(_EXPECTED_LOCAL_LFS_GIT_PREFIX)],
+            _EXPECTED_LOCAL_LFS_GIT_PREFIX,
+        )
+        self.assertEqual(observed["cwd"], layout.destination)
+        self.assertEqual(observed["env"], environment)
+
+    def test_local_lfs_checkout_hydrates_verified_object_with_isolated_config(
+        self,
+    ) -> None:
+        self.destination.mkdir(parents=True)
+        layout = materializer._build_layout(self.destination)
+        layout.repository.mkdir()
+        adapter_payload = b"locally verified adapter payload"
+        contract = self._contract(adapter_payload=adapter_payload)
+        pointer_payload = (
+            "version https://git-lfs.github.com/spec/v1\n"
+            f"oid {contract.adapter_lfs_oid}\n"
+            f"size {contract.adapter_lfs_bytes}\n"
+        ).encode("ascii")
+        environment = materializer._git_environment()
+        environment.pop("GIT_LFS_SKIP_SMUDGE", None)
+
+        def run_git(*arguments: str) -> None:
+            completed = materializer._run_command(
+                [
+                    *materializer._clean_git_command(),
+                    "-C",
+                    str(layout.repository),
+                    *arguments,
+                ],
+                cwd=layout.destination,
+                env=environment,
+            )
+            self.assertEqual(
+                completed.returncode,
+                0,
+                completed.stderr.decode("utf-8", errors="replace"),
+            )
+
+        run_git("init", "--quiet")
+        weight = layout.repository / contract.adapter_lfs_relative_path
+        weight.parent.mkdir(parents=True)
+        weight.write_bytes(pointer_payload)
+        run_git("add", "--", contract.adapter_lfs_relative_path)
+        attributes = layout.repository / ".gitattributes"
+        attributes.write_text(
+            f"{contract.adapter_lfs_relative_path} filter=lfs diff=lfs merge=lfs -text\n",
+            encoding="utf-8",
+        )
+        run_git("add", "--", ".gitattributes")
+        run_git(
+            "-c",
+            "user.name=Local Fixture",
+            "-c",
+            "user.email=fixture.invalid@example.invalid",
+            "commit",
+            "--quiet",
+            "-m",
+            "local LFS fixture",
+        )
+        object_oid = contract.adapter_lfs_oid.removeprefix("sha256:")
+        local_object = (
+            layout.repository
+            / ".git"
+            / "lfs"
+            / "objects"
+            / object_oid[:2]
+            / object_oid[2:4]
+            / object_oid
+        )
+        local_object.parent.mkdir(parents=True)
+        local_object.write_bytes(adapter_payload)
+        materializer._verify_single_lfs_object(layout.repository, contract)
+        self.assertEqual(weight.read_bytes(), pointer_payload)
+
+        def run_checkout(
+            command: object,
+            *,
+            cwd: Path,
+            env: dict[str, str],
+        ) -> subprocess.CompletedProcess[bytes]:
+            completed = materializer._run_command(
+                list(command),
+                cwd=cwd,
+                env=env,
+            )
+            logs = sorted((layout.repository / ".git" / "lfs" / "logs").glob("*"))
+            diagnostic = completed.stderr.decode("utf-8", errors="replace")
+            if logs:
+                diagnostic += "\n" + logs[-1].read_text(
+                    encoding="utf-8",
+                    errors="replace",
+                )
+            self.assertEqual(
+                completed.returncode,
+                0,
+                diagnostic,
+            )
+            return completed
+
+        materializer._checkout_adapter_from_local_lfs(
+            layout,
+            contract,
+            environment=environment,
+            runner=run_checkout,
+        )
+
+        self.assertEqual(weight.read_bytes(), adapter_payload)
+        materializer._require_clean_repository_status(
+            layout,
+            runner=materializer._run_command,
+        )
 
     def test_clean_status_rejects_ignored_entries_with_isolated_git(self) -> None:
         self.destination.mkdir(parents=True)
@@ -375,6 +548,10 @@ class MaterializerTests(unittest.TestCase):
                 materializer._require_clean_repository_status(layout, runner=runner)
         self.assertEqual(caught.exception.code, "CLEAN_REPOSITORY_DIRTY")
         self.assertIn("--ignored", observed["command"])
+        self.assertEqual(
+            observed["command"][: len(_EXPECTED_LOCAL_LFS_GIT_PREFIX)],
+            _EXPECTED_LOCAL_LFS_GIT_PREFIX,
+        )
         self.assertEqual(observed["env"]["GIT_CONFIG_GLOBAL"], "NUL")
         self.assertEqual(observed["env"]["GIT_CONFIG_NOSYSTEM"], "1")
         self.assertNotIn("GIT_LFS_SKIP_SMUDGE", observed["env"])
@@ -535,6 +712,104 @@ class MaterializerTests(unittest.TestCase):
         self.assertEqual(caught.exception.code, "EXPECTED_FAILURE")
         self.assertFalse(self.destination.exists())
         self.assertFalse(self.receipt.exists())
+
+    def test_cleanup_removes_nested_read_only_regular_file(self) -> None:
+        read_only = (
+            self.destination
+            / "repository"
+            / ".git"
+            / "objects"
+            / "pack"
+            / "frozen-pack.idx"
+        )
+        read_only.parent.mkdir(parents=True)
+        read_only.write_bytes(b"read-only pack index")
+        read_only.chmod(stat.S_IREAD)
+        self.assertTrue(
+            getattr(read_only.lstat(), "st_file_attributes", 0)
+            & stat.FILE_ATTRIBUTE_READONLY
+        )
+        try:
+            materializer._remove_owned_destination(self.destination)
+        finally:
+            if read_only.exists():
+                read_only.chmod(stat.S_IWRITE)
+        self.assertFalse(self.destination.exists())
+
+    def test_cleanup_rejects_regular_file_with_external_hardlink(self) -> None:
+        regular_file = self.destination / "repository" / "tracked.bin"
+        regular_file.parent.mkdir(parents=True)
+        regular_file.write_bytes(b"shared bytes")
+        external_link = self.test_root / "external-hardlink.bin"
+        try:
+            os.link(regular_file, external_link)
+        except OSError as exc:
+            self.skipTest(f"hardlinks unavailable: {exc}")
+
+        with self.assertRaises(materializer.MaterializationError) as caught:
+            materializer._remove_owned_destination(self.destination)
+
+        self.assertEqual(caught.exception.code, "CLEANUP_FILE_CHANGED")
+        self.assertTrue(regular_file.exists())
+        self.assertTrue(external_link.exists())
+
+    @unittest.skipUnless(os.name == "nt", "Win32 handle semantics")
+    def test_readonly_handle_rejects_identity_mismatch_before_mutation(self) -> None:
+        read_only = self.test_root / "identity-mismatch.idx"
+        read_only.write_bytes(b"identity-bound bytes")
+        read_only.chmod(stat.S_IREAD)
+        metadata = read_only.lstat()
+        wrong_identity = (int(metadata.st_dev), int(metadata.st_ino) + 1)
+        try:
+            with self.assertRaises(materializer.MaterializationError) as caught:
+                materializer._remove_windows_readonly_file_by_handle(
+                    read_only,
+                    wrong_identity,
+                )
+            self.assertEqual(caught.exception.code, "CLEANUP_FILE_CHANGED")
+            self.assertTrue(read_only.exists())
+            self.assertTrue(
+                getattr(read_only.lstat(), "st_file_attributes", 0)
+                & stat.FILE_ATTRIBUTE_READONLY
+            )
+        finally:
+            if read_only.exists():
+                read_only.chmod(stat.S_IWRITE)
+                read_only.unlink()
+
+    @unittest.skipUnless(os.name == "nt", "Win32 handle semantics")
+    def test_cleanup_handles_block_owned_entry_replacement(self) -> None:
+        directory = self.destination / "repository"
+        directory.mkdir(parents=True)
+        directory_metadata = directory.lstat()
+        directory_descriptor = materializer._open_windows_cleanup_directory_handle(
+            directory,
+            materializer._cleanup_identity(directory_metadata),
+        )
+        moved_directory = self.test_root / "moved-repository"
+        try:
+            with self.assertRaises(OSError):
+                directory.rename(moved_directory)
+        finally:
+            os.close(directory_descriptor)
+
+        regular_file = directory / "tracked.bin"
+        regular_file.write_bytes(b"identity-bound bytes")
+        file_descriptor = materializer._open_windows_cleanup_handle(
+            regular_file,
+            desired_access=0x00010000 | 0x0080 | 0x0100,
+            flags=0x00200000,
+            failure_code="TEST_HANDLE_FAILED",
+        )
+        moved_file = self.test_root / "moved-tracked.bin"
+        external_link = self.test_root / "concurrent-hardlink.bin"
+        try:
+            with self.assertRaises(OSError):
+                regular_file.rename(moved_file)
+            os.link(regular_file, external_link)
+            self.assertEqual(regular_file.lstat().st_nlink, 2)
+        finally:
+            os.close(file_descriptor)
 
     def test_final_clean_status_runs_after_validation_before_receipt(self) -> None:
         preregistration = self.test_root / "preregistration.json"

@@ -14,7 +14,6 @@ import hashlib
 import json
 import os
 import re
-import shutil
 import stat
 import subprocess
 import sys
@@ -425,6 +424,22 @@ def _clean_git_command() -> list[str]:
     return ["git", "-c", "credential.helper=", "-c", "core.hooksPath=NUL"]
 
 
+def _local_lfs_git_command() -> list[str]:
+    """Provide an offline-capable LFS filter despite isolated Git config."""
+
+    return [
+        *_clean_git_command(),
+        "-c",
+        "filter.lfs.process=git-lfs filter-process --skip",
+        "-c",
+        "filter.lfs.required=true",
+        "-c",
+        "filter.lfs.clean=git-lfs clean -- %f",
+        "-c",
+        "filter.lfs.smudge=git-lfs smudge --skip -- %f",
+    ]
+
+
 def _require_clean_repository_status(
     layout: CleanLayout,
     *,
@@ -437,7 +452,7 @@ def _require_clean_repository_status(
     status = _run_checked(
         "git_status",
         [
-            *_clean_git_command(),
+            *_local_lfs_git_command(),
             "-C",
             str(layout.repository),
             "status",
@@ -451,6 +466,31 @@ def _require_clean_repository_status(
     ).stdout
     if status:
         _fail("CLEAN_REPOSITORY_DIRTY")
+
+
+def _checkout_adapter_from_local_lfs(
+    layout: CleanLayout,
+    contract: MaterializationContract,
+    *,
+    environment: Mapping[str, str],
+    runner: CommandRunner,
+) -> None:
+    """Hydrate only the frozen Adapter path from the verified local LFS object."""
+
+    _run_checked(
+        "git_lfs_checkout_adapter",
+        [
+            *_local_lfs_git_command(),
+            "-C",
+            str(layout.repository),
+            "lfs",
+            "checkout",
+            contract.adapter_lfs_relative_path,
+        ],
+        cwd=layout.destination,
+        env=environment,
+        runner=runner,
+    )
 
 
 def _materialize_repository(
@@ -600,6 +640,12 @@ def _materialize_repository(
         runner=runner,
     )
     _verify_single_lfs_object(layout.repository, contract)
+    _checkout_adapter_from_local_lfs(
+        layout,
+        contract,
+        environment=lfs_env,
+        runner=runner,
+    )
     adapter_weight = _path_under(
         layout.repository,
         contract.adapter_lfs_relative_path,
@@ -974,11 +1020,397 @@ def _remove_owned_destination(destination: Path) -> None:
         _fail("CLEANUP_TARGET_NOT_GUID")
     if not os.path.lexists(destination):
         return
-    if _is_reparse(destination) or not destination.is_dir():
+    _require_safe_cleanup_parent_chain()
+    destination_metadata = _cleanup_lstat(destination, "target")
+    if _metadata_is_reparse(destination_metadata) or not stat.S_ISDIR(
+        destination_metadata.st_mode
+    ):
         _fail("UNSAFE_CLEANUP_TARGET")
-    shutil.rmtree(destination)
+    _remove_cleanup_directory(
+        destination,
+        expected_identity=_cleanup_identity(destination_metadata),
+    )
     if os.path.lexists(destination):
         _fail("CLEANUP_INCOMPLETE")
+
+
+def _remove_cleanup_directory(
+    path: Path,
+    *,
+    expected_identity: tuple[int, int],
+) -> None:
+    metadata = _cleanup_lstat(path, "directory")
+    if (
+        _metadata_is_reparse(metadata)
+        or not stat.S_ISDIR(metadata.st_mode)
+        or _cleanup_identity(metadata) != expected_identity
+    ):
+        _fail("UNSAFE_CLEANUP_DIRECTORY")
+    directory_descriptor = (
+        _open_windows_cleanup_directory_handle(path, expected_identity)
+        if os.name == "nt"
+        else None
+    )
+    traversal_complete = False
+    try:
+        try:
+            with os.scandir(path) as entries:
+                child_names = sorted(entry.name for entry in entries)
+        except OSError as exc:
+            raise MaterializationError("CLEANUP_SCAN_FAILED") from exc
+        for name in child_names:
+            child = path / name
+            child_metadata = _cleanup_lstat(child, "entry")
+            if _metadata_is_reparse(child_metadata):
+                _fail("UNSAFE_CLEANUP_ENTRY")
+            if stat.S_ISDIR(child_metadata.st_mode):
+                _remove_cleanup_directory(
+                    child,
+                    expected_identity=_cleanup_identity(child_metadata),
+                )
+            elif stat.S_ISREG(child_metadata.st_mode):
+                _remove_cleanup_regular_file(child, child_metadata)
+            else:
+                _fail("UNSAFE_CLEANUP_ENTRY")
+        traversal_complete = True
+    finally:
+        if directory_descriptor is not None:
+            try:
+                os.close(directory_descriptor)
+            except OSError as exc:
+                if traversal_complete:
+                    raise MaterializationError(
+                        "CLEANUP_DIRECTORY_HANDLE_CLOSE_FAILED"
+                    ) from exc
+    final_metadata = _cleanup_lstat(path, "directory")
+    if (
+        _metadata_is_reparse(final_metadata)
+        or not stat.S_ISDIR(final_metadata.st_mode)
+        or _cleanup_identity(final_metadata) != expected_identity
+    ):
+        _fail("CLEANUP_DIRECTORY_CHANGED")
+    try:
+        path.rmdir()
+    except OSError as exc:
+        raise MaterializationError("CLEANUP_DIRECTORY_REMOVE_FAILED") from exc
+
+
+def _require_safe_cleanup_parent_chain() -> None:
+    try:
+        relative = CLEAN_PARENT.relative_to(ROOT)
+    except ValueError:
+        _fail("CLEANUP_PARENT_ESCAPE")
+    current = ROOT
+    for part in (None, *relative.parts):
+        if part is not None:
+            current = current / part
+        metadata = _cleanup_lstat(current, "parent")
+        if _metadata_is_reparse(metadata) or not stat.S_ISDIR(metadata.st_mode):
+            _fail("UNSAFE_CLEANUP_PARENT")
+
+
+def _remove_cleanup_regular_file(path: Path, expected: os.stat_result) -> None:
+    expected_identity = _cleanup_identity(expected)
+    _require_cleanup_regular_identity(expected, expected_identity)
+    try:
+        path.unlink()
+    except PermissionError:
+        current = _cleanup_lstat(path, "read_only_file")
+        _require_cleanup_regular_identity(current, expected_identity)
+        if os.name != "nt":
+            _fail("CLEANUP_NOFOLLOW_DELETE_UNAVAILABLE")
+        _remove_windows_readonly_file_by_handle(path, expected_identity)
+    except OSError as exc:
+        raise MaterializationError("CLEANUP_FILE_REMOVE_FAILED") from exc
+    if os.path.lexists(path):
+        _fail("CLEANUP_FILE_REMOVE_INCOMPLETE")
+
+
+def _cleanup_lstat(path: Path, label: str) -> os.stat_result:
+    try:
+        return path.lstat()
+    except OSError as exc:
+        raise MaterializationError("CLEANUP_ENTRY_UNREADABLE", label) from exc
+
+
+def _require_cleanup_regular_identity(
+    metadata: os.stat_result,
+    expected_identity: tuple[int, int],
+) -> None:
+    if (
+        _metadata_is_reparse(metadata)
+        or not stat.S_ISREG(metadata.st_mode)
+        or _cleanup_identity(metadata) != expected_identity
+        or int(metadata.st_nlink) != 1
+    ):
+        _fail("CLEANUP_FILE_CHANGED")
+
+
+def _open_windows_cleanup_handle(
+    path: Path,
+    *,
+    desired_access: int,
+    flags: int,
+    failure_code: str,
+) -> int:
+    """Open one exact Windows entry without following or permitting replacement."""
+
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    create_file = kernel32.CreateFileW
+    create_file.argtypes = [
+        wintypes.LPCWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+        wintypes.DWORD,
+        wintypes.HANDLE,
+    ]
+    create_file.restype = wintypes.HANDLE
+    close_handle = kernel32.CloseHandle
+    close_handle.argtypes = [wintypes.HANDLE]
+    close_handle.restype = wintypes.BOOL
+
+    file_share_read = 0x0001
+    open_existing = 3
+    invalid_handle = wintypes.HANDLE(-1).value
+    raw_handle = create_file(
+        str(path),
+        desired_access,
+        file_share_read,
+        None,
+        open_existing,
+        flags,
+        None,
+    )
+    if raw_handle == invalid_handle:
+        error = ctypes.WinError(ctypes.get_last_error())
+        raise MaterializationError(failure_code) from error
+    try:
+        return msvcrt.open_osfhandle(
+            int(raw_handle),
+            os.O_RDONLY | getattr(os, "O_BINARY", 0),
+        )
+    except OSError as exc:
+        close_handle(raw_handle)
+        raise MaterializationError(f"{failure_code}_WRAP") from exc
+
+
+def _windows_final_path(descriptor: int) -> Path:
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    get_final_path = kernel32.GetFinalPathNameByHandleW
+    get_final_path.argtypes = [
+        wintypes.HANDLE,
+        wintypes.LPWSTR,
+        wintypes.DWORD,
+        wintypes.DWORD,
+    ]
+    get_final_path.restype = wintypes.DWORD
+
+    buffer = ctypes.create_unicode_buffer(32_768)
+    observed = get_final_path(
+        wintypes.HANDLE(msvcrt.get_osfhandle(descriptor)),
+        buffer,
+        len(buffer),
+        0,
+    )
+    if observed == 0 or observed >= len(buffer):
+        error = ctypes.WinError(ctypes.get_last_error())
+        raise MaterializationError("CLEANUP_HANDLE_PATH_FAILED") from error
+    value = buffer.value
+    if value.startswith("\\\\?\\UNC\\"):
+        value = "\\\\" + value[8:]
+    elif value.startswith("\\\\?\\"):
+        value = value[4:]
+    return Path(value)
+
+
+def _open_windows_cleanup_directory_handle(
+    path: Path,
+    expected_identity: tuple[int, int],
+) -> int:
+    file_list_directory = 0x0001
+    file_read_attributes = 0x0080
+    file_flag_open_reparse_point = 0x00200000
+    file_flag_backup_semantics = 0x02000000
+    descriptor = _open_windows_cleanup_handle(
+        path,
+        desired_access=file_list_directory | file_read_attributes,
+        flags=file_flag_open_reparse_point | file_flag_backup_semantics,
+        failure_code="CLEANUP_DIRECTORY_HANDLE_FAILED",
+    )
+    try:
+        try:
+            opened = os.fstat(descriptor)
+        except OSError as exc:
+            raise MaterializationError(
+                "CLEANUP_DIRECTORY_HANDLE_INSPECT_FAILED"
+            ) from exc
+        if (
+            _metadata_is_reparse(opened)
+            or not stat.S_ISDIR(opened.st_mode)
+            or _cleanup_identity(opened) != expected_identity
+            or not _same_path(_windows_final_path(descriptor), path)
+        ):
+            _fail("CLEANUP_DIRECTORY_CHANGED")
+    except BaseException:
+        try:
+            os.close(descriptor)
+        except OSError:
+            pass
+        raise
+    return descriptor
+
+
+def _remove_windows_readonly_file_by_handle(
+    path: Path,
+    expected_identity: tuple[int, int],
+) -> None:
+    """Delete one verified READONLY file without changing its shared attributes."""
+
+    import ctypes
+    import msvcrt
+    from ctypes import wintypes
+
+    class FileDispositionInfoEx(ctypes.Structure):
+        _fields_ = [("Flags", wintypes.DWORD)]
+
+    class ByHandleFileInformation(ctypes.Structure):
+        _fields_ = [
+            ("FileAttributes", wintypes.DWORD),
+            ("CreationTime", wintypes.FILETIME),
+            ("LastAccessTime", wintypes.FILETIME),
+            ("LastWriteTime", wintypes.FILETIME),
+            ("VolumeSerialNumber", wintypes.DWORD),
+            ("FileSizeHigh", wintypes.DWORD),
+            ("FileSizeLow", wintypes.DWORD),
+            ("NumberOfLinks", wintypes.DWORD),
+            ("FileIndexHigh", wintypes.DWORD),
+            ("FileIndexLow", wintypes.DWORD),
+        ]
+
+    kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+    get_file_information = kernel32.GetFileInformationByHandle
+    get_file_information.argtypes = [
+        wintypes.HANDLE,
+        ctypes.POINTER(ByHandleFileInformation),
+    ]
+    get_file_information.restype = wintypes.BOOL
+    set_information = kernel32.SetFileInformationByHandle
+    set_information.argtypes = [
+        wintypes.HANDLE,
+        ctypes.c_int,
+        wintypes.LPVOID,
+        wintypes.DWORD,
+    ]
+    set_information.restype = wintypes.BOOL
+    delete_access = 0x00010000
+    file_read_attributes = 0x0080
+    file_flag_open_reparse_point = 0x00200000
+    file_attribute_readonly = 0x0001
+    file_attribute_directory = 0x0010
+    file_attribute_reparse_point = 0x0400
+    file_disposition_info_ex_class = 21
+    file_disposition_delete = 0x00000001
+    file_disposition_posix_semantics = 0x00000002
+    file_disposition_ignore_readonly_attribute = 0x00000010
+    descriptor = _open_windows_cleanup_handle(
+        path,
+        desired_access=delete_access | file_read_attributes,
+        flags=file_flag_open_reparse_point,
+        failure_code="CLEANUP_READONLY_HANDLE_FAILED",
+    )
+
+    operation_complete = False
+    try:
+        native_handle = wintypes.HANDLE(msvcrt.get_osfhandle(descriptor))
+        try:
+            opened = os.fstat(descriptor)
+        except OSError as exc:
+            raise MaterializationError("CLEANUP_READONLY_INSPECT_FAILED") from exc
+        _require_cleanup_regular_identity(opened, expected_identity)
+        if not _same_path(_windows_final_path(descriptor), path):
+            _fail("CLEANUP_FILE_CHANGED")
+
+        handle_information = ByHandleFileInformation()
+        if not get_file_information(
+            native_handle,
+            ctypes.byref(handle_information),
+        ):
+            error = ctypes.WinError(ctypes.get_last_error())
+            raise MaterializationError("CLEANUP_READONLY_INSPECT_FAILED") from error
+        handle_attributes = int(handle_information.FileAttributes)
+        if (
+            handle_attributes
+            & (file_attribute_directory | file_attribute_reparse_point)
+            or int(handle_information.NumberOfLinks) != 1
+        ):
+            _fail("CLEANUP_FILE_CHANGED")
+        if not handle_attributes & file_attribute_readonly:
+            _fail("CLEANUP_READONLY_ATTRIBUTE_MISSING")
+
+        try:
+            opened_before_delete = os.fstat(descriptor)
+        except OSError as exc:
+            raise MaterializationError("CLEANUP_READONLY_INSPECT_FAILED") from exc
+        _require_cleanup_regular_identity(opened_before_delete, expected_identity)
+        if not _same_path(_windows_final_path(descriptor), path):
+            _fail("CLEANUP_FILE_CHANGED")
+        handle_before_delete = ByHandleFileInformation()
+        if not get_file_information(
+            native_handle,
+            ctypes.byref(handle_before_delete),
+        ):
+            error = ctypes.WinError(ctypes.get_last_error())
+            raise MaterializationError("CLEANUP_READONLY_INSPECT_FAILED") from error
+        if (
+            int(handle_before_delete.FileAttributes)
+            & (file_attribute_directory | file_attribute_reparse_point)
+            or not int(handle_before_delete.FileAttributes) & file_attribute_readonly
+            or int(handle_before_delete.NumberOfLinks) != 1
+        ):
+            _fail("CLEANUP_FILE_CHANGED")
+
+        disposition = FileDispositionInfoEx()
+        disposition.Flags = (
+            file_disposition_delete
+            | file_disposition_posix_semantics
+            | file_disposition_ignore_readonly_attribute
+        )
+        if not set_information(
+            native_handle,
+            file_disposition_info_ex_class,
+            ctypes.byref(disposition),
+            ctypes.sizeof(disposition),
+        ):
+            error = ctypes.WinError(ctypes.get_last_error())
+            raise MaterializationError("CLEANUP_FILE_DISPOSITION_FAILED") from error
+        operation_complete = True
+    finally:
+        try:
+            os.close(descriptor)
+        except OSError as exc:
+            if operation_complete:
+                raise MaterializationError("CLEANUP_HANDLE_CLOSE_FAILED") from exc
+
+
+def _cleanup_identity(value: os.stat_result) -> tuple[int, int]:
+    return (int(value.st_dev), int(value.st_ino))
+
+
+def _metadata_is_reparse(value: os.stat_result) -> bool:
+    reparse_flag = getattr(stat, "FILE_ATTRIBUTE_REPARSE_POINT", 0x400)
+    return stat.S_ISLNK(value.st_mode) or bool(
+        getattr(value, "st_file_attributes", 0) & reparse_flag
+    )
 
 
 def _build_layout(destination: Path) -> CleanLayout:
